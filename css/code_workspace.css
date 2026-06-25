@@ -40,6 +40,11 @@
     width: 100%;
 }
 
+#code_output::selection {
+    background-color: white;
+    color: black;
+}
+
 .code_output_expanded {
     height: 50%;
 }
