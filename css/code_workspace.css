@@ -33,23 +33,37 @@
     border-radius: 10px;
 }
 
-.CodeMirror {
-    height: 100% !important;
+#code_output {
+    background-color: black;
+    color: white;
+    padding: 5px;
+    width: 100%;
 }
 
-.CodeMirror-gutters .breakpoints {
-    width: 20px !important;        /* или любая другая ширина */
-    min-width: 20px !important;
+.code_output_expanded {
+    height: 50%;
 }
 
-/* Стиль самого маркера */
-.breakpoint-marker {
+.code_output_not_expanded {
+    height: 0;
+}
+
+#code_output_header {
+    display: flex;
+    padding: 5px 10px;
+    background-color: #0d612a;
+    flex-direction: row;
+    align-content: center;
+    justify-content: space-between;
+}
+
+#button_download_result_files {
     display: block;
-    width: 16px;
-    height: 16px;
-    margin: 2px auto 0 auto;       /* центрируем по вертикали */
-    border-radius: 50%;
-    background-color: #e74c3c;
-    cursor: pointer;
-    flex-shrink: 0;                /* предотвращает сжатие */
+}
+
+#button_expand_output {
+    display: block;
+    width: 24px;
+    height: 24px;
+    color: white;
 }
