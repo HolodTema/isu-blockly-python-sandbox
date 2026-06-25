@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ISU Practice</title>
+
+    <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
+    <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
+    <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
+    <script src="https://unpkg.com/blockly/msg/ru.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Marko+One&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/fonts.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/code_workspace.css">
+</head>
+<body>
+<header>
+    <a class="font_powered_marko_one">Сохранить проект</a>
+    <a class="font_powered_marko_one">Документация</a>
+</header>
+<main>
+    <div id="blockly_workspace"></div>
+    <div id="code_workspace">
+        <div id="code_buttons">
+            <div id="button_convert_to_code" class="text_button font_powered_marko_one">Convert to code</div>
+            <div id="button_run_code" class="text_button font_powered_marko_one">run</div>
+            <div id="button_debug_code" class="text_button font_powered_marko_one">debug</div>
+        </div>
+        <div id="code_editor"></div>
+    </div>
+</main>
+<script src="js/index.js"></script>
+</body>
+</html>
