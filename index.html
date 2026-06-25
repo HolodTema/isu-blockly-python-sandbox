@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Marko+One&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material.min.css">
@@ -27,6 +28,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/scroll/simplescrollbars.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v314.0.0/full/pyodide.js"></script>
 </head>
 <body>
 <header>
@@ -55,8 +58,8 @@ hello_world()
             <div id="button_download_result_files" class="text_button">Download result files</div>
             <img id="button_expand_output" src="assets/images/ic_expand_down.svg" alt="expand">
         </div>
-        <div id="code_output" class="code_output_expanded">
-            kk
+        <div id="code_output" class="font_powered_cascadia_code code_output_expanded">
+            Запусти код и посмотри результат его работы здесь!
         </div>
 
     </div>
