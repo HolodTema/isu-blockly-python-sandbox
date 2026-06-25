@@ -1,4 +1,43 @@
+let codeMirror = undefined;
+
+function configureCodeMirror() {
+    const textarea = document.getElementById("python_code");
+
+    codeMirror = CodeMirror.fromTextArea(textarea, {
+        mode: 'python',
+        theme: 'material',
+        lineNumbers: true,
+        readOnly: true,
+        gutters: ['CodeMirror-linenumbers', 'breakpoints'],
+        styleActiveLine: true,
+        scrollbarStyle: 'simple',
+    });
+
+    codeMirror.on('gutterClick', function (cm, lineNumber, gutter) {
+        console.log('Clicked on gutter:', gutter, 'line:', lineNumber);
+        if (gutter !== 'breakpoints') return;
+
+        const lineInfo = cm.lineInfo(lineNumber);
+        if (lineInfo.gutterMarkers && lineInfo.gutterMarkers['breakpoints']) {
+            cm.setGutterMarker(lineNumber, 'breakpoints', null);
+        } else {
+            const marker = document.createElement('div');
+            marker.className = 'breakpoint-marker';
+            cm.setGutterMarker(lineNumber, 'breakpoints', marker);
+        }
+    });
+}
+
 function configureBlocklyLib() {
+    Blockly.Blocks['start_block'] = {
+        init: function() {
+            this.appendDummyInput().appendField("Начало");
+            this.setNextStatement(true, null);
+            this.setColour('#FF0000');
+            this.setTooltip('Стартовый блок программы');
+        }
+    };
+
     const blocklyToolbox = {
         kind: "categoryToolbox",
         contents: [
@@ -91,46 +130,40 @@ function configureBlocklyLib() {
         zoom: {
             controls: true,
             wheel: true,
-            startScale: 0.9
+            startScale: 1.2
         },
         trashcan: false
     });
 
+    const startBlock = blocklyWorkspace.newBlock('start_block');
+    startBlock.initSvg();
+    startBlock.render();
+    startBlock.moveBy(50, 30);
+    startBlock.setDeletable(false);
+    startBlock.setMovable(false);
+
     document.getElementById("button_convert_to_code")
         .addEventListener("click", function () {
-            const code = Blockly.JavaScript.workspaceToCode(blocklyWorkspace);
-            document.getElementById("code_editor").textContent = code;
+            const topBlocks = blocklyWorkspace.getTopBlocks(true);
+            const startBlock = topBlocks.find(b => b.type === "start_block");
+
+            if (startBlock == null) {
+                console.error("Error: start block is deleted, but it cannot be deleted.");
+            }
+            else {
+                const secondBlock = startBlock.getNextBlock();
+                if (secondBlock == null) {
+                    codeMirror.setValue("# Пустая программа");
+                }
+                else {
+                    const code = Blockly.Python.blockToCode(secondBlock);
+                    codeMirror.setValue(code);
+                }
+            }
         });
 }
 
 
-function configureCodeMirror() {
-    const textarea = document.getElementById("python_code");
-
-    const editor = CodeMirror.fromTextArea(textarea, {
-        mode: 'python',
-        theme: 'material',
-        lineNumbers: true,
-        readOnly: true,
-        gutters: ['CodeMirror-linenumbers', 'breakpoints'],
-        styleActiveLine: true,
-        scrollbarStyle: 'simple',
-    });
-
-    editor.on('gutterClick', function (cm, lineNumber, gutter) {
-        console.log('Clicked on gutter:', gutter, 'line:', lineNumber);
-        if (gutter !== 'breakpoints') return;
-
-        const lineInfo = cm.lineInfo(lineNumber);
-        if (lineInfo.gutterMarkers && lineInfo.gutterMarkers['breakpoints']) {
-            cm.setGutterMarker(lineNumber, 'breakpoints', null);
-        } else {
-            const marker = document.createElement('div');
-            marker.className = 'breakpoint-marker';
-            cm.setGutterMarker(lineNumber, 'breakpoints', marker);
-        }
-    });
-}
 
 function configurePyodide() {
     async function main() {
@@ -183,7 +216,7 @@ function configureCodeOutputExpandButton() {
     })
 }
 
-configureBlocklyLib();
 configureCodeMirror();
+configureBlocklyLib();
 configureCodeOutputExpandButton();
 configurePyodide();
