@@ -2,13 +2,12 @@
 #code_workspace {
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
-#code_editor {
-    background-color: lightgray;
+#codeViewer {
     flex-grow: 1;
-    margin: 0 10px 10px 10px;
-    border-radius: 10px;
+    height: 100%;
 }
 
 #code_buttons {
@@ -32,4 +31,25 @@
     color: white;
     font-size: 16px;
     border-radius: 10px;
+}
+
+.CodeMirror {
+    height: 100% !important;
+}
+
+.CodeMirror-gutters .breakpoints {
+    width: 20px !important;        /* или любая другая ширина */
+    min-width: 20px !important;
+}
+
+/* Стиль самого маркера */
+.breakpoint-marker {
+    display: block;
+    width: 16px;
+    height: 16px;
+    margin: 2px auto 0 auto;       /* центрируем по вертикали */
+    border-radius: 50%;
+    background-color: #e74c3c;
+    cursor: pointer;
+    flex-shrink: 0;                /* предотвращает сжатие */
 }
