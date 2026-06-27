@@ -1,0 +1,23 @@
+[
+  {
+    "type": "start_block",
+    "message0": "Начало программы",
+    "nextStatement": null,
+    "colour": 0,
+    "tooltip": "Программа начинается с этого блока"
+  },
+  {
+    "type": "print_block",
+    "message0": "напечатать %1",
+    "args0": [
+      {
+        "type": "input_value",
+        "name": "TEXT"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 160,
+    "tooltip": "Печатает текст в консоль"
+  }
+]

@@ -2,13 +2,12 @@
 #code_workspace {
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
-#code_editor {
-    background-color: lightgray;
+#codeViewer {
     flex-grow: 1;
-    margin: 0 10px 10px 10px;
-    border-radius: 10px;
+    height: 100%;
 }
 
 #code_buttons {
@@ -32,4 +31,45 @@
     color: white;
     font-size: 16px;
     border-radius: 10px;
+}
+
+#code_output {
+    background-color: black;
+    color: white;
+    padding: 5px;
+    width: 100%;
+    white-space: pre-wrap;
+}
+
+#code_output::selection {
+    background-color: white;
+    color: black;
+}
+
+.code_output_expanded {
+    height: 50%;
+}
+
+.code_output_not_expanded {
+    height: 0;
+}
+
+#code_output_header {
+    display: flex;
+    padding: 5px 10px;
+    background-color: #0d612a;
+    flex-direction: row;
+    align-content: center;
+    justify-content: space-between;
+}
+
+#button_download_result_files {
+    display: block;
+}
+
+#button_expand_output {
+    display: block;
+    width: 24px;
+    height: 24px;
+    color: white;
 }

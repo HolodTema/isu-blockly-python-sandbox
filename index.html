@@ -6,17 +6,32 @@
 
     <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
     <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
-    <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
+    <script src="https://unpkg.com/blockly/python_compressed.js"></script>
     <script src="https://unpkg.com/blockly/msg/ru.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Marko+One&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/scroll/simplescrollbars.min.css">
 
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/fonts.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/code_workspace.css">
+    <link rel="stylesheet" href="css/code_mirror.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/scroll/simplescrollbars.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v314.0.0/full/pyodide.js"></script>
+
+    <script type="module" src="js/index.js"></script>
 </head>
 <body>
 <header>
@@ -31,9 +46,18 @@
             <div id="button_run_code" class="text_button font_powered_marko_one">run</div>
             <div id="button_debug_code" class="text_button font_powered_marko_one">debug</div>
         </div>
-        <div id="code_editor"></div>
+        <div id="codeViewer">
+            <textarea id="python_code">
+# Пустая программа
+            </textarea>
+        </div>
+        <div id="code_output_header">
+            <div id="button_download_result_files" class="text_button">Download result files</div>
+            <img id="button_expand_output" src="assets/images/ic_expand_down.svg" alt="expand">
+        </div>
+        <div id="code_output" class="font_powered_cascadia_code code_output_expanded">Запусти код и посмотри результат его работы здесь!</div>
+
     </div>
 </main>
-<script src="js/index.js"></script>
 </body>
 </html>
