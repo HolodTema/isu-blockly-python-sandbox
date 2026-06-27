@@ -19,6 +19,10 @@
       "contents": [
         {
           "kind": "block",
+          "type": "import_lib_requests_block"
+        },
+        {
+          "kind": "block",
           "type": "http_query_block"
         },
         {

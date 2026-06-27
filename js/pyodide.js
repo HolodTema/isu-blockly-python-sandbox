@@ -2,6 +2,7 @@ export default function configurePyodide() {
     async function main() {
         console.log("pyodide loading started");
         let pyodide = await loadPyodide();
+        await pyodide.loadPackage("requests");
         console.log("Pyodide is loaded");
 
         const buttonRunCode = document.getElementById("button_run_code");

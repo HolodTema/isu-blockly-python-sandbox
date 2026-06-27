@@ -21,6 +21,14 @@
         "tooltip": "Печатает текст в консоль"
     },
     {
+        "type": "import_lib_requests_block",
+        "message0": "Подключить библиотеку requests",
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 160,
+        "tooltip": "Подключает python-библиотеку requests для работы с HTTP-запросами"
+    },
+    {
         "type": "http_query_block",
         "message0": "HTTP-параметр %1 = %2",
         "args0": [
@@ -35,16 +43,8 @@
                 "text": "value"
             }
         ],
-        "inputs": [
-            {
-                "type": "input_value",
-                "name": "PREV",
-                "check": "Query",
-                "align": "LEFT"
-            }
-        ],
-        "output": "Query",
-        "inputsInline": true,
+        "previousStatement": "HttpQueryBlock",
+        "nextStatement": "HttpQueryBlock",
         "colour": 160,
         "tooltip": "Добавляет параметр http-запроса (query)"
     },
@@ -63,22 +63,14 @@
                 "text": "value"
             }
         ],
-        "inputs": [
-            {
-                "type": "input_value",
-                "name": "PREV",
-                "check": "Header",
-                "align": "LEFT"
-            }
-        ],
-        "output": "Header",
-        "inputsInline": true,
+        "previousStatement": "HttpHeaderBlock",
+        "nextStatement": "HttpHeaderBlock",
         "colour": 160,
         "tooltip": "Добавляет заголовок к http-запросу (header)"
     },
     {
         "type": "http_get_request_block",
-        "message0": "Отправить HTTP GET-запрос по адресу %1",
+        "message0": "HTTP GET-запрос по адресу %1",
         "args0": [
             {
                 "type": "field_input",
@@ -89,24 +81,29 @@
         "message1": "параметры: %1",
         "args1": [
             {
-                "type": "input_value",
+                "type": "input_statement",
                 "name": "QUERY",
-                "check": "Query"
+                "check": "HttpQueryBlock"
             }
         ],
         "message2": "заголовки: %1",
         "args2": [
             {
-                "type": "input_value",
+                "type": "input_statement",
                 "name": "HEADERS",
-                "check": "Header"
+                "check": "HttpHeaderBlock"
             }
         ],
-        "message3": "при ответе сервера: %1",
+        "message3": "при ответе сервера: %1 статус-код: %2",
         "args3": [
             {
                 "type": "input_statement",
                 "name": "RESPONSE"
+            },
+            {
+                "type": "input_value",
+                "name": "STATUS_CODE",
+                "check": "Number"
             }
         ],
         "message4": "при таймауте: %1",
@@ -116,7 +113,6 @@
                 "name": "TIMEOUT"
             }
         ],
-        "inputsInline": false,
         "previousStatement": null,
         "nextStatement": null,
         "colour": 160,

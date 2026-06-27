@@ -36,6 +36,10 @@ function configureBlocksCodegen() {
         var text = Blockly.Python.valueToCode(block, "TEXT", Blockly.Python.ORDER_NONE) || '""';
         return "print(" + text + ")\n";
     };
+
+    blocksStorage["import_lib_requests_block"] = function(block) {
+        return "import requests\n";
+    }
 }
 
 function createStartBlock(blocklyWorkspace) {
