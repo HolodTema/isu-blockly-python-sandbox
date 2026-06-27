@@ -8,23 +8,10 @@ export default function configurePyodide() {
         const textAreaPythonCode = document.getElementById("python_code");
         const codeOutput = document.getElementById("code_output");
 
-        // buttonRunCode.addEventListener("click", function () {
-        //     const code = textAreaPythonCode.textContent;
-        //     let result = pyodide.runPython(code);
-        //     codeOutput.textContent = result;
-        // });
-
         buttonRunCode.addEventListener("click", function () {
-            const code = textAreaPythonCode.textContent;
-
-            pyodide.runPython(`
-import sys
-from io import StringIO
-sys.stdout = StringIO()
-    `);
-
+            pyodide.runPython("import sys; from io import StringIO; sys.stdout = StringIO()");
+            const code = window.codeMirror.getValue();
             pyodide.runPython(code);
-
             const output = pyodide.runPython("sys.stdout.getvalue()");
             codeOutput.textContent = output || "Вывод отсутствует";
         });

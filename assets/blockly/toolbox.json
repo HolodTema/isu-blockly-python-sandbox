@@ -1,0 +1,146 @@
+{
+  "kind": "categoryToolbox",
+  "contents": [
+    {
+      "kind": "category",
+      "name": "Ввод-вывод",
+      "colour": "#0048ff",
+      "contents": [
+        {
+          "kind": "block",
+          "type": "print_block"
+        }
+      ]
+    },
+    {
+      "kind": "category",
+      "name": "Логика",
+      "colour": "#5C81A6",
+      "contents": [
+        {
+          "kind": "block",
+          "type": "controls_if"
+        },
+        {
+          "kind": "block",
+          "type": "logic_compare"
+        },
+        {
+          "kind": "block",
+          "type": "logic_operation"
+        },
+        {
+          "kind": "block",
+          "type": "logic_negate"
+        },
+        {
+          "kind": "block",
+          "type": "logic_boolean"
+        }
+      ]
+    },
+    {
+      "kind": "category",
+      "name": "Циклы",
+      "colour": "#5CA65C",
+      "contents": [
+        {
+          "kind": "block",
+          "type": "controls_repeat_ext"
+        },
+        {
+          "kind": "block",
+          "type": "controls_whileUntil"
+        },
+        {
+          "kind": "block",
+          "type": "controls_for"
+        }
+      ]
+    },
+    {
+      "kind": "category",
+      "name": "Математика",
+      "colour": "#A65C5C",
+      "contents": [
+        {
+          "kind": "block",
+          "type": "math_number"
+        },
+        {
+          "kind": "block",
+          "type": "math_arithmetic"
+        },
+        {
+          "kind": "block",
+          "type": "math_single"
+        },
+        {
+          "kind": "block",
+          "type": "math_trig"
+        }
+      ]
+    },
+    {
+      "kind": "category",
+      "name": "Текст",
+      "colour": "#A65CA6",
+      "contents": [
+        {
+          "kind": "block",
+          "type": "text"
+        },
+        {
+          "kind": "block",
+          "type": "text_join"
+        },
+        {
+          "kind": "block",
+          "type": "text_length"
+        },
+        {
+          "kind": "block",
+          "type": "text_isEmpty"
+        }
+      ]
+    },
+    {
+      "kind": "category",
+      "name": "Переменные",
+      "colour": "#CC6633",
+      "contents": [
+        {
+          "kind": "block",
+          "type": "variables_get"
+        },
+        {
+          "kind": "block",
+          "type": "variables_set"
+        }
+      ]
+    },
+    {
+      "kind": "category",
+      "name": "Функции",
+      "colour": "#3366CC",
+      "contents": [
+        {
+          "kind": "block",
+          "type": "procedures_defreturn"
+        },
+        {
+          "kind": "block",
+          "type": "procedures_defnoreturn"
+        },
+        {
+          "kind": "block",
+          "type": "procedures_callreturn"
+        },
+        {
+          "kind": "block",
+          "type": "procedures_callnoreturn"
+        }
+      ]
+    }
+  ]
+}
