@@ -14,6 +14,25 @@
     },
     {
       "kind": "category",
+      "name": "HTTP",
+      "colour": "#7FFFD4",
+      "contents": [
+        {
+          "kind": "block",
+          "type": "http_query_block"
+        },
+        {
+          "kind": "block",
+          "type": "http_header_block"
+        },
+        {
+          "kind": "block",
+          "type": "http_get_request_block"
+        }
+      ]
+    },
+    {
+      "kind": "category",
       "name": "Логика",
       "colour": "#5C81A6",
       "contents": [

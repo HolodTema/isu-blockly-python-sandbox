@@ -1,23 +1,125 @@
 [
-  {
-    "type": "start_block",
-    "message0": "Начало программы",
-    "nextStatement": null,
-    "colour": 0,
-    "tooltip": "Программа начинается с этого блока"
-  },
-  {
-    "type": "print_block",
-    "message0": "напечатать %1",
-    "args0": [
-      {
-        "type": "input_value",
-        "name": "TEXT"
-      }
-    ],
-    "previousStatement": null,
-    "nextStatement": null,
-    "colour": 160,
-    "tooltip": "Печатает текст в консоль"
-  }
+    {
+        "type": "start_block",
+        "message0": "Начало программы",
+        "nextStatement": null,
+        "colour": 0,
+        "tooltip": "Программа начинается с этого блока"
+    },
+    {
+        "type": "print_block",
+        "message0": "напечатать %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 160,
+        "tooltip": "Печатает текст в консоль"
+    },
+    {
+        "type": "http_query_block",
+        "message0": "HTTP-параметр %1 = %2",
+        "args0": [
+            {
+                "type": "field_input",
+                "name": "KEY",
+                "text": "key"
+            },
+            {
+                "type": "field_input",
+                "name": "VALUE",
+                "text": "value"
+            }
+        ],
+        "inputs": [
+            {
+                "type": "input_value",
+                "name": "PREV",
+                "check": "Query",
+                "align": "LEFT"
+            }
+        ],
+        "output": "Query",
+        "inputsInline": true,
+        "colour": 160,
+        "tooltip": "Добавляет параметр http-запроса (query)"
+    },
+    {
+        "type": "http_header_block",
+        "message0": "HTTP-заголовок %1 : %2",
+        "args0": [
+            {
+                "type": "field_input",
+                "name": "NAME",
+                "text": "name"
+            },
+            {
+                "type": "field_input",
+                "name": "VALUE",
+                "text": "value"
+            }
+        ],
+        "inputs": [
+            {
+                "type": "input_value",
+                "name": "PREV",
+                "check": "Header",
+                "align": "LEFT"
+            }
+        ],
+        "output": "Header",
+        "inputsInline": true,
+        "colour": 160,
+        "tooltip": "Добавляет заголовок к http-запросу (header)"
+    },
+    {
+        "type": "http_get_request_block",
+        "message0": "Отправить HTTP GET-запрос по адресу %1",
+        "args0": [
+            {
+                "type": "field_input",
+                "name": "PATH",
+                "text": "/"
+            }
+        ],
+        "message1": "параметры: %1",
+        "args1": [
+            {
+                "type": "input_value",
+                "name": "QUERY",
+                "check": "Query"
+            }
+        ],
+        "message2": "заголовки: %1",
+        "args2": [
+            {
+                "type": "input_value",
+                "name": "HEADERS",
+                "check": "Header"
+            }
+        ],
+        "message3": "при ответе сервера: %1",
+        "args3": [
+            {
+                "type": "input_statement",
+                "name": "RESPONSE"
+            }
+        ],
+        "message4": "при таймауте: %1",
+        "args4": [
+            {
+                "type": "input_statement",
+                "name": "TIMEOUT"
+            }
+        ],
+        "inputsInline": false,
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 160,
+        "tooltip": "HTTP GET-запрос. Параметры и заголовки – горизонтальные цепочки, ответ и таймаут – вертикальные контейнеры."
+    }
 ]
