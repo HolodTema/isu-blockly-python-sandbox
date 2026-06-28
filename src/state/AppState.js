@@ -1,5 +1,5 @@
 
-class AppState {
+export class AppState {
     constructor() {
         this.jsonBlocks = null;
         this.generatedCode = null;
