@@ -1,7 +1,7 @@
 import * as Blockly from "blockly";
 import { pythonGenerator } from "blockly/python";
 
-class BlocklyService {
+export class BlocklyService {
     constructor(appState, htmlContainerId) {
         this.state = state;
         this.htmlContainerId = htmlContainerId;
