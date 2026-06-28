@@ -32,6 +32,10 @@
         {
           "kind": "block",
           "type": "http_get_request_block"
+        },
+        {
+          "kind": "block",
+          "type": "http_status_code_block"
         }
       ]
     },

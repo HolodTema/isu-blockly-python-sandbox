@@ -94,16 +94,11 @@
                 "check": "HttpHeaderBlock"
             }
         ],
-        "message3": "при ответе сервера: %1 статус-код: %2",
+        "message3": "при ответе сервера: %1",
         "args3": [
             {
                 "type": "input_statement",
                 "name": "RESPONSE"
-            },
-            {
-                "type": "input_value",
-                "name": "STATUS_CODE",
-                "check": "Number"
             }
         ],
         "message4": "при таймауте: %1",
@@ -117,5 +112,13 @@
         "nextStatement": null,
         "colour": 160,
         "tooltip": "HTTP GET-запрос. Параметры и заголовки – горизонтальные цепочки, ответ и таймаут – вертикальные контейнеры."
+    },
+    {
+        "type": "http_status_code_block",
+        "message0": "статус-код",
+        "output": null,
+        "colour": 160,
+        "tooltip": "Статус код HTTP-запроса. Автоматически обновляется при новом запросе",
+        "helpUrl": ""
     }
 ]
