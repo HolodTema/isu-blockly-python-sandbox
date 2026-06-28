@@ -70,6 +70,33 @@ function setButtonConvertToCodeListener(blocklyWorkspace) {
         });
 }
 
+function setButtonSaveProjectListener(blocklyWorkspace) {
+    const buttonSaveProject = document.getElementById("button_save_project");
+    buttonSaveProject.addEventListener("click", function () {
+        const pythonCode = window.codeMirror.getValue();
+        console.log(Object.keys(Blockly.serialization));
+        const jsonBlocklyState = Blockly.serialization.workspaces.save(blocklyWorkspace);
+
+        const jsonProject = {
+            python: pythonCode,
+            blocklyState: jsonBlocklyState
+        };
+
+        const jsonProjectStr = JSON.stringify(jsonProject, null, 2);
+
+        const blob = new Blob([jsonProjectStr], { type: "text/plain" });
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "proj.blockly";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+}
+
 export default function configureBlocklyLib() {
     loadCustomBlocksFromFile(() => {
         loadToolboxFromFile(toolboxJson => {
@@ -93,6 +120,7 @@ export default function configureBlocklyLib() {
             configureBlocksCodegen();
             createStartBlock(blocklyWorkspace);
             setButtonConvertToCodeListener(blocklyWorkspace);
+            setButtonSaveProjectListener(blocklyWorkspace);
         });
     });
 }
