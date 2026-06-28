@@ -1,4 +1,4 @@
-import * as Blockly from "blockly";
+import Blockly from "blockly";
 import { pythonGenerator } from "blockly/python";
 
 export class BlocklyService {
@@ -12,11 +12,11 @@ export class BlocklyService {
 
     async init() {
         try {
-            const jsonBlocks = await fetch("../assets/blockly/blocks.json")
+            const jsonBlocks = await fetch("/assets/blockly/blocks.json")
                 .then(r => r.json());
             Blockly.defineBlocksWithJsonArray(blocksJson);
 
-            const jsonToolbox = await fetch("../assets/blockly/toolbox.json")
+            const jsonToolbox = await fetch("/assets/blockly/toolbox.json")
                 .then(r => r.json());
 
             this.workspace = Blockly.inject(this.htmlContainerId, {

@@ -36,11 +36,11 @@ export class UIService {
         buttonExpandOutput.addEventListener("click", (e) => {
             if (divCodeOutput.className.includes("code_output_expanded")) {
                 divCodeOutput.className = 'font_powered_cascadia_code code_output_not_expanded';
-                buttonExpandOutput.src = '../assets/images/ic_expand_up.svg';
+                buttonExpandOutput.src = '/assets/images/ic_expand_up.svg';
             }
             else {
-                divCodeOutput.className = 'font_powered_cascadia_code code_output_expanded';
-                buttonExpandOutput.src = '../assets/images/ic_expand_down.svg';
+                divCodeOutput.className = "font_powered_cascadia_code code_output_expanded";
+                buttonExpandOutput.src = "/assets/images/ic_expand_down.svg";
             }
         });
     }

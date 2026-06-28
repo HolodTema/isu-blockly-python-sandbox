@@ -1,6 +1,5 @@
 import CodeMirror from 'codemirror';
 import 'codemirror/mode/python/python';
-import 'codemirror/theme/material.css';
 import 'codemirror/addon/selection/active-line';
 import 'codemirror/addon/scroll/simplescrollbars';
 
