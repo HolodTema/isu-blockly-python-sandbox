@@ -70,10 +70,90 @@ function setButtonConvertToCodeListener(blocklyWorkspace) {
         });
 }
 
+function setButtonSaveProjectListener(blocklyWorkspace) {
+    const buttonSaveProject = document.getElementById("button_save_project");
+    buttonSaveProject.addEventListener("click", function () {
+        const pythonCode = window.codeMirror.getValue();
+        const jsonBlocklyState = Blockly.serialization.workspaces.save(blocklyWorkspace);
+
+        const jsonProject = {
+            python: pythonCode,
+            blocklyState: jsonBlocklyState
+        };
+
+        const jsonProjectStr = JSON.stringify(jsonProject, null, 2);
+
+        const blob = new Blob([jsonProjectStr], { type: "text/plain" });
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "project.chef";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+}
+
+function setButtonOpenProjectListener(blocklyWorkspace) {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".chef";
+    fileInput.style.display = "none";
+    document.body.appendChild(fileInput);
+
+    fileInput.addEventListener("change", function (event) {
+        const file = event.target.files[0];
+        if (!file) {
+            console.log("No file is selected.");
+            return;
+        }
+
+        const fileReader = new FileReader();
+        fileReader.onload = function (e) {
+            try {
+                const content = e.target.result;
+                const project = JSON.parse(content);
+
+                if (typeof project.python !== "string") {
+                    console.log("Error: unable to open project from invalid .chef file");
+                    return;
+                }
+                if (!project.blocklyState || typeof project.blocklyState !== "object") {
+                    console.log("Error: unable to open project from invalid .chef file");
+                    return;
+                }
+
+                window.codeMirror.setValue(project.python);
+                blocklyWorkspace.clear();
+                Blockly.serialization.workspaces.load(project.blocklyState, blocklyWorkspace);
+                console.log("The project from file was opened.");
+            }
+            catch (e) {
+                console.error("Unable to open project from file:", e);
+            }
+            finally {
+                fileInput.value = "";
+            }
+        }
+
+        fileReader.onerror = function () {
+            alert("Unable to open project from file");
+            fileInput.value = "";
+        }
+        fileReader.readAsText(file, "UTF-8");
+    });
+
+    const buttonOpenProject = document.getElementById("button_open_project");
+    buttonOpenProject.addEventListener("click", function () {
+        fileInput.click();
+    });
+}
+
 export default function configureBlocklyLib() {
     loadCustomBlocksFromFile(() => {
-        loadToolboxFromFile(toolboxJson => {
-
+        loadToolboxFromFile(toolboxJson => {    
             const blocklyWorkspace = Blockly.inject("blockly_workspace", {
                 toolbox: toolboxJson,
                 grid: {
@@ -93,6 +173,8 @@ export default function configureBlocklyLib() {
             configureBlocksCodegen();
             createStartBlock(blocklyWorkspace);
             setButtonConvertToCodeListener(blocklyWorkspace);
+            setButtonSaveProjectListener(blocklyWorkspace);
+            setButtonOpenProjectListener(blocklyWorkspace);
         });
     });
 }
