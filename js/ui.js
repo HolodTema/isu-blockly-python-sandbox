@@ -1,5 +1,5 @@
-export default function configureCodeOutputExpandButton() {
-    const buttonOutputExpand = document.getElementById("button_expand_output")
+function configureButtonOutputExpand() {
+    const buttonOutputExpand = document.getElementById("button_expand_output");
 
     const codeOutput = document.getElementById("code_output");
 
@@ -11,6 +11,10 @@ export default function configureCodeOutputExpandButton() {
             codeOutput.className = "font_powered_cascadia_code code_output_expanded";
             buttonOutputExpand.src = "assets/images/ic_expand_down.svg";
         }
-    })
+    });
+}
+
+export default function configureButtons() {
+    configureButtonOutputExpand();
 }
 
