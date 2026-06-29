@@ -1,8 +1,8 @@
-import Blockly from "blockly";
+import * as Blockly from 'blockly';
 import { pythonGenerator } from "blockly/python";
 
 export class BlocklyService {
-    constructor(appState, htmlContainerId) {
+    constructor(state, htmlContainerId) {
         this.state = state;
         this.htmlContainerId = htmlContainerId;
         this.workspace = undefined;
@@ -14,7 +14,7 @@ export class BlocklyService {
         try {
             const jsonBlocks = await fetch("/assets/blockly/blocks.json")
                 .then(r => r.json());
-            Blockly.defineBlocksWithJsonArray(blocksJson);
+            Blockly.defineBlocksWithJsonArray(jsonBlocks);
 
             const jsonToolbox = await fetch("/assets/blockly/toolbox.json")
                 .then(r => r.json());
@@ -75,12 +75,12 @@ export class BlocklyService {
 
     saveWorkspaceState() {
         const stateToSave = Blockly.serialization.workspaces.save(this.workspace);
-        this.state.setBlocksState(stateToSave);
+        this.state.setJsonBlocks(stateToSave);
     }
 
     generateAndUpdateCode() {
         const code = pythonGenerator.workspaceToCode(this.workspace);
-        this.state.setPythonCode(code);
+        this.state.setGeneratedCode(code);
     }
 
     clearWorkspace() {
