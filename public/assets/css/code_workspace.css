@@ -73,3 +73,7 @@
     height: 24px;
     color: white;
 }
+
+#codemirror_workspace {
+    height: 100%;
+}
