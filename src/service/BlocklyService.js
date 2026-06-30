@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly';
+import * as Ru from 'blockly/msg/ru';
 import { pythonGenerator } from "blockly/python";
 
 export class BlocklyService {
@@ -19,6 +20,8 @@ export class BlocklyService {
             const jsonToolbox = await fetch("/assets/blockly/toolbox.json")
                 .then(r => r.json());
 
+            Blockly.setLocale(Ru);
+
             this.workspace = Blockly.inject(this.htmlContainerId, {
                 toolbox: jsonToolbox,
                 grid: {spacing: 20, length: 3, color: '#ccc', snap: true},
@@ -36,7 +39,7 @@ export class BlocklyService {
                 }
 
                 this.saveWorkspaceState();
-                this.generateAndUpdateCode();
+                // this.generateAndUpdateCode();
             });
 
             if (this.state.blocksState) {
