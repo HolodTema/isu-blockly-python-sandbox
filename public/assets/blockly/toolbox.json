@@ -134,6 +134,7 @@
     {
       "kind": "category",
       "name": "Переменные",
+      "custom": "VARIABLE",
       "colour": "#CC6633",
       "contents": [
         {
