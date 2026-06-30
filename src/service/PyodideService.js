@@ -20,7 +20,7 @@ export class PyodideService {
         }
     }
 
-    async runPythonCode(strCode) {
+    async runPythonCode(code) {
         if (!this.isInit) {
             console.error("Pyodide: you cannot run the code while pyodide init() is in progress");
             return;
@@ -30,6 +30,7 @@ export class PyodideService {
             this.pyodide.runPython("import sys; from io import StringIO; sys.stdout = StringIO()");
             this.pyodide.runPython(code);
             const output = this.pyodide.runPython("sys.stdout.getvalue()") || "Вывод отсутствует";
+            console.log(output);
             this.state.setCodeOutput(output);
         }
         catch (e) {

@@ -1,5 +1,7 @@
 import * as Blockly from 'blockly';
+import * as Ru from 'blockly/msg/ru';
 import { pythonGenerator } from "blockly/python";
+import {python} from "@codemirror/lang-python";
 
 export class BlocklyService {
     constructor(state, htmlContainerId) {
@@ -19,6 +21,8 @@ export class BlocklyService {
             const jsonToolbox = await fetch("/assets/blockly/toolbox.json")
                 .then(r => r.json());
 
+            Blockly.setLocale(Ru);
+
             this.workspace = Blockly.inject(this.htmlContainerId, {
                 toolbox: jsonToolbox,
                 grid: {spacing: 20, length: 3, color: '#ccc', snap: true},
@@ -36,7 +40,7 @@ export class BlocklyService {
                 }
 
                 this.saveWorkspaceState();
-                this.generateAndUpdateCode();
+                // this.generateAndUpdateCode();
             });
 
             if (this.state.blocksState) {
@@ -50,6 +54,8 @@ export class BlocklyService {
     }
 
     configureCodeGenerator() {
+        pythonGenerator.INDENT = '    ';
+
         pythonGenerator.forBlock["start_block"] = function (block) {
             return "";
         };
@@ -79,7 +85,18 @@ export class BlocklyService {
     }
 
     generateAndUpdateCode() {
-        const code = pythonGenerator.workspaceToCode(this.workspace);
+        const allBlocks = this.workspace.getTopBlocks(false);
+        const startBlock = allBlocks.find(block => block.type === "start_block");
+        if (!startBlock) {
+
+            console.error("Blockly: Error: there is no start_block on the workspace");
+
+            return "";
+
+        }
+        pythonGenerator.init(this.workspace);
+        let code = pythonGenerator.blockToCode(startBlock);
+        code = pythonGenerator.finish(code).trim();
         this.state.setGeneratedCode(code);
     }
 

@@ -43,5 +43,11 @@ export class UIService {
                 buttonExpandOutput.src = "/assets/images/ic_expand_down.svg";
             }
         });
+
+        this.state.subscribe((key, st) => {
+            if (key === "codeOutput") {
+                divCodeOutput.textContent = st.codeOutput;
+            }
+        })
     }
 }
