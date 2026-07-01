@@ -3,17 +3,6 @@
   "contents": [
     {
       "kind": "category",
-      "name": "Ввод-вывод",
-      "colour": "#0048ff",
-      "contents": [
-        {
-          "kind": "block",
-          "type": "print_block"
-        }
-      ]
-    },
-    {
-      "kind": "category",
       "name": "HTTP",
       "colour": "#7FFFD4",
       "contents": [
@@ -96,7 +85,7 @@
     {
       "kind": "category",
       "name": "Математика",
-      "colour": "#A65C5C",
+      "colour": "#5B67A5",
       "contents": [
         {
           "kind": "block",
@@ -119,8 +108,12 @@
     {
       "kind": "category",
       "name": "Текст",
-      "colour": "#A65CA6",
+      "colour": "#5BA58C",
       "contents": [
+        {
+          "kind": "block",
+          "type": "print_block"
+        },
         {
           "kind": "block",
           "type": "text"
@@ -143,7 +136,7 @@
       "kind": "category",
       "name": "Переменные",
       "custom": "VARIABLE",
-      "colour": "#CC6633",
+      "colour": "#A55B80",
       "contents": [
         {
           "kind": "block",
@@ -152,29 +145,6 @@
         {
           "kind": "block",
           "type": "variables_set"
-        }
-      ]
-    },
-    {
-      "kind": "category",
-      "name": "Функции",
-      "colour": "#3366CC",
-      "contents": [
-        {
-          "kind": "block",
-          "type": "procedures_defreturn"
-        },
-        {
-          "kind": "block",
-          "type": "procedures_defnoreturn"
-        },
-        {
-          "kind": "block",
-          "type": "procedures_callreturn"
-        },
-        {
-          "kind": "block",
-          "type": "procedures_callnoreturn"
         }
       ]
     }
