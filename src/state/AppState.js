@@ -4,6 +4,7 @@ export class AppState {
         this.jsonBlocks = null;
         this.generatedCode = null;
         this.codeOutput = null;
+        this.setInputFilenames = new Set();
         this.listeners = [];
     }
 
@@ -30,5 +31,18 @@ export class AppState {
     setCodeOutput(codeOutput) {
         this.codeOutput = codeOutput;
         this.notifyAllListeners("codeOutput");
+    }
+
+    isInputFilenameInSet(inputFilename) {
+        return this.setInputFilenames.has(inputFilename);
+    }
+
+    addInputFilename(inputFilename) {
+        this.setInputFilenames.add(inputFilename);
+        this.notifyAllListeners("setInputFilenames");
+    }
+
+    removeInputFilename(inputFilename) {
+        const isDeleted = this.setInputFilenames.delete(inputFilename);
     }
 }

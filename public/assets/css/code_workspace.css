@@ -85,6 +85,10 @@
     margin: 0 0 10px 10px;
 }
 
+#input_add_input_file {
+    display: none;
+}
+
 #button_add_input_file {
     text-align: center;
     white-space: nowrap;

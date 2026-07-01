@@ -46,4 +46,19 @@ export class PyodideService {
         }
         this.runPythonCode(code);
     }
+
+    saveInputFileToPyodideMemory(filename, byteArray) {
+        this.pyodide.FS.writeFile(filename, byteArray);
+        // this.pyodide.globals.set("target_filename", filename);
+    }
+
+    removeInputFileFromPyodideMemory(filename) {
+        try {
+            this.pyodide.FS.unlink(filename);
+            console.log("Pyodide: input file removed from pyodide's memory successfully");
+        }
+        catch (e) {
+            console.error("Pyodide: unable to remove input file from pyodide's memory because it does not exist.");
+        }
+    }
 }
