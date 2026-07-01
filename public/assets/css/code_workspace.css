@@ -77,3 +77,43 @@
 #codemirror_workspace {
     height: 100%;
 }
+
+#input_files_toolbar {
+    flex-direction: row;
+    display: flex;
+    align-items: center;
+    margin: 0 0 10px 10px;
+}
+
+#button_add_input_file {
+    text-align: center;
+    white-space: nowrap;
+}
+
+#input_files_list {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    align-items: center;
+    gap: 5px 0;
+}
+
+.input_file {
+    display: flex;
+    margin: 0 5px;
+    border: 1px solid #0d612a;
+    border-radius: 10px;
+    align-items: center;
+    padding: 0 5px;
+}
+
+.input_file_text {
+    color: #0d612a;
+    white-space: nowrap;
+}
+
+.button_remove_input_file {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
