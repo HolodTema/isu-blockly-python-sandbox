@@ -1,0 +1,123 @@
+
+#code_workspace {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+#codeViewer {
+    flex-grow: 1;
+    height: 100%;
+}
+
+#code_buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 10px 0;
+}
+
+#code_buttons > div {
+    margin: 0 10px;
+}
+
+#button_convert_to_code {
+
+}
+
+.text_button {
+    padding: 5px 10px;
+    background-color: green;
+    color: white;
+    font-size: 16px;
+    border-radius: 10px;
+}
+
+#code_output {
+    background-color: black;
+    color: white;
+    padding: 5px;
+    width: 100%;
+    white-space: pre-wrap;
+}
+
+#code_output::selection {
+    background-color: white;
+    color: black;
+}
+
+.code_output_expanded {
+    height: 50%;
+}
+
+.code_output_not_expanded {
+    height: 0;
+}
+
+#code_output_header {
+    display: flex;
+    padding: 5px 10px;
+    background-color: #0d612a;
+    flex-direction: row;
+    align-content: center;
+    justify-content: space-between;
+}
+
+#button_download_result_files {
+    display: block;
+}
+
+#button_expand_output {
+    display: block;
+    width: 24px;
+    height: 24px;
+    color: white;
+}
+
+#codemirror_workspace {
+    height: 100%;
+}
+
+#input_files_toolbar {
+    flex-direction: row;
+    display: flex;
+    align-items: center;
+    margin: 0 0 10px 10px;
+}
+
+#input_add_input_file {
+    display: none;
+}
+
+#button_add_input_file {
+    text-align: center;
+    white-space: nowrap;
+}
+
+#input_files_list {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    align-items: center;
+    gap: 5px 0;
+}
+
+.input_file {
+    display: flex;
+    margin: 0 5px;
+    border: 1px solid #0d612a;
+    border-radius: 10px;
+    align-items: center;
+    padding: 0 5px;
+}
+
+.input_file_text {
+    color: #0d612a;
+    white-space: nowrap;
+}
+
+.button_remove_input_file {
+    width: 24px;
+    height: 24px;
+    display: block;
+}

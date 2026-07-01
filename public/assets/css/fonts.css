@@ -6,6 +6,13 @@
 
 .font_powered_marko_one {
     font-family: "Marko One", serif;
-    font-weight: 200;
+    font-weight: 300;
+    font-style: normal;
+}
+
+.font_powered_cascadia_code {
+    font-family: "Cascadia Code", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 300;
     font-style: normal;
 }

@@ -4,23 +4,23 @@
     <meta charset="UTF-8">
     <title>ISU Practice</title>
 
-    <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
-    <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
-    <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
-    <script src="https://unpkg.com/blockly/msg/ru.js"></script>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Marko+One&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/fonts.css">
-    <link rel="stylesheet" href="css/header.css">
-    <link rel="stylesheet" href="css/code_workspace.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/fonts.css">
+    <link rel="stylesheet" href="assets/css/header.css">
+    <link rel="stylesheet" href="assets/css/code_workspace.css">
+    <link rel="stylesheet" href="assets/css/code_mirror.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/blockly@11.2.0/dist/blockly.min.css">
 </head>
 <body>
 <header>
-    <a class="font_powered_marko_one">Сохранить проект</a>
+    <a class="font_powered_marko_one" id="button_save_project">Сохранить проект</a>
+    <a class="font_powered_marko_one" id="button_open_project">Открыть проект</a>
     <a class="font_powered_marko_one">Документация</a>
 </header>
 <main>
@@ -31,9 +31,29 @@
             <div id="button_run_code" class="text_button font_powered_marko_one">run</div>
             <div id="button_debug_code" class="text_button font_powered_marko_one">debug</div>
         </div>
-        <div id="code_editor"></div>
+        <div id="input_files_toolbar">
+            <input id="input_add_input_file" type="file" accept=".txt, .json, .csv"/>
+            <div id="button_add_input_file" class="text_button font_powered_marko_one">Add input file</div>
+            <div id="input_files_list">
+<!--                <div class="input_file">-->
+<!--                    <img class="button_remove_input_file" src="assets/images/ic_close_black.svg" alt="close">-->
+<!--                    <div class="input_file_text">File name kdjjaskdfja</div>-->
+<!--                </div>-->
+            </div>
+        </div>
+        <div id="codeViewer">
+            <div id="codemirror_workspace">
+            </div>
+        </div>
+        <div id="code_output_header">
+            <div id="button_download_result_files" class="text_button">Download result files</div>
+            <img id="button_expand_output" src="assets/images/ic_expand_down.svg" alt="expand">
+        </div>
+        <div id="code_output" class="font_powered_cascadia_code code_output_expanded">Запусти код и посмотри результат его работы здесь!</div>
+
     </div>
 </main>
-<script src="js/index.js"></script>
+<script src="https://cdn.jsdelivr.net/pyodide/v314.0.0/full/pyodide.js"></script>
+<script type="module" src="/src/main.js"></script>
 </body>
 </html>
