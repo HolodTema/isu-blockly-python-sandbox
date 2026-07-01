@@ -108,6 +108,11 @@ export class UIService {
             inputAddInputFile.click();
         });
 
+        const buttonDownloadResultFiles = document.getElementById("button_download_result_files");
+        buttonDownloadResultFiles.addEventListener("click", (e) => {
+            this.pyodideService.saveResultFilesIntoZipArchive();
+        });
+
         this.state.subscribe((key, st) => {
             if (key === "codeOutput") {
                 divCodeOutput.textContent = st.codeOutput;
