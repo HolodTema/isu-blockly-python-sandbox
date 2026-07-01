@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly';
 import * as Ru from 'blockly/msg/ru';
 import { pythonGenerator } from "blockly/python";
+import { Order } from "blockly/python";
 import {python} from "@codemirror/lang-python";
 
 export class BlocklyService {
@@ -58,6 +59,12 @@ export class BlocklyService {
 
         pythonGenerator.forBlock["start_block"] = function (block) {
             return "";
+        };
+
+        pythonGenerator.forBlock["custom_if"] = function (block) {
+            let condition = pythonGenerator.valueToCode(block, "CONDITION", Order.ATOMIC) || "False";
+            let codeInsideIf = pythonGenerator.statementToCode(block, "THEN");
+            return `if ${condition}:\n${codeInsideIf}\n`;
         };
 
         pythonGenerator.forBlock["print_block"] = function (block) {

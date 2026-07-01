@@ -46,6 +46,10 @@
       "contents": [
         {
           "kind": "block",
+          "type": "custom_if"
+        },
+        {
+          "kind": "block",
           "type": "controls_if"
         },
         {

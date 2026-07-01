@@ -7,6 +7,25 @@
         "tooltip": "Программа начинается с этого блока"
     },
     {
+        "type": "custom_if",
+        "message0": "если %1 то %2",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "CONDITION",
+                "check": "Boolean"
+            },
+            {
+                "type": "input_statement",
+                "name": "THEN"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 210,
+        "tooltip": "Условный оператор if"
+    },
+    {
         "type": "print_block",
         "message0": "напечатать %1",
         "args0": [
