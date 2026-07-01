@@ -3,17 +3,6 @@
   "contents": [
     {
       "kind": "category",
-      "name": "Ввод-вывод",
-      "colour": "#0048ff",
-      "contents": [
-        {
-          "kind": "block",
-          "type": "print_block"
-        }
-      ]
-    },
-    {
-      "kind": "category",
       "name": "HTTP",
       "colour": "#7FFFD4",
       "contents": [
@@ -46,7 +35,15 @@
       "contents": [
         {
           "kind": "block",
-          "type": "controls_if"
+          "type": "custom_if_block"
+        },
+        {
+          "kind": "block",
+          "type": "custom_if_else_block"
+        },
+        {
+          "kind": "block",
+          "type": "custom_if_elif_else_block"
         },
         {
           "kind": "block",
@@ -88,7 +85,7 @@
     {
       "kind": "category",
       "name": "Математика",
-      "colour": "#A65C5C",
+      "colour": "#5B67A5",
       "contents": [
         {
           "kind": "block",
@@ -111,15 +108,15 @@
     {
       "kind": "category",
       "name": "Текст",
-      "colour": "#A65CA6",
+      "colour": "#5BA58C",
       "contents": [
         {
           "kind": "block",
-          "type": "text"
+          "type": "print_block"
         },
         {
           "kind": "block",
-          "type": "text_join"
+          "type": "text"
         },
         {
           "kind": "block",
@@ -128,6 +125,30 @@
         {
           "kind": "block",
           "type": "text_isEmpty"
+        },
+        {
+          "kind": "block",
+          "type": "text_join_block"
+        },
+        {
+          "kind": "block",
+          "type": "text_file_open_block"
+        },
+        {
+          "kind": "block",
+          "type": "text_file_read_block"
+        },
+        {
+          "kind": "block",
+          "type": "text_file_read_lines_block"
+        },
+        {
+          "kind": "block",
+          "type": "text_file_write_to_end_block"
+        },
+        {
+          "kind": "block",
+          "type": "text_file_close_block"
         }
       ]
     },
@@ -135,7 +156,7 @@
       "kind": "category",
       "name": "Переменные",
       "custom": "VARIABLE",
-      "colour": "#CC6633",
+      "colour": "#A55B80",
       "contents": [
         {
           "kind": "block",
@@ -149,25 +170,20 @@
     },
     {
       "kind": "category",
-      "name": "Функции",
-      "colour": "#3366CC",
+      "name": "Списки",
+      "colour": "#5B67A5",
       "contents": [
-        {
-          "kind": "block",
-          "type": "procedures_defreturn"
-        },
-        {
-          "kind": "block",
-          "type": "procedures_defnoreturn"
-        },
-        {
-          "kind": "block",
-          "type": "procedures_callreturn"
-        },
-        {
-          "kind": "block",
-          "type": "procedures_callnoreturn"
-        }
+        { "kind": "block", "type": "lists_create_with" },
+
+        { "kind": "block", "type": "lists_repeat" },
+        { "kind": "block", "type": "lists_length" },
+        { "kind": "block", "type": "lists_isEmpty" },
+        { "kind": "block", "type": "lists_getIndex" },
+        { "kind": "block", "type": "lists_setIndex" },
+        { "kind": "block", "type": "lists_getSublist" },
+        { "kind": "block", "type": "lists_split" },
+        { "kind": "block", "type": "lists_sort" },
+        { "kind": "block", "type": "lists_indexOf" }
       ]
     }
   ]

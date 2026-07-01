@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly';
 import * as Ru from 'blockly/msg/ru';
 import { pythonGenerator } from "blockly/python";
+import { Order } from "blockly/python";
 import {python} from "@codemirror/lang-python";
 
 export class BlocklyService {
@@ -60,14 +61,81 @@ export class BlocklyService {
             return "";
         };
 
+        pythonGenerator.forBlock["custom_if_block"] = function (block) {
+            let condition = pythonGenerator.valueToCode(block, "CONDITION", Order.ATOMIC) || "False";
+            let codeInsideIf = pythonGenerator.statementToCode(block, "THEN");
+            return `if ${condition}:\n${codeInsideIf}\n`;
+        };
+
+        pythonGenerator.forBlock["custom_if_else_block"] = function(block) {
+            const condition = pythonGenerator.valueToCode(block, "CONDITION", Order.ATOMIC) || "False";
+            const thenCode = pythonGenerator.statementToCode(block, "THEN");
+            const elseCode = pythonGenerator.statementToCode(block, "ELSE");
+            return `if ${condition}:\n${thenCode}else:\n${elseCode}\n`;
+        };
+
+        pythonGenerator.forBlock["custom_if_elif_else_block"] = function(block) {
+            const cond1 = pythonGenerator.valueToCode(block, "COND1", Order.ATOMIC) || "False";
+            const then1 = pythonGenerator.statementToCode(block, "THEN1");
+            const cond2 = pythonGenerator.valueToCode(block, "COND2", Order.ATOMIC) || "False";
+            const then2 = pythonGenerator.statementToCode(block, "THEN2");
+            const elseCode = pythonGenerator.statementToCode(block, "ELSE");
+            return `if ${cond1}:\n${then1}elif ${cond2}:\n${then2}else:\n${elseCode}\n`;
+        };
+
+        pythonGenerator.forBlock["text_file_open_block"] = function(block) {
+            const filePath = block.getFieldValue("FILE_PATH");
+            const fileMode = block.getFieldValue("MODE");
+            const variableCode = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+            return `${variableCode} = open("${filePath}", '${fileMode}')\n`;
+        };
+
+        pythonGenerator.forBlock["text_file_read_block"] = function (block) {
+            const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+            const code = `${fileVariable}.read()\n`;
+            return [code, Order.FUNCTION_CALL];
+        };
+
+        pythonGenerator.forBlock["text_file_read_lines_block"] = function(block) {
+            const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+            const code = `${fileVariable}.readlines()\n`;
+            return [code, Order.FUNCTION_CALL];
+        };
+
+        pythonGenerator.forBlock["text_file_write_to_end_block"] = function(block) {
+            const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+            const textToWrite = pythonGenerator.valueToCode(block, "TEXT_TO_WRITE", Order.ATOMIC) || "";
+            return `${fileVariable}.write(${textToWrite})\n`;
+        };
+
+        pythonGenerator.forBlock["text_file_close_block"] = function(block) {
+            const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+            return `${fileVariable}.close()\n`;
+        };
+
+        pythonGenerator.forBlock["text_join_block"] = function(block) {
+            let textLeft = pythonGenerator.valueToCode(block, "TEXT_LEFT", Order.NONE) || "";
+            if (textLeft.length > 0) {
+                textLeft = textLeft.substring(1, textLeft.length - 1);
+            }
+
+            let textRight = pythonGenerator.valueToCode(block, "TEXT_RIGHT", Order.NONE) || "";
+            if (textRight.length > 0) {
+                textRight = textRight.substring(1, textRight.length - 1);
+            }
+
+            const code = `"${textLeft}${textRight}"`;
+            return [code, Order.FUNCTION_CALL];
+        }
+
         pythonGenerator.forBlock["print_block"] = function (block) {
-            var text = pythonGenerator.valueToCode(block, "TEXT", pythonGenerator.ORDER_NONE) || '""';
+            const text = pythonGenerator.valueToCode(block, "TEXT", Order.NONE) || '""';
             return "print(" + text + ")\n";
         };
 
         pythonGenerator.forBlock["import_lib_requests_block"] = function (block) {
             return "import requests\n";
-        }
+        };
     }
 
     createStartBlock() {
