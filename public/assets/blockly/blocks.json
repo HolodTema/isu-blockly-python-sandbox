@@ -115,6 +115,40 @@
         "tooltip": "Возвращает список строк из открытого файла",
         "helpUrl": ""
     },
+    {
+        "type": "text_file_write_to_end_block",
+        "message0": "Записать текст %1 в конец файла %2",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT_TO_WRITE"
+            },
+            {
+                "type": "input_value",
+                "name": "FILE_VARIABLE",
+                "check": "File"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 160,
+        "tooltip": "Записывает текст в конец открытого файла. Файл должен быть открыт в режиме append ('a')."
+    },
+    {
+        "type": "text_file_close_block",
+        "message0": "Закрыть файл %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "FILE_VARIABLE",
+                "check": "File"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 160,
+        "tooltip": "Сохраняет записанную в файл информацию и закрывает файл. Нужно обязательно закрывать файлы, открытые в режиме 'w' или 'a'."
+    },
 
     {
         "type": "print_block",

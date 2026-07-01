@@ -141,6 +141,14 @@
         {
           "kind": "block",
           "type": "text_file_read_lines_block"
+        },
+        {
+          "kind": "block",
+          "type": "text_file_write_to_end_block"
+        },
+        {
+          "kind": "block",
+          "type": "text_file_close_block"
         }
       ]
     },

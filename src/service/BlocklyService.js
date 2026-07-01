@@ -71,7 +71,7 @@ export class BlocklyService {
             const condition = pythonGenerator.valueToCode(block, "CONDITION", Order.ATOMIC) || "False";
             const thenCode = pythonGenerator.statementToCode(block, "THEN");
             const elseCode = pythonGenerator.statementToCode(block, "ELSE");
-            return `if ${condition}:\n${thenCode}else:\n${elseCode}`;
+            return `if ${condition}:\n${thenCode}else:\n${elseCode}\n`;
         };
 
         pythonGenerator.forBlock["custom_if_elif_else_block"] = function(block) {
@@ -80,7 +80,7 @@ export class BlocklyService {
             const cond2 = pythonGenerator.valueToCode(block, "COND2", Order.ATOMIC) || "False";
             const then2 = pythonGenerator.statementToCode(block, "THEN2");
             const elseCode = pythonGenerator.statementToCode(block, "ELSE");
-            return `if ${cond1}:\n${then1}elif ${cond2}:\n${then2}else:\n${elseCode}`;
+            return `if ${cond1}:\n${then1}elif ${cond2}:\n${then2}else:\n${elseCode}\n`;
         };
 
         pythonGenerator.forBlock["text_file_open_block"] = function(block) {
@@ -92,14 +92,25 @@ export class BlocklyService {
 
         pythonGenerator.forBlock["text_file_read_block"] = function (block) {
             const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
-            const code = `${fileVariable}.read()`;
+            const code = `${fileVariable}.read()\n`;
             return [code, Order.FUNCTION_CALL];
         };
 
         pythonGenerator.forBlock["text_file_read_lines_block"] = function(block) {
             const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
-            const code = `${fileVariable}.readlines()`;
+            const code = `${fileVariable}.readlines()\n`;
             return [code, Order.FUNCTION_CALL];
+        };
+
+        pythonGenerator.forBlock["text_file_write_to_end_block"] = function(block) {
+            const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+            const textToWrite = pythonGenerator.valueToCode(block, "TEXT_TO_WRITE", Order.ATOMIC) || "";
+            return `${fileVariable}.write(${textToWrite})\n`;
+        };
+
+        pythonGenerator.forBlock["text_file_close_block"] = function(block) {
+            const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+            return `${fileVariable}.close()\n`;
         };
 
         pythonGenerator.forBlock["print_block"] = function (block) {
