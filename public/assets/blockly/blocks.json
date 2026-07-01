@@ -106,7 +106,7 @@
         "args0": [
             {
                 "type": "input_value",
-                "name": "FILE",
+                "name": "FILE_VARIABLE",
                 "check": "File"
             }
         ],

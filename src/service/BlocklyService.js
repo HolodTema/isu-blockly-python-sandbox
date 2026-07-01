@@ -88,13 +88,19 @@ export class BlocklyService {
             const fileMode = block.getFieldValue("MODE");
             const variableCode = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
             return `${variableCode} = open("${filePath}", '${fileMode}')\n`;
-        }
+        };
 
         pythonGenerator.forBlock["text_file_read_block"] = function (block) {
             const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
             const code = `${fileVariable}.read()`;
             return [code, Order.FUNCTION_CALL];
-        }
+        };
+
+        pythonGenerator.forBlock["text_file_read_lines_block"] = function(block) {
+            const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+            const code = `${fileVariable}.readlines()`;
+            return [code, Order.FUNCTION_CALL];
+        };
 
         pythonGenerator.forBlock["print_block"] = function (block) {
             const text = pythonGenerator.valueToCode(block, "TEXT", pythonGenerator.ORDER_NONE) || '""';
@@ -103,7 +109,7 @@ export class BlocklyService {
 
         pythonGenerator.forBlock["import_lib_requests_block"] = function (block) {
             return "import requests\n";
-        }
+        };
     }
 
     createStartBlock() {
