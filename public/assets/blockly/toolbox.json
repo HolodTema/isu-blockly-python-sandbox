@@ -50,7 +50,11 @@
         },
         {
           "kind": "block",
-          "type": "controls_if"
+          "type": "custom_if_else"
+        },
+        {
+          "kind": "block",
+          "type": "custom_if_elif_else"
         },
         {
           "kind": "block",

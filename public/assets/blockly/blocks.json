@@ -26,6 +26,34 @@
         "tooltip": "Условный оператор if"
     },
     {
+        "type": "custom_if_else",
+        "message0": "если %1 то %2 иначе %3",
+        "args0": [
+            { "type": "input_value", "name": "CONDITION", "check": "Boolean" },
+            { "type": "input_statement", "name": "THEN" },
+            { "type": "input_statement", "name": "ELSE" }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 210,
+        "tooltip": "Условный оператор if-else"
+    },
+    {
+        "type": "custom_if_elif_else",
+        "message0": "если %1 то %2 иначе если %3 то %4 иначе %5",
+        "args0": [
+            { "type": "input_value", "name": "COND1", "check": "Boolean" },
+            { "type": "input_statement", "name": "THEN1" },
+            { "type": "input_value", "name": "COND2", "check": "Boolean" },
+            { "type": "input_statement", "name": "THEN2" },
+            { "type": "input_statement", "name": "ELSE" }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 210,
+        "tooltip": "Условный оператор if-elif-else"
+    },
+    {
         "type": "print_block",
         "message0": "напечатать %1",
         "args0": [
