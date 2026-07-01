@@ -61,20 +61,20 @@ export class BlocklyService {
             return "";
         };
 
-        pythonGenerator.forBlock["custom_if"] = function (block) {
+        pythonGenerator.forBlock["custom_if_block"] = function (block) {
             let condition = pythonGenerator.valueToCode(block, "CONDITION", Order.ATOMIC) || "False";
             let codeInsideIf = pythonGenerator.statementToCode(block, "THEN");
             return `if ${condition}:\n${codeInsideIf}\n`;
         };
 
-        pythonGenerator.forBlock["custom_if_else"] = function(block) {
+        pythonGenerator.forBlock["custom_if_else_block"] = function(block) {
             const condition = pythonGenerator.valueToCode(block, "CONDITION", Order.ATOMIC) || "False";
             const thenCode = pythonGenerator.statementToCode(block, "THEN");
             const elseCode = pythonGenerator.statementToCode(block, "ELSE");
             return `if ${condition}:\n${thenCode}else:\n${elseCode}`;
         };
 
-        pythonGenerator.forBlock["custom_if_elif_else"] = function(block) {
+        pythonGenerator.forBlock["custom_if_elif_else_block"] = function(block) {
             const cond1 = pythonGenerator.valueToCode(block, "COND1", Order.ATOMIC) || "False";
             const then1 = pythonGenerator.statementToCode(block, "THEN1");
             const cond2 = pythonGenerator.valueToCode(block, "COND2", Order.ATOMIC) || "False";
@@ -83,8 +83,21 @@ export class BlocklyService {
             return `if ${cond1}:\n${then1}elif ${cond2}:\n${then2}else:\n${elseCode}`;
         };
 
+        pythonGenerator.forBlock["text_file_open_block"] = function(block) {
+            const filePath = block.getFieldValue("FILE_PATH");
+            const fileMode = block.getFieldValue("MODE");
+            const variableCode = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+            return `${variableCode} = open("${filePath}", '${fileMode}')\n`;
+        }
+
+        pythonGenerator.forBlock["text_file_read_block"] = function (block) {
+            const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+            const code = `${fileVariable}.read()`;
+            return [code, Order.FUNCTION_CALL];
+        }
+
         pythonGenerator.forBlock["print_block"] = function (block) {
-            var text = pythonGenerator.valueToCode(block, "TEXT", pythonGenerator.ORDER_NONE) || '""';
+            const text = pythonGenerator.valueToCode(block, "TEXT", pythonGenerator.ORDER_NONE) || '""';
             return "print(" + text + ")\n";
         };
 

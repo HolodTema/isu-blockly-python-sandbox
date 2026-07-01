@@ -6,8 +6,9 @@
         "colour": 0,
         "tooltip": "Программа начинается с этого блока"
     },
+
     {
-        "type": "custom_if",
+        "type": "custom_if_block",
         "message0": "если %1 то %2",
         "args0": [
             {
@@ -26,7 +27,7 @@
         "tooltip": "Условный оператор if"
     },
     {
-        "type": "custom_if_else",
+        "type": "custom_if_else_block",
         "message0": "если %1 то %2 иначе %3",
         "args0": [
             { "type": "input_value", "name": "CONDITION", "check": "Boolean" },
@@ -39,7 +40,7 @@
         "tooltip": "Условный оператор if-else"
     },
     {
-        "type": "custom_if_elif_else",
+        "type": "custom_if_elif_else_block",
         "message0": "если %1 то %2 иначе если %3 то %4 иначе %5",
         "args0": [
             { "type": "input_value", "name": "COND1", "check": "Boolean" },
@@ -53,6 +54,68 @@
         "colour": 210,
         "tooltip": "Условный оператор if-elif-else"
     },
+
+    {
+        "type": "text_file_open_block",
+        "message0": "открыть текстовый файл %1 в режиме %2 в переменную %3",
+        "args0": [
+            {
+                "type": "field_input",
+                "name": "FILE_PATH",
+                "text": "file.txt"
+            },
+            {
+                "type": "field_dropdown",
+                "name": "MODE",
+                "options": [
+                    ["чтение ('r')", "r"],
+                    ["запись ('w')", "w"],
+                    ["добавление ('a')", "a"]
+                ]
+            },
+            {
+                "type": "input_value",
+                "name": "FILE_VARIABLE",
+                "check": "File"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 160,
+        "tooltip": "Открывает файл и сохраняет его в переменную",
+        "helpUrl": ""
+    },
+    {
+        "type": "text_file_read_block",
+        "message0": "прочитать текст из файла %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "FILE_VARIABLE",
+                "check": "File"
+            }
+        ],
+        "output": "String",
+        "colour": 160,
+        "tooltip": "Возвращает весь текст из открытого файла",
+        "helpUrl": ""
+    },
+    {
+        "type": "text_file_read_lines_block",
+        "message0": "прочитать строки из файла %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "FILE",
+                "check": "File"
+            }
+        ],
+        "output": "Array",
+        "colour": 160,
+        "tooltip": "Возвращает список строк из открытого файла",
+        "helpUrl": ""
+    },
+
     {
         "type": "print_block",
         "message0": "напечатать %1",
@@ -67,6 +130,7 @@
         "colour": 160,
         "tooltip": "Печатает текст в консоль"
     },
+
     {
         "type": "import_lib_requests_block",
         "message0": "Подключить библиотеку requests",
