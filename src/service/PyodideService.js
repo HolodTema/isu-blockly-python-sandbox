@@ -39,8 +39,8 @@ export class PyodideService {
     }
 
     runCurrentCodeFromWorkspace() {
-        const code = this.state.generatedCode;
-        if (!code.trim()) {
+        const code = this.state.generatedCode?.trim();
+        if (!code) {
             this.state.setCodeOutput("# Пустая программа\n");
             return;
         }
@@ -59,6 +59,30 @@ export class PyodideService {
         }
         catch (e) {
             console.error("Pyodide: unable to remove input file from pyodide's memory because it does not exist.");
+        }
+    }
+
+    async saveResultFilesIntoZipArchive() {
+        try {
+            const response = await fetch("public/assets/python/createZipArchiveOfResultFiles.py");
+            const strPythonScript = await response.text();
+
+            this.pyodide.runPython(strPythonScript);
+            const zipBinaryData = this.pyodide.FS.readFile("/home/pyodide/exported_files.zip");
+
+            const blob = new Blob([zipBinaryData], { type: "application/zip" });
+            const invisibleLinkElement = document.createElement("a");
+            invisibleLinkElement.href = URL.createObjectURL(blob);
+            invisibleLinkElement.download = "result_files.zip";
+
+            document.body.appendChild(invisibleLinkElement);
+            invisibleLinkElement.click();
+            document.body.removeChild(invisibleLinkElement);
+            return true;
+        }
+        catch (e) {
+            console.error("Pyodide: Unable to download result files:", e);
+            return false;
         }
     }
 }
