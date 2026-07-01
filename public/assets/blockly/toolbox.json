@@ -120,15 +120,15 @@
         },
         {
           "kind": "block",
-          "type": "text_join"
-        },
-        {
-          "kind": "block",
           "type": "text_length"
         },
         {
           "kind": "block",
           "type": "text_isEmpty"
+        },
+        {
+          "kind": "block",
+          "type": "text_join_block"
         },
         {
           "kind": "block",

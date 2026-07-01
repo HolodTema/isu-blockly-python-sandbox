@@ -149,6 +149,25 @@
         "colour": 160,
         "tooltip": "Сохраняет записанную в файл информацию и закрывает файл. Нужно обязательно закрывать файлы, открытые в режиме 'w' или 'a'."
     },
+    {
+        "type": "text_join_block",
+        "message0": "Объединить текст %1 и текст %2",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT_LEFT",
+                "check": "String"
+            },
+            {
+                "type": "input_value",
+                "name": "TEXT_RIGHT",
+                "check": "String"
+            }
+        ],
+        "output": "String",
+        "colour": 160,
+        "tooltip": "Объединяет тексты друг с другом."
+    },
 
     {
         "type": "print_block",

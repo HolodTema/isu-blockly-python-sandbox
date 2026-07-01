@@ -113,8 +113,23 @@ export class BlocklyService {
             return `${fileVariable}.close()\n`;
         };
 
+        pythonGenerator.forBlock["text_join_block"] = function(block) {
+            let textLeft = pythonGenerator.valueToCode(block, "TEXT_LEFT", Order.NONE) || "";
+            if (textLeft.length > 0) {
+                textLeft = textLeft.substring(1, textLeft.length - 1);
+            }
+
+            let textRight = pythonGenerator.valueToCode(block, "TEXT_RIGHT", Order.NONE) || "";
+            if (textRight.length > 0) {
+                textRight = textRight.substring(1, textRight.length - 1);
+            }
+
+            const code = `"${textLeft}${textRight}"`;
+            return [code, Order.FUNCTION_CALL];
+        }
+
         pythonGenerator.forBlock["print_block"] = function (block) {
-            const text = pythonGenerator.valueToCode(block, "TEXT", pythonGenerator.ORDER_NONE) || '""';
+            const text = pythonGenerator.valueToCode(block, "TEXT", Order.NONE) || '""';
             return "print(" + text + ")\n";
         };
 
