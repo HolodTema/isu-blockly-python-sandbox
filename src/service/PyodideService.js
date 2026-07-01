@@ -78,9 +78,11 @@ export class PyodideService {
             document.body.appendChild(invisibleLinkElement);
             invisibleLinkElement.click();
             document.body.removeChild(invisibleLinkElement);
+            return true;
         }
         catch (e) {
             console.error("Pyodide: Unable to download result files:", e);
+            return false;
         }
     }
 }
