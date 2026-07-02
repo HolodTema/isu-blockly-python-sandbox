@@ -92,13 +92,13 @@ export class BlocklyService {
 
         pythonGenerator.forBlock["text_file_read_block"] = function (block) {
             const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
-            const code = `${fileVariable}.read()\n`;
+            const code = `${fileVariable}.read()`;
             return [code, Order.FUNCTION_CALL];
         };
 
         pythonGenerator.forBlock["text_file_read_lines_block"] = function(block) {
             const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
-            const code = `${fileVariable}.readlines()\n`;
+            const code = `${fileVariable}.readlines()`;
             return [code, Order.FUNCTION_CALL];
         };
 
@@ -150,8 +150,11 @@ export class BlocklyService {
         };
 
         pythonGenerator.forBlock["http_get_request_block"] = function (block) {
-            const path = pythonGenerator.valueToCode(block, "PATH", Order.ATOMIC) || `""`
+            let path = pythonGenerator.valueToCode(block, "PATH", Order.ATOMIC) || `""`
 
+            if (path !== `""`) {
+                path = `'https://cors-anywhere.herokuapp.com/${path.substring(1, path.length)}`;
+            }
             let queryItems = [];
             let queryBlock = block.getInputTargetBlock("QUERY");
             while (queryBlock) {
@@ -184,8 +187,17 @@ export class BlocklyService {
             const variableStatusCode = pythonGenerator.valueToCode(block, "STATUS_CODE", Order.ATOMIC) || "status_code";
             const variableResponseBody = pythonGenerator.valueToCode(block, "RESPONSE_BODY", Order.ATOMIC) || "response_body";
 
-            const codeOnResponse = pythonGenerator.statementToCode(block, "RESPONSE");
-            const codeOnTimeout = pythonGenerator.statementToCode(block, "TIMEOUT");
+            let codeOnResponse = pythonGenerator.statementToCode(block, "RESPONSE");
+            let codeOnTimeout = pythonGenerator.statementToCode(block, "TIMEOUT");
+
+            const indentToTry = (code) => {
+                if (!code) return '';
+                return code.split('\n')
+                    .map(line => line ? '    ' + line : line) // 8 пробелов
+                    .join('\n');
+            };
+            codeOnResponse = indentToTry(codeOnResponse);
+            codeOnTimeout = indentToTry(codeOnTimeout);
 
             var queryDict = queryItems.length ? '{' + queryItems.join(', ') + '}' : '{}';
             var headerDict = headerItems.length ? '{' + headerItems.join(', ') + '}' : '{}';
@@ -206,9 +218,9 @@ async def do_request():
         response = await pyfetch(url, method="GET", headers=headers, timeout=10)
         ${variableStatusCode} = response.status
         ${variableResponseBody} = await response.text()
-    ${codeOnResponse}
+${codeOnResponse}
     except Exception as e:
-    ${codeOnTimeout}
+${codeOnTimeout}
 
 await do_request()
             `;

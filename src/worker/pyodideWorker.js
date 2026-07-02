@@ -54,7 +54,7 @@ sys.stdout = worker_stdout
 
 async function handleRunCode(code, id) {
     try {
-        const result = pyodide.runPythonAsync(code);
+        const result = await pyodide.runPythonAsync(code);
         self.postMessage({ id, type: 'done', payload: result });
     } catch (e) {
         self.postMessage({ id, type: 'error', payload: e.message });
