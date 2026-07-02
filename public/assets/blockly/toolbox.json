@@ -3,33 +3,6 @@
   "contents": [
     {
       "kind": "category",
-      "name": "HTTP",
-      "colour": "#7FFFD4",
-      "contents": [
-        {
-          "kind": "block",
-          "type": "import_lib_requests_block"
-        },
-        {
-          "kind": "block",
-          "type": "http_query_block"
-        },
-        {
-          "kind": "block",
-          "type": "http_header_block"
-        },
-        {
-          "kind": "block",
-          "type": "http_get_request_block"
-        },
-        {
-          "kind": "block",
-          "type": "http_status_code_block"
-        }
-      ]
-    },
-    {
-      "kind": "category",
       "name": "Логика",
       "colour": "#5C81A6",
       "contents": [
@@ -184,6 +157,29 @@
         { "kind": "block", "type": "lists_split" },
         { "kind": "block", "type": "lists_sort" },
         { "kind": "block", "type": "lists_indexOf" }
+      ]
+    },
+    {
+      "kind": "category",
+      "name": "HTTP",
+      "colour": "#FF6F00",
+      "contents": [
+        {
+          "kind": "block",
+          "type": "import_lib_requests_block"
+        },
+        {
+          "kind": "block",
+          "type": "http_query_block"
+        },
+        {
+          "kind": "block",
+          "type": "http_header_block"
+        },
+        {
+          "kind": "block",
+          "type": "http_get_request_block"
+        }
       ]
     }
   ]

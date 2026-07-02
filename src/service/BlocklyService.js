@@ -136,6 +136,106 @@ export class BlocklyService {
         pythonGenerator.forBlock["import_lib_requests_block"] = function (block) {
             return "import requests\n";
         };
+
+        pythonGenerator.forBlock["http_query_block"] = function (block) {
+            const queryKey = pythonGenerator.valueToCode(block, "KEY", Order.ATOMIC) || "";
+            const queryValue = pythonGenerator.valueToCode(block, "VALUE", Order.ATOMIC) || "";
+            return `${queryKey}=${queryValue}`;
+        };
+
+        pythonGenerator.forBlock["http_header_block"] = function (block) {
+            const headerName = pythonGenerator.valueToCode(block, "NAME", Order.ATOMIC) || "";
+            const headerValue = pythonGenerator.valueToCode(block, "VALUE", Order.ATOMIC) || "";
+            return `${headerName}: ${headerValue}`;
+        };
+
+        pythonGenerator.forBlock["http_get_request_block"] = function (block) {
+            const path = pythonGenerator.valueToCode(block, "PATH", Order.ATOMIC) || `""`
+
+            let queryItems = [];
+            let queryBlock = block.getInputTargetBlock("QUERY");
+            while (queryBlock) {
+                const queryItemCode = pythonGenerator.blockToCode(queryBlock);
+                if (queryItemCode) {
+                    queryItems.push(queryItemCode[0]);
+                }
+                queryBlock = queryBlock.nextConnection
+                if (queryBlock) {
+                    queryBlock = queryBlock.targetBlock();
+                }
+            }
+
+            let headerItems = [];
+            let headerBlock = block.getInputTargetBlock("HEADERS");
+            while (headerBlock) {
+                const headerItemCode = pythonGenerator.blockToCode(headerBlock);
+                if (headerItemCode) {
+                    headerItems.push(headerItemCode[0]);
+                }
+                headerBlock = headerBlock.nextConnection;
+                if (headerBlock) {
+                    headerBlock = headerBlock.targetBlock();
+                }
+            }
+
+            const variableStatusCode = pythonGenerator.valueToCode(block, "STATUS_CODE", Order.ATOMIC) || "status_code";
+            const variableResponseBody = pythonGenerator.valueToCode(block, "RESPONSE_BODY", Order.ATOMIC) || "response_body";
+
+            const codeOnResponse = pythonGenerator.statementToCode(block, "RESPONSE");
+            const codeOnTimeout = pythonGenerator.statementToCode(block, "TIMEOUT");
+
+            var queryList = queryItems.length ? '[' + queryItems.join(', ') + ']' : '[]';
+            var headerList = headerItems.length ? '[' + headerItems.join(', ') + ']' : '[]';
+
+            var code = `
+import asyncio
+from pyodide.http import pyfetch
+
+async def _http_get():
+    url = ${path}
+    status_var = ${variableStatusCode}
+    body_var = ${variableResponseBody}
+
+    query_parts = ${queryList}
+    header_parts = ${headerList}
+
+    params = {}
+    for part in query_parts:
+        if '=' in part:
+            k, v = part.split('=', 1)
+            params[k] = v
+
+    headers = {}
+    for part in header_parts:
+        if ': ' in part:
+            k, v = part.split(': ', 1)
+            headers[k] = v
+
+    try:
+        response = await asyncio.wait_for(
+            pyfetch(url, method='GET', headers=headers, params=params), 
+            timeout=10
+        )
+        body = await response.text()
+        status = response.status
+
+        # Сохраняем в глобальные переменные (доступны в Blockly)
+        globals()[status_var] = status
+        globals()[body_var] = body
+
+        # Выполняем блок "при успехе"
+        ${codeOnResponse}
+
+    except asyncio.TimeoutError:
+        # Выполняем блок "при таймауте"
+        ${codeOnTimeout}
+
+# Запускаем асинхронную функцию
+asyncio.ensure_future(_http_get())
+`;
+
+            return code;
+        }
     }
 
     createStartBlock() {
