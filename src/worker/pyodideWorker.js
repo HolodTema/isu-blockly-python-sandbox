@@ -3,7 +3,6 @@ importScripts('https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js');
 let pyodide = null;
 let isInitialized = false;
 
-// Перехват stdout/stderr для отправки в UI
 class WorkerStdout {
     constructor() {
         this.buffer = '';
@@ -15,9 +14,6 @@ class WorkerStdout {
             type: 'stdout',
             payload: text
         });
-    }
-    flush() {
-        // необязательно
     }
 }
 
@@ -56,16 +52,9 @@ sys.stdout = worker_stdout
     }
 }
 
-// Обработчики команд
 async function handleRunCode(code, id) {
     try {
-        const wrappedCode = `
-try:    
-${code}
-except Exception as e:
-    print(f"Ошибка: {e}")
-`;
-        const result = pyodide.runPython(wrappedCode);
+        const result = pyodide.runPythonAsync(code);
         self.postMessage({ id, type: 'done', payload: result });
     } catch (e) {
         self.postMessage({ id, type: 'error', payload: e.message });

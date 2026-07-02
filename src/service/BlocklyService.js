@@ -155,7 +155,7 @@ export class BlocklyService {
             let queryItems = [];
             let queryBlock = block.getInputTargetBlock("QUERY");
             while (queryBlock) {
-                const queryItemCode = pythonGenerator.blockToCode(queryBlock);
+                const queryItemCode = pythonGenerator.blockToCode(queryBlock, true);
                 console.log(queryItemCode);
                 if (queryItemCode) {
                     console.log("push");
@@ -171,7 +171,7 @@ export class BlocklyService {
             let headerItems = [];
             let headerBlock = block.getInputTargetBlock("HEADERS");
             while (headerBlock) {
-                const headerItemCode = pythonGenerator.blockToCode(headerBlock);
+                const headerItemCode = pythonGenerator.blockToCode(headerBlock, true);
                 if (headerItemCode) {
                     headerItems.push(headerItemCode);
                 }
