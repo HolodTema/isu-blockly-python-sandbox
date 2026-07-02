@@ -22,6 +22,19 @@ export class UIService {
                 this.projectService.saveProjectToFile();
             });
 
+        const divCodeWorkspace = document.getElementById("code_workspace");
+        const buttonExpandCode = document.getElementById("button_expand_code");
+        buttonExpandCode.addEventListener("click", () => {
+            if (divCodeWorkspace.style.display !== "none") {
+                divCodeWorkspace.style.display = "none";
+                buttonExpandCode.src = "assets/images/ic_expand_left.svg";
+            }
+            else {
+                divCodeWorkspace.style.display = "";
+                buttonExpandCode.src = "assets/images/ic_expand_right.svg";
+            }
+        });
+
         const buttonOpenProject = document.getElementById("button_open_project");
         let htmlElementFileInput = null;
         buttonOpenProject.addEventListener("click", (e) => {
@@ -119,6 +132,8 @@ export class UIService {
             });
         });
 
+        this.showSplashScreenWithHideTimer()
+
         this.state.subscribe((key, st) => {
             if (key === "codeOutput") {
                 divCodeOutput.textContent = st.codeOutput;
@@ -129,5 +144,17 @@ export class UIService {
     showErrorToastNoResultFiles() {
         console.log("toast");
         this.toastService.showErrorToast("Выполненный код не сохранял результирующих файлов для загрузки");
+    }
+
+    showSplashScreenWithHideTimer() {
+        const splash = document.getElementById('splash_screen_container');
+
+        setTimeout(() => {
+            splash.classList.add('hidden');
+
+            setTimeout(() => {
+                splash.classList.add('removed');
+            }, 1500);
+        }, 1500);
     }
 }

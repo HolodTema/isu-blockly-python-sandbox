@@ -10,29 +10,6 @@
     height: 100%;
 }
 
-#code_buttons {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    margin: 10px 0;
-}
-
-#code_buttons > div {
-    margin: 0 10px;
-}
-
-#button_convert_to_code {
-
-}
-
-.text_button {
-    padding: 5px 10px;
-    background-color: green;
-    color: white;
-    font-size: 16px;
-    border-radius: 10px;
-}
-
 #code_output {
     background-color: black;
     color: white;
@@ -56,21 +33,59 @@
 
 #code_output_header {
     display: flex;
-    padding: 5px 10px;
-    background-color: #0d612a;
+    padding: 0 15px;
+    background-color: #07830a;
     flex-direction: row;
     align-content: center;
     justify-content: space-between;
 }
 
+#code_output_header_left {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    align-content: center;
+}
+#code_output_header_right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: end;
+}
+
+#img_download_result_files {
+    display: block;
+    height: 16px;
+}
+
 #button_download_result_files {
     display: block;
+    font-size: 16px;
+    padding: 0 0 0 5px;
+    color: white;
+}
+
+#button_download_result_files:hover {
+    color: cornflowerblue;
 }
 
 #button_expand_output {
     display: block;
-    width: 24px;
-    height: 24px;
+    width: 16px;
+    height: 16px;
+    color: white;
+}
+
+#tab_button_output {
+    padding: 5px 10px;
+    margin: 0 0 0 10px;
+    background-color: #ffffff;
+    color: #066C08;
+}
+
+#tab_button_debug {
+    padding: 5px 10px;
+    background-color: #066C08;
     color: white;
 }
 
@@ -82,16 +97,29 @@
     flex-direction: row;
     display: flex;
     align-items: center;
-    margin: 0 0 10px 10px;
+    background-color: #07830a;
+    padding: 10px;
 }
 
 #input_add_input_file {
     display: none;
 }
 
+#img_add_input_file {
+    display: block;
+    height: 16px;
+}
+
 #button_add_input_file {
+    display: block;
     text-align: center;
     white-space: nowrap;
+    font-size: 16px;
+    color: white;
+}
+
+#button_add_input_file:hover {
+    color: cornflowerblue;
 }
 
 #input_files_list {
@@ -99,20 +127,29 @@
     flex-direction: row;
     overflow-x: auto;
     align-items: center;
+    padding: 0 0 0 10px;
     gap: 5px 0;
 }
 
 .input_file {
+    height: fit-content;
     display: flex;
-    margin: 0 5px;
-    border: 1px solid #0d612a;
-    border-radius: 10px;
+    margin: 0 10px 0 0;
+    background-color: #ffffff;
+    border-bottom-right-radius: 10px;
+    border-top-right-radius: 10px;
     align-items: center;
-    padding: 0 5px;
 }
 
 .input_file_text {
-    color: #0d612a;
+;
+    color: #ffffff;
+    margin: 0;
+    padding: 5px 5px;
+    font-size: 16px;
+    border-bottom-right-radius: 10px;
+    border-top-right-radius: 10px;
+    background-color: #066C08;
     white-space: nowrap;
 }
 

@@ -25,14 +25,15 @@ main {
 }
 
 #blockly_workspace {
-    width: 50%;
-    flex-shrink: 0;
+    height: 100%;
+    min-width: 50%;
+    max-width: 100%;
+    flex-grow: 1;
 }
 
 #code_workspace {
-    width: 50%;
     height: 100%;
+    width: 50%;
     flex-grow: 1;
-    flex-shrink: 1;
 }
 
