@@ -208,7 +208,6 @@ async def do_request():
         ${variableResponseBody} = await response.text()
     ${codeOnResponse}
     except Exception as e:
-        # pyfetch выбрасывает исключение при таймауте или сетевых ошибках
     ${codeOnTimeout}
 
 await do_request()
