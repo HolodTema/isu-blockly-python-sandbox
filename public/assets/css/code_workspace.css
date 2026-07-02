@@ -33,21 +33,59 @@
 
 #code_output_header {
     display: flex;
-    padding: 5px 10px;
-    background-color: #0d612a;
+    padding: 0 15px;
+    background-color: #07830a;
     flex-direction: row;
     align-content: center;
     justify-content: space-between;
 }
 
+#code_output_header_left {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    align-content: center;
+}
+#code_output_header_right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: end;
+}
+
+#img_download_result_files {
+    display: block;
+    height: 16px;
+}
+
 #button_download_result_files {
     display: block;
+    font-size: 16px;
+    padding: 0 0 0 5px;
+    color: white;
+}
+
+#button_download_result_files:hover {
+    color: cornflowerblue;
 }
 
 #button_expand_output {
     display: block;
-    width: 24px;
-    height: 24px;
+    width: 16px;
+    height: 16px;
+    color: white;
+}
+
+#tab_button_output {
+    padding: 5px 10px;
+    margin: 0 0 0 10px;
+    background-color: #ffffff;
+    color: #066C08;
+}
+
+#tab_button_debug {
+    padding: 5px 10px;
+    background-color: #066C08;
     color: white;
 }
 
