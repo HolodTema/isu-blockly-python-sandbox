@@ -28,7 +28,7 @@ export class PyodideService {
 
         try {
             this.pyodide.runPython("import sys; from io import StringIO; sys.stdout = StringIO()");
-            this.pyodide.runPython(code);
+            this.pyodide.runPythonAsync(code);
             const output = this.pyodide.runPython("sys.stdout.getvalue()") || "Вывод отсутствует";
             console.log(output);
             this.state.setCodeOutput(output);

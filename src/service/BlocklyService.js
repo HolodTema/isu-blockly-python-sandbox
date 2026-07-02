@@ -187,38 +187,33 @@ export class BlocklyService {
             const codeOnResponse = pythonGenerator.statementToCode(block, "RESPONSE");
             const codeOnTimeout = pythonGenerator.statementToCode(block, "TIMEOUT");
 
-            var queryList = queryItems.length ? '{' + queryItems.join(', ') + '}' : '{}';
-            var headerList = headerItems.length ? '{' + headerItems.join(', ') + '}' : '{}';
+            var queryDict = queryItems.length ? '{' + queryItems.join(', ') + '}' : '{}';
+            var headerDict = headerItems.length ? '{' + headerItems.join(', ') + '}' : '{}';
 
-            var code = `
-from requests.adapters import HTTPAdapter
+            return `
+from pyodide.http import pyfetch
 
-class SafeHTTPAdapter(HTTPAdapter):
-    def send(self, request, **kwargs):
-        forbidden = ['accept-encoding', 'connection', 'host', 'content-length', 'transfer-encoding']
-        for h in forbidden:
-            request.headers.pop(h, None)
-        request.headers.pop('Accept-Encoding', None)
-        return super().send(request, **kwargs)
+async def do_request():
+    url = ${path}
+    params = ${queryDict}
+    headers = ${headerDict}
 
-session = requests.Session()
-session.mount('http://', SafeHTTPAdapter())
-session.mount('https://', SafeHTTPAdapter())
+    if params:
+        from urllib.parse import urlencode
+        url = url + '?' + urlencode(params)
 
-url = ${path}
-params = ${queryList}
-headers = ${headerList}
+    try:
+        response = await pyfetch(url, method="GET", headers=headers, timeout=10)
+        ${variableStatusCode} = response.status
+        ${variableResponseBody} = await response.text()
+    ${codeOnResponse}
+    except Exception as e:
+        # pyfetch выбрасывает исключение при таймауте или сетевых ошибках
+    ${codeOnTimeout}
 
-try:
-    response = session.get(url, params=params, headers=headers, timeout=10)
-    ${variableStatusCode} = response.status_code
-    ${variableResponseBody } = response.text
-${codeOnResponse}
-except requests.exceptions.Timeout:
-${codeOnTimeout}
-`;
-            return code;
-        }
+await do_request()
+            `;
+        };
     }
 
     createStartBlock() {
