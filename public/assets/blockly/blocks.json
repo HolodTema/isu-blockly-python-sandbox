@@ -234,8 +234,16 @@
     },
     {
         "type": "http_get_request_block",
-        "message0": "HTTP GET-запрос по адресу %1",
+        "message0": "HTTP %1 запрос по адресу %2",
         "args0": [
+            {
+                "type": "field_dropdown",
+                "name": "REQUEST_TYPE",
+                "options": [
+                    ["GET", "GET"],
+                    ["POST", "POST"]
+                ]
+            },
             {
                 "type": "input_value",
                 "name": "PATH",
@@ -258,29 +266,37 @@
                 "check": "HttpHeaderBlock"
             }
         ],
-        "message3": "сохранить статус-код в переменную %1",
+        "message3": "Тело запроса: %1",
         "args3": [
+            {
+                "type": "input_value",
+                "name": "REQUEST_BODY",
+                "check": "String"
+            }
+        ],
+        "message4": "сохранить статус-код в переменную %1",
+        "args4": [
             {
                 "type": "input_value",
                 "name": "STATUS_CODE"
             }
         ],
-        "message4": "сохранить тело ответа в переменную %1",
-        "args4": [
+        "message5": "сохранить тело ответа в переменную %1",
+        "args5": [
             {
                 "type": "input_value",
                 "name": "RESPONSE_BODY"
             }
         ],
-        "message5": "Если сервер ответил: %1",
-        "args5": [
+        "message6": "Если сервер ответил: %1",
+        "args6": [
             {
                 "type": "input_statement",
                 "name": "RESPONSE"
             }
         ],
-        "message6": "Иначе, при таймауте: %1",
-        "args6": [
+        "message7": "Иначе, при таймауте: %1",
+        "args7": [
             {
                 "type": "input_statement",
                 "name": "TIMEOUT"

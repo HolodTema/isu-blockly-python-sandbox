@@ -150,6 +150,8 @@ export class BlocklyService {
         };
 
         pythonGenerator.forBlock["http_get_request_block"] = function (block) {
+            const requestType = block.getFieldValue("REQUEST_TYPE");
+
             let path = pythonGenerator.valueToCode(block, "PATH", Order.ATOMIC) || `""`
 
             if (path !== `""`) {
@@ -184,6 +186,8 @@ export class BlocklyService {
                 }
             }
 
+            const strRequestBody = pythonGenerator.valueToCode(block, "REQUEST_BODY", Order.ATOMIC) || null;
+
             const variableStatusCode = pythonGenerator.valueToCode(block, "STATUS_CODE", Order.ATOMIC) || "status_code";
             const variableResponseBody = pythonGenerator.valueToCode(block, "RESPONSE_BODY", Order.ATOMIC) || "response_body";
 
@@ -209,13 +213,14 @@ async def do_request():
     url = ${path}
     params = ${queryDict}
     headers = ${headerDict}
+    ${strRequestBody ? `request_body = ${strRequestBody}` : ''}
 
     if params:
         from urllib.parse import urlencode
         url = url + '?' + urlencode(params)
 
     try:
-        response = await pyfetch(url, method="GET", headers=headers, timeout=10)
+        response = await pyfetch(url, method="${requestType}", headers=headers, ${strRequestBody ? 'body=request_body,' : ''} timeout=10)
         ${variableStatusCode} = response.status
         ${variableResponseBody} = await response.text()
 ${codeOnResponse}
