@@ -191,24 +191,26 @@ export class BlocklyService {
             var headerList = headerItems.length ? '{' + headerItems.join(', ') + '}' : '{}';
 
             var code = `
+from requests.adapters import HTTPAdapter
+
+class SafeHTTPAdapter(HTTPAdapter):
+    def send(self, request, **kwargs):
+        forbidden = ['accept-encoding', 'connection', 'host', 'content-length', 'transfer-encoding']
+        for h in forbidden:
+            request.headers.pop(h, None)
+        request.headers.pop('Accept-Encoding', None)
+        return super().send(request, **kwargs)
+
+session = requests.Session()
+session.mount('http://', SafeHTTPAdapter())
+session.mount('https://', SafeHTTPAdapter())
+
 url = ${path}
-query_list = ${queryList}
-header_list = ${headerList}
-
-params = {}
-for part in query_list:
-    if '=' in part:
-        k, v = part.split('=', 1)
-        params[k] = v
-
-headers = {}
-for part in header_list:
-    if ': ' in part:
-        k, v = part.split(': ', 1)
-        headers[k] = v
+params = ${queryList}
+headers = ${headerList}
 
 try:
-    response = requests.get(url, params=params, headers=headers, timeout=10)
+    response = session.get(url, params=params, headers=headers, timeout=10)
     ${variableStatusCode} = response.status_code
     ${variableResponseBody } = response.text
 ${codeOnResponse}
