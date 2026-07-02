@@ -138,14 +138,14 @@ export class BlocklyService {
         };
 
         pythonGenerator.forBlock["http_query_block"] = function (block) {
-            const queryKey = pythonGenerator.valueToCode(block, "KEY", Order.ATOMIC) || "";
-            const queryValue = pythonGenerator.valueToCode(block, "VALUE", Order.ATOMIC) || "";
-            return `${queryKey}=${queryValue}`;
+            const queryKey = pythonGenerator.valueToCode(block, "KEY", Order.ATOMIC) || "''";
+            const queryValue = pythonGenerator.valueToCode(block, "VALUE", Order.ATOMIC) || "''";
+            return `${queryKey}: ${queryValue}`;
         };
 
         pythonGenerator.forBlock["http_header_block"] = function (block) {
-            const headerName = pythonGenerator.valueToCode(block, "NAME", Order.ATOMIC) || "";
-            const headerValue = pythonGenerator.valueToCode(block, "VALUE", Order.ATOMIC) || "";
+            const headerName = pythonGenerator.valueToCode(block, "NAME", Order.ATOMIC) || "''";
+            const headerValue = pythonGenerator.valueToCode(block, "VALUE", Order.ATOMIC) || "''";
             return `${headerName}: ${headerValue}`;
         };
 
@@ -156,21 +156,24 @@ export class BlocklyService {
             let queryBlock = block.getInputTargetBlock("QUERY");
             while (queryBlock) {
                 const queryItemCode = pythonGenerator.blockToCode(queryBlock);
+                console.log(queryItemCode);
                 if (queryItemCode) {
-                    queryItems.push(queryItemCode[0]);
+                    console.log("push");
+                    queryItems.push(queryItemCode);
                 }
                 queryBlock = queryBlock.nextConnection
                 if (queryBlock) {
                     queryBlock = queryBlock.targetBlock();
                 }
             }
+            console.log(queryItems);
 
             let headerItems = [];
             let headerBlock = block.getInputTargetBlock("HEADERS");
             while (headerBlock) {
                 const headerItemCode = pythonGenerator.blockToCode(headerBlock);
                 if (headerItemCode) {
-                    headerItems.push(headerItemCode[0]);
+                    headerItems.push(headerItemCode);
                 }
                 headerBlock = headerBlock.nextConnection;
                 if (headerBlock) {
@@ -184,56 +187,34 @@ export class BlocklyService {
             const codeOnResponse = pythonGenerator.statementToCode(block, "RESPONSE");
             const codeOnTimeout = pythonGenerator.statementToCode(block, "TIMEOUT");
 
-            var queryList = queryItems.length ? '[' + queryItems.join(', ') + ']' : '[]';
-            var headerList = headerItems.length ? '[' + headerItems.join(', ') + ']' : '[]';
+            var queryList = queryItems.length ? '{' + queryItems.join(', ') + '}' : '{}';
+            var headerList = headerItems.length ? '{' + headerItems.join(', ') + '}' : '{}';
 
             var code = `
-import asyncio
-from pyodide.http import pyfetch
+url = ${path}
+query_list = ${queryList}
+header_list = ${headerList}
 
-async def _http_get():
-    url = ${path}
-    status_var = ${variableStatusCode}
-    body_var = ${variableResponseBody}
+params = {}
+for part in query_list:
+    if '=' in part:
+        k, v = part.split('=', 1)
+        params[k] = v
 
-    query_parts = ${queryList}
-    header_parts = ${headerList}
+headers = {}
+for part in header_list:
+    if ': ' in part:
+        k, v = part.split(': ', 1)
+        headers[k] = v
 
-    params = {}
-    for part in query_parts:
-        if '=' in part:
-            k, v = part.split('=', 1)
-            params[k] = v
-
-    headers = {}
-    for part in header_parts:
-        if ': ' in part:
-            k, v = part.split(': ', 1)
-            headers[k] = v
-
-    try:
-        response = await asyncio.wait_for(
-            pyfetch(url, method='GET', headers=headers, params=params), 
-            timeout=10
-        )
-        body = await response.text()
-        status = response.status
-
-        # Сохраняем в глобальные переменные (доступны в Blockly)
-        globals()[status_var] = status
-        globals()[body_var] = body
-
-        # Выполняем блок "при успехе"
-        ${codeOnResponse}
-
-    except asyncio.TimeoutError:
-        # Выполняем блок "при таймауте"
-        ${codeOnTimeout}
-
-# Запускаем асинхронную функцию
-asyncio.ensure_future(_http_get())
+try:
+    response = requests.get(url, params=params, headers=headers, timeout=10)
+    ${variableStatusCode} = response.status_code
+    ${variableResponseBody } = response.text
+${codeOnResponse}
+except requests.exceptions.Timeout:
+${codeOnTimeout}
 `;
-
             return code;
         }
     }
