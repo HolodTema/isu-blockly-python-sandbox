@@ -48,7 +48,9 @@ sys.stdout = worker_stdout
 
 async function handleRunCode(code, id) {
     try {
+        console.log(code);
         const result = await pyodide.runPythonAsync(code);
+        console.log("code is done", result);
         self.postMessage({ id, type: 'done', payload: result });
     } catch (e) {
         self.postMessage({ id, type: 'error', payload: e.message });
@@ -57,7 +59,8 @@ async function handleRunCode(code, id) {
 
 async function handleLoadFile(filename, byteArray) {
     try {
-        pyodide.FS.writeFile(filename, byteArray);
+        const data = new Uint8Array(byteArray);
+        pyodide.FS.writeFile(filename, data);
         self.postMessage({ type: 'fileLoaded', payload: filename });
     } catch (e) {
         self.postMessage({ type: 'error', payload: `Ошибка загрузки файла ${filename}: ${e.message}` });

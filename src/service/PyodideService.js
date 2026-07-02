@@ -68,7 +68,6 @@ export class PyodideService {
     }
 
     async runPythonCode(code) {
-        console.log(code);
         if (!this.isReady) {
             await new Promise(resolve => {
                 const check = () => {
@@ -79,7 +78,12 @@ export class PyodideService {
             });
         }
         this.state.setCodeOutput('');
-        await this.sendCommand('run', code);
+        try {
+            await this.sendCommand('run', code);
+        } catch (error) {
+            this.state.setCodeOutput(`Ошибка выполнения: ${error.message}`);
+            console.error('Pyodide error:', error);
+        }
     }
 
     saveInputFileToPyodideMemory(filename, byteArray) {
