@@ -92,13 +92,13 @@ export class BlocklyService {
 
         pythonGenerator.forBlock["text_file_read_block"] = function (block) {
             const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
-            const code = `${fileVariable}.read()\n`;
+            const code = `${fileVariable}.read()`;
             return [code, Order.FUNCTION_CALL];
         };
 
         pythonGenerator.forBlock["text_file_read_lines_block"] = function(block) {
             const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
-            const code = `${fileVariable}.readlines()\n`;
+            const code = `${fileVariable}.readlines()`;
             return [code, Order.FUNCTION_CALL];
         };
 
@@ -135,6 +135,100 @@ export class BlocklyService {
 
         pythonGenerator.forBlock["import_lib_requests_block"] = function (block) {
             return "import requests\n";
+        };
+
+        pythonGenerator.forBlock["http_query_block"] = function (block) {
+            const queryKey = pythonGenerator.valueToCode(block, "KEY", Order.ATOMIC) || "''";
+            const queryValue = pythonGenerator.valueToCode(block, "VALUE", Order.ATOMIC) || "''";
+            return `${queryKey}: ${queryValue}`;
+        };
+
+        pythonGenerator.forBlock["http_header_block"] = function (block) {
+            const headerName = pythonGenerator.valueToCode(block, "NAME", Order.ATOMIC) || "''";
+            const headerValue = pythonGenerator.valueToCode(block, "VALUE", Order.ATOMIC) || "''";
+            return `${headerName}: ${headerValue}`;
+        };
+
+        pythonGenerator.forBlock["http_get_request_block"] = function (block) {
+            const requestType = block.getFieldValue("REQUEST_TYPE");
+
+            let path = pythonGenerator.valueToCode(block, "PATH", Order.ATOMIC) || `""`
+
+            if (path !== `""`) {
+                path = `'https://cors-anywhere.herokuapp.com/${path.substring(1, path.length)}`;
+            }
+            let queryItems = [];
+            let queryBlock = block.getInputTargetBlock("QUERY");
+            while (queryBlock) {
+                const queryItemCode = pythonGenerator.blockToCode(queryBlock, true);
+                console.log(queryItemCode);
+                if (queryItemCode) {
+                    console.log("push");
+                    queryItems.push(queryItemCode);
+                }
+                queryBlock = queryBlock.nextConnection
+                if (queryBlock) {
+                    queryBlock = queryBlock.targetBlock();
+                }
+            }
+            console.log(queryItems);
+
+            let headerItems = [];
+            let headerBlock = block.getInputTargetBlock("HEADERS");
+            while (headerBlock) {
+                const headerItemCode = pythonGenerator.blockToCode(headerBlock, true);
+                if (headerItemCode) {
+                    headerItems.push(headerItemCode);
+                }
+                headerBlock = headerBlock.nextConnection;
+                if (headerBlock) {
+                    headerBlock = headerBlock.targetBlock();
+                }
+            }
+
+            const strRequestBody = pythonGenerator.valueToCode(block, "REQUEST_BODY", Order.ATOMIC) || null;
+
+            const variableStatusCode = pythonGenerator.valueToCode(block, "STATUS_CODE", Order.ATOMIC) || "status_code";
+            const variableResponseBody = pythonGenerator.valueToCode(block, "RESPONSE_BODY", Order.ATOMIC) || "response_body";
+
+            let codeOnResponse = pythonGenerator.statementToCode(block, "RESPONSE");
+            let codeOnTimeout = pythonGenerator.statementToCode(block, "TIMEOUT");
+
+            const indentToTry = (code) => {
+                if (!code) return '';
+                return code.split('\n')
+                    .map(line => line ? '    ' + line : line) // 8 пробелов
+                    .join('\n');
+            };
+            codeOnResponse = indentToTry(codeOnResponse);
+            codeOnTimeout = indentToTry(codeOnTimeout);
+
+            var queryDict = queryItems.length ? '{' + queryItems.join(', ') + '}' : '{}';
+            var headerDict = headerItems.length ? '{' + headerItems.join(', ') + '}' : '{}';
+
+            return `
+from pyodide.http import pyfetch
+
+async def do_request():
+    url = ${path}
+    params = ${queryDict}
+    headers = ${headerDict}
+    ${strRequestBody ? `request_body = ${strRequestBody}` : ''}
+
+    if params:
+        from urllib.parse import urlencode
+        url = url + '?' + urlencode(params)
+
+    try:
+        response = await pyfetch(url, method="${requestType}", headers=headers, ${strRequestBody ? 'body=request_body,' : ''} timeout=10)
+        ${variableStatusCode} = response.status
+        ${variableResponseBody} = await response.text()
+${codeOnResponse}
+    except Exception as e:
+${codeOnTimeout}
+
+await do_request()
+            `;
         };
     }
 
