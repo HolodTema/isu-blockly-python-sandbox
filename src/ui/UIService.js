@@ -22,6 +22,17 @@ export class UIService {
                 this.projectService.saveProjectToFile();
             });
 
+        const divCodeWorkspace = document.getElementById("code_workspace");
+        const buttonExpandCode = document.getElementById("button_expand_code");
+        buttonExpandCode.addEventListener("click", () => {
+            if (divCodeWorkspace.style.display !== "none") {
+                divCodeWorkspace.style.display = "none";
+            }
+            else {
+                divCodeWorkspace.style.display = "";
+            }
+        });
+
         const buttonOpenProject = document.getElementById("button_open_project");
         let htmlElementFileInput = null;
         buttonOpenProject.addEventListener("click", (e) => {
