@@ -130,6 +130,8 @@ export class UIService {
             });
         });
 
+        this.showSplashScreenWithHideTimer()
+
         this.state.subscribe((key, st) => {
             if (key === "codeOutput") {
                 divCodeOutput.textContent = st.codeOutput;
@@ -140,5 +142,17 @@ export class UIService {
     showErrorToastNoResultFiles() {
         console.log("toast");
         this.toastService.showErrorToast("Выполненный код не сохранял результирующих файлов для загрузки");
+    }
+
+    showSplashScreenWithHideTimer() {
+        const splash = document.getElementById('splash_screen_container');
+
+        setTimeout(() => {
+            splash.classList.add('hidden');
+
+            setTimeout(() => {
+                splash.classList.add('removed');
+            }, 1500);
+        }, 1500);
     }
 }
