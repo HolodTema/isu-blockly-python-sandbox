@@ -27,9 +27,11 @@ export class UIService {
         buttonExpandCode.addEventListener("click", () => {
             if (divCodeWorkspace.style.display !== "none") {
                 divCodeWorkspace.style.display = "none";
+                buttonExpandCode.src = "assets/images/ic_expand_left.svg";
             }
             else {
                 divCodeWorkspace.style.display = "";
+                buttonExpandCode.src = "assets/images/ic_expand_right.svg";
             }
         });
 
