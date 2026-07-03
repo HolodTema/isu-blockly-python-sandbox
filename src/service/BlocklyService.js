@@ -250,7 +250,7 @@ await do_request()
             const n = pythonGenerator.valueToCode(block, "N", Order.ATOMIC) || '5';
             return [`${df}.head(${n})`, Order.FUNCTION_CALL];
         };
-        
+
         pythonGenerator.forBlock["pandas_tail_n_block"] = function(block) {
             const df = pythonGenerator.valueToCode(block, "DF", Order.ATOMIC) || '""';
             const n = pythonGenerator.valueToCode(block, "N", Order.ATOMIC) || '5';
@@ -261,6 +261,11 @@ await do_request()
             const listVar = pythonGenerator.valueToCode(block, "LIST", Order.ATOMIC) || '[]';
             const item = pythonGenerator.valueToCode(block, "ITEM", Order.ATOMIC) || 'None';
             return `${listVar}.append(${item})\n`;
+        };
+
+        pythonGenerator.forBlock["pandas_info_block"] = function(block) {
+            const df = pythonGenerator.valueToCode(block, "DF", Order.ATOMIC) || '""';
+            return `${df}.info()\n`;
         };
     }
 

@@ -359,7 +359,7 @@
     },
     {
         "type": "pandas_head_n_block",
-        "message0": "первые %1 строк таблицы %2",
+        "message0": "Первые %1 строк таблицы %2",
         "args0": [
             {
                 "type": "input_value",
@@ -377,7 +377,7 @@
     },
     {
         "type": "pandas_tail_n_block",
-        "message0": "последние %2 строк таблицы %1",
+        "message0": "Последние %2 строк таблицы %1",
         "args0": [
             {
                 "type": "input_value",
@@ -411,5 +411,19 @@
         "nextStatement": null,
         "colour": 270,
         "tooltip": "Добавляет элемент в конец списка"
+    },
+    {
+        "type": "pandas_info_block",
+        "message0": "Показать информацию о таблице %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "DF"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 270,
+        "tooltip": "Выводит в консоль информацию о DataFrame: типы столбцов, количество ненулевых значений, память"
     }
 ]
