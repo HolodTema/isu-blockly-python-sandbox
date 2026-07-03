@@ -155,7 +155,7 @@ export class BlocklyService {
             let path = pythonGenerator.valueToCode(block, "PATH", Order.ATOMIC) || `""`
 
             if (path !== `""`) {
-                path = `'https://cors-anywhere.herokuapp.com/${path.substring(1, path.length)}`;
+                path = `'http://185.105.109.140:8080/${path.substring(1, path.length)}`;
             }
             let queryItems = [];
             let queryBlock = block.getInputTargetBlock("QUERY");
