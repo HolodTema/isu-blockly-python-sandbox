@@ -1,64 +1,114 @@
-
 export class PyodideService {
     constructor(state) {
         this.state = state;
-        this.pyodide = null;
-        this.isInit = false;
+        this.worker = null;
+        this.isReady = false;
+        this.pendingPromises = new Map();
+        this.messageId = 0;
         this.init();
     }
 
-    async init() {
-        try {
-            console.log("Pyodide: init process started");
-            this.pyodide = await loadPyodide();
-            await this.pyodide.loadPackage("requests");
-            this.isInit = true;
-            console.log("Pyodide: init process finished");
-        }
-        catch (e) {
-            console.error("Pyodide: init failed:", e);
-        }
+    init() {
+        this.worker = new Worker('src/worker/pyodideWorker.js');
+
+        this.worker.addEventListener('message', (event) => {
+            const msg = event.data;
+            if (msg.type === 'init') {
+                this.isReady = true;
+                console.log('Pyodide worker инициализирован');
+                return;
+            }
+            if (msg.type === 'stdout') {
+                const currentOutput = this.state.codeOutput || '';
+                this.state.setCodeOutput(currentOutput + msg.payload);
+                return;
+            }
+            if (msg.type === 'log') {
+                console.log('[Pyodide worker]', msg.payload);
+                return;
+            }
+            if (msg.type === 'error') {
+                this.state.setCodeOutput(`Ошибка: ${msg.payload}`);
+                return;
+            }
+            if (msg.type === 'zipReady') {
+                const buffer = msg.payload;
+                const blob = new Blob([buffer], { type: 'application/zip' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'result_files.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
+                return;
+            }
+            if (msg.id !== undefined) {
+                const resolver = this.pendingPromises.get(msg.id);
+                if (resolver) {
+                    if (msg.type === 'error') {
+                        resolver.reject(new Error(msg.payload));
+                    } else {
+                        resolver.resolve(msg.payload);
+                    }
+                    this.pendingPromises.delete(msg.id);
+                }
+            }
+        });
+
+    }
+
+    sendCommand(type, payload) {
+        return new Promise((resolve, reject) => {
+            const id = this.messageId++;
+            this.pendingPromises.set(id, { resolve, reject });
+            this.worker.postMessage({ id, type, payload });
+        });
     }
 
     async runPythonCode(code) {
-        if (!this.isInit) {
-            console.error("Pyodide: you cannot run the code while pyodide init() is in progress");
-            return;
+        if (!this.isReady) {
+            await new Promise(resolve => {
+                const check = () => {
+                    if (this.isReady) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
         }
-
+        this.state.setCodeOutput('');
         try {
-            this.pyodide.runPython("import sys; from io import StringIO; sys.stdout = StringIO()");
-            this.pyodide.runPython(code);
-            const output = this.pyodide.runPython("sys.stdout.getvalue()") || "Вывод отсутствует";
-            console.log(output);
-            this.state.setCodeOutput(output);
+            await this.sendCommand('run', code);
+        } catch (error) {
+            this.state.setCodeOutput(`Ошибка выполнения: ${error.message}`);
+            console.error('Pyodide error:', error);
         }
-        catch (e) {
-            this.state.setCodeOutput(e.message);
-        }
-    }
-
-    runCurrentCodeFromWorkspace() {
-        const code = this.state.generatedCode;
-        if (!code.trim()) {
-            this.state.setCodeOutput("# Пустая программа\n");
-            return;
-        }
-        this.runPythonCode(code);
     }
 
     saveInputFileToPyodideMemory(filename, byteArray) {
-        this.pyodide.FS.writeFile(filename, byteArray);
-        // this.pyodide.globals.set("target_filename", filename);
+        this.worker.postMessage({
+            id: this.messageId++,
+            type: 'loadFile',
+            payload: { filename, data: byteArray.buffer }
+        }, [byteArray.buffer]);
     }
 
     removeInputFileFromPyodideMemory(filename) {
-        try {
-            this.pyodide.FS.unlink(filename);
-            console.log("Pyodide: input file removed from pyodide's memory successfully");
+        this.sendCommand('removeFile', filename).catch(e => console.warn(e));
+    }
+
+    async saveResultFilesIntoZipArchive() {
+        await this.sendCommand('saveZip', null);
+        return true;
+    }
+
+    runCurrentCodeFromWorkspace() {
+        const code = this.state.generatedCode?.trim();
+        if (!code) {
+            this.state.setCodeOutput('# Пустая программа\n');
+            return;
         }
-        catch (e) {
-            console.error("Pyodide: unable to remove input file from pyodide's memory because it does not exist.");
-        }
+        this.runPythonCode(code);
     }
 }

@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ISU Practice</title>
+    <title>CodeChef</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Marko+One&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="assets/css/styles.css">
@@ -14,26 +14,44 @@
     <link rel="stylesheet" href="assets/css/header.css">
     <link rel="stylesheet" href="assets/css/code_workspace.css">
     <link rel="stylesheet" href="assets/css/code_mirror.css">
+    <link rel="stylesheet" href="assets/css/toast.css">
+    <link rel="stylesheet" href="assets/css/splash_screen.css">
+
+    <link rel="icon" href="assets/images/logo.png" type="image/png">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/blockly@11.2.0/dist/blockly.min.css">
 </head>
 <body>
-<header>
-    <a class="font_powered_marko_one" id="button_save_project">Сохранить проект</a>
-    <a class="font_powered_marko_one" id="button_open_project">Открыть проект</a>
-    <a class="font_powered_marko_one">Документация</a>
-</header>
+<div id="header">
+    <div id="header_left">
+        <img id="full_logo" src="assets/images/full_logo.png" alt="">
+
+        <img src="assets/images/ic_save_project.svg", alt="">
+        <a class="font_powered_mclaren" id="button_save_project">Сохранить проект</a>
+
+        <img src="assets/images/ic_open_project.svg", alt="">
+        <a class="font_powered_mclaren" id="button_open_project">Открыть проект</a>
+    </div>
+    <div id="header_right">
+        <img src="assets/images/ic_convert_to_code.svg", alt="">
+        <a class="font_powered_mclaren" id="button_convert_to_code">Конвертировать в код</a>
+
+        <img src="assets/images/ic_run_code.svg", alt="">
+        <a class="font_powered_mclaren" id="button_run_code">Запуск</a>
+
+        <img src="assets/images/ic_debug_code.svg", alt="">
+        <a class="font_powered_mclaren" id="button_debug_code">Отладка</a>
+        
+        <img id="button_expand_code" src="assets/images/ic_expand_right.svg" alt="">
+    </div>
+</div>
 <main>
     <div id="blockly_workspace"></div>
     <div id="code_workspace">
-        <div id="code_buttons">
-            <div id="button_convert_to_code" class="text_button font_powered_marko_one">Convert to code</div>
-            <div id="button_run_code" class="text_button font_powered_marko_one">run</div>
-            <div id="button_debug_code" class="text_button font_powered_marko_one">debug</div>
-        </div>
         <div id="input_files_toolbar">
             <input id="input_add_input_file" type="file" accept=".txt, .json, .csv"/>
-            <div id="button_add_input_file" class="text_button font_powered_marko_one">Add input file</div>
+            <img id="img_add_input_file" src="assets/images/ic_add_input_file.svg", alt="">
+            <a id="button_add_input_file" class="font_powered_mclaren">Входные файлы</a>
             <div id="input_files_list">
 <!--                <div class="input_file">-->
 <!--                    <img class="button_remove_input_file" src="assets/images/ic_close_black.svg" alt="close">-->
@@ -46,14 +64,27 @@
             </div>
         </div>
         <div id="code_output_header">
-            <div id="button_download_result_files" class="text_button">Download result files</div>
-            <img id="button_expand_output" src="assets/images/ic_expand_down.svg" alt="expand">
+            <div id="code_output_header_left">
+                <img id="button_expand_output" src="assets/images/ic_expand_down.svg" alt="expand">
+                <div id="tab_button_output" class="font_powered_mclaren">Вывод</div>
+                <div id="tab_button_debug" class="font_powered_mclaren">Отладка</div>
+            </div>
+            <div id="code_output_header_right">
+                <img id="img_download_result_files" src="assets/images/ic_download_result_files.svg" alt=""/>
+                <a id="button_download_result_files" class="font_powered_mclaren">Скачать итоговые файлы</a>
+            </div>
         </div>
         <div id="code_output" class="font_powered_cascadia_code code_output_expanded">Запусти код и посмотри результат его работы здесь!</div>
 
     </div>
 </main>
-<script src="https://cdn.jsdelivr.net/pyodide/v314.0.0/full/pyodide.js"></script>
+<div id="toast_container"></div>
+<div id="splash_screen_container">
+    <img id="img_logo_splash_screen" src="assets/images/logo.png" alt="">
+    <img id="img_full_logo_splash_screen" src="assets/images/full_logo.png" alt="">
+    <div id="text_loading" class="font_powered_mclaren">Загрузка...</div>
+</div>
+<!--<script src="https://cdn.jsdelivr.net/pyodide/v314.0.0/full/pyodide.js"></script>-->
 <script type="module" src="/src/main.js"></script>
 </body>
 </html>

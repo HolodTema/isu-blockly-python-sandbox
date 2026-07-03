@@ -19,7 +19,7 @@ export class ProjectService {
         tempElementA.href = url;
         tempElementA.download = "project.chef";
         document.body.appendChild(tempElementA);
-        a.click();
+        tempElementA.click();
         document.body.removeChild(tempElementA);
         setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
@@ -28,7 +28,7 @@ export class ProjectService {
         const fileReader = new FileReader();
         fileReader.onload = (e) => {
             try {
-                const data = JSOn.parse(e.target.result);
+                const data = JSON.parse(e.target.result);
 
                 if (typeof data.python !== "string" || !data.blocklyState) {
                     console.error("Unable to load project from file. Invalid file format");
@@ -62,7 +62,7 @@ export class ProjectService {
         document.body.appendChild(input);
         input.addEventListener("change", (e) => {
             if (e.target.files.length > 0) {
-                this.loadFromFile(e.target.files[0]);
+                this.loadProjectFromFile(e.target.files[0]);
             }
         });
         return input;

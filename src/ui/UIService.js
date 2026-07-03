@@ -1,10 +1,11 @@
 export class UIService {
-    constructor(state, blocklyService, pyodideService, projectService, codeMirrorService) {
+    constructor(state, blocklyService, pyodideService, projectService, codeMirrorService, toastService) {
         this.state = state;
         this.blocklyService = blocklyService;
         this.pyodideService = pyodideService;
         this.projectService = projectService;
         this.codeMirrorService = codeMirrorService;
+        this.toastService = toastService
 
         document.getElementById("button_convert_to_code")
             .addEventListener("click", (e) => {
@@ -20,6 +21,19 @@ export class UIService {
             .addEventListener("click", (e) => {
                 this.projectService.saveProjectToFile();
             });
+
+        const divCodeWorkspace = document.getElementById("code_workspace");
+        const buttonExpandCode = document.getElementById("button_expand_code");
+        buttonExpandCode.addEventListener("click", () => {
+            if (divCodeWorkspace.style.display !== "none") {
+                divCodeWorkspace.style.display = "none";
+                buttonExpandCode.src = "assets/images/ic_expand_left.svg";
+            }
+            else {
+                divCodeWorkspace.style.display = "";
+                buttonExpandCode.src = "assets/images/ic_expand_right.svg";
+            }
+        });
 
         const buttonOpenProject = document.getElementById("button_open_project");
         let htmlElementFileInput = null;
@@ -108,10 +122,39 @@ export class UIService {
             inputAddInputFile.click();
         });
 
+        const buttonDownloadResultFiles = document.getElementById("button_download_result_files");
+        buttonDownloadResultFiles.addEventListener("click", (e) => {
+            const promise = this.pyodideService.saveResultFilesIntoZipArchive();
+            promise.then(isSuccessful => {
+                if (!isSuccessful) {
+                    this.showErrorToastNoResultFiles();
+                }
+            });
+        });
+
+        this.showSplashScreenWithHideTimer()
+
         this.state.subscribe((key, st) => {
             if (key === "codeOutput") {
                 divCodeOutput.textContent = st.codeOutput;
             }
         });
+    }
+
+    showErrorToastNoResultFiles() {
+        console.log("toast");
+        this.toastService.showErrorToast("Выполненный код не сохранял результирующих файлов для загрузки");
+    }
+
+    showSplashScreenWithHideTimer() {
+        const splash = document.getElementById('splash_screen_container');
+
+        setTimeout(() => {
+            splash.classList.add('hidden');
+
+            setTimeout(() => {
+                splash.classList.add('removed');
+            }, 1500);
+        }, 1500);
     }
 }
