@@ -306,5 +306,124 @@
         "nextStatement": null,
         "colour": 26,
         "tooltip": "HTTP GET-запрос. Параметры и заголовки – горизонтальные цепочки, ответ и таймаут – вертикальные контейнеры."
+    },
+
+    {
+        "type": "pandas_import_block",
+        "message0": "Подключить библиотеку pandas как pd",
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 270,
+        "tooltip": "Импортирует библиотеку pandas"
+    },
+    {
+        "type": "pandas_read_html_block",
+        "message0": "прочитать HTML‑таблицу из HTML-текста %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "HTML_TEXT",
+                "check": "String"
+            }
+        ],
+        "output": null,
+        "colour": 270,
+        "tooltip": "Парсит HTML‑строку и возвращает первую таблицу как DataFrame"
+    },
+    {
+        "type": "pandas_concat_block",
+        "message0": "Объединить список таблиц в %1 в одну таблицу",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "LIST",
+                "check": "Array"
+            }
+        ],
+        "output": null,
+        "colour": 270,
+        "tooltip": "Объединяет все DataFrame из списка в один"
+    },
+    {
+        "type": "pandas_head_block",
+        "message0": "Первые 5 строк таблицы %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "DF"
+            }
+        ],
+        "output": null,
+        "colour": 270,
+        "tooltip": "Возвращает первые 5 строк DataFrame"
+    },
+    {
+        "type": "pandas_head_n_block",
+        "message0": "Первые %1 строк таблицы %2",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "N",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "DF"
+            }
+        ],
+        "output": null,
+        "colour": 270,
+        "tooltip": "Возвращает первые N строк DataFrame"
+    },
+    {
+        "type": "pandas_tail_n_block",
+        "message0": "Последние %2 строк таблицы %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "DF"
+            },
+            {
+                "type": "input_value",
+                "name": "N",
+                "check": "Number"
+            }
+        ],
+        "output": null,
+        "colour": 270,
+        "tooltip": "Возвращает последние N строк DataFrame"
+    },
+    {
+        "type": "pandas_append_to_list_block",
+        "message0": "Добавить элемент %2 в список %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "LIST",
+                "check": "Array"
+            },
+            {
+                "type": "input_value",
+                "name": "ITEM"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 270,
+        "tooltip": "Добавляет элемент в конец списка"
+    },
+    {
+        "type": "pandas_info_block",
+        "message0": "Показать информацию о таблице %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "DF"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 270,
+        "tooltip": "Выводит в консоль информацию о DataFrame: типы столбцов, количество ненулевых значений, память"
     }
 ]
