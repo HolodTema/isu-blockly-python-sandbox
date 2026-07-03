@@ -236,8 +236,8 @@ await do_request()
         };
 
         pythonGenerator.forBlock["pandas_read_html_block"] = function(block) {
-            const url = pythonGenerator.valueToCode(block, "URL", Order.ATOMIC) || '""';
-            return [`pd.read_html(${url})[0]`, Order.FUNCTION_CALL];
+            const htmlText = pythonGenerator.valueToCode(block, "HTML_TEXT", Order.ATOMIC) || '""';
+            return [`pd.read_html(${htmlText})[0]`, Order.FUNCTION_CALL];
         };
 
         pythonGenerator.forBlock["pandas_concat_block"] = function(block) {
@@ -245,9 +245,16 @@ await do_request()
             return [`pd.concat(${listVar})`, Order.FUNCTION_CALL];
         };
 
-        pythonGenerator.forBlock["pandas_head_block"] = function(block) {
+        pythonGenerator.forBlock["pandas_head_n_block"] = function(block) {
             const df = pythonGenerator.valueToCode(block, "DF", Order.ATOMIC) || '""';
-            return [`${df}.head()`, Order.FUNCTION_CALL];
+            const n = pythonGenerator.valueToCode(block, "N", Order.ATOMIC) || '5';
+            return [`${df}.head(${n})`, Order.FUNCTION_CALL];
+        };
+        
+        pythonGenerator.forBlock["pandas_tail_n_block"] = function(block) {
+            const df = pythonGenerator.valueToCode(block, "DF", Order.ATOMIC) || '""';
+            const n = pythonGenerator.valueToCode(block, "N", Order.ATOMIC) || '5';
+            return [`${df}.tail(${n})`, Order.FUNCTION_CALL];
         };
 
         pythonGenerator.forBlock["pandas_append_to_list_block"] = function(block) {

@@ -318,17 +318,17 @@
     },
     {
         "type": "pandas_read_html_block",
-        "message0": "Прочитать таблицу с HTML-документа по адресу %1",
+        "message0": "прочитать HTML‑таблицу из HTML-текста %1",
         "args0": [
             {
                 "type": "input_value",
-                "name": "URL",
+                "name": "HTML_TEXT",
                 "check": "String"
             }
         ],
         "output": null,
         "colour": 270,
-        "tooltip": "Загружает страницу и возвращает первую таблицу как DataFrame объект"
+        "tooltip": "Парсит HTML‑строку и возвращает первую таблицу как DataFrame"
     },
     {
         "type": "pandas_concat_block",
@@ -356,6 +356,42 @@
         "output": null,
         "colour": 270,
         "tooltip": "Возвращает первые 5 строк DataFrame"
+    },
+    {
+        "type": "pandas_head_n_block",
+        "message0": "первые %1 строк таблицы %2",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "N",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "DF"
+            }
+        ],
+        "output": null,
+        "colour": 270,
+        "tooltip": "Возвращает первые N строк DataFrame"
+    },
+    {
+        "type": "pandas_tail_n_block",
+        "message0": "последние %2 строк таблицы %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "DF"
+            },
+            {
+                "type": "input_value",
+                "name": "N",
+                "check": "Number"
+            }
+        ],
+        "output": null,
+        "colour": 270,
+        "tooltip": "Возвращает последние N строк DataFrame"
     },
     {
         "type": "pandas_append_to_list_block",
