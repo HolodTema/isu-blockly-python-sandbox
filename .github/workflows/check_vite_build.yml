@@ -37,6 +37,7 @@ jobs:
     needs: deploy
     if: always()
     steps:
+      # ---- Базовое уведомление о статусе (текст) ----
       - name: Send Telegram notification
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -75,22 +76,19 @@ jobs:
             -d text="$MESSAGE" \
             -d parse_mode="HTML"
 
+      # ---- Скриншот сайта (уже был) ----
       - name: Take screenshot and send to Telegram
         if: needs.deploy.result == 'success'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          SITE_URL: ${{ secrets.SITE_URL || 'https://your-domain.com' }}  # добавьте секрет или укажите жёстко
+          SITE_URL: ${{ secrets.SITE_URL }}
         run: |
           if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
             echo "⚠️ Telegram secrets not set, skipping screenshot"
             exit 0
           fi
-
-          # Устанавливаем Puppeteer (быстро, ~15 секунд)
           npm install puppeteer
-
-          # Делаем скриншот
           node -e "
           const puppeteer = require('puppeteer');
           (async () => {
@@ -102,8 +100,64 @@ jobs:
             await browser.close();
           })();
           "
-
-          # Отправляем фото
           curl -s -F photo=@screenshot.png "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendPhoto" \
             -F chat_id="$TELEGRAM_CHAT_ID" \
             -F caption="📸 Текущий вид сайта после деплоя"
+
+      # ---- НОВОЕ: QR-код сайта ----
+      - name: Generate QR code and send to Telegram
+        if: needs.deploy.result == 'success'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SITE_URL: ${{ secrets.SITE_URL }}
+        run: |
+          npm install qrcode
+          node -e "
+          const QRCode = require('qrcode');
+          QRCode.toFile('qrcode.png', '$SITE_URL', { width: 300 }, (err) => {
+            if (err) throw err;
+          });
+          "
+          curl -s -F photo=@qrcode.png "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendPhoto" \
+            -F chat_id="$TELEGRAM_CHAT_ID" \
+            -F caption="📱 QR-код на сайт (отсканируй телефоном)"
+
+      # ---- НОВОЕ: Lighthouse-отчёт (производительность, доступность, SEO) ----
+      - name: Run Lighthouse and send result link
+        if: needs.deploy.result == 'success'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SITE_URL: ${{ secrets.SITE_URL }}
+        run: |
+          # Устанавливаем Lighthouse CLI
+          npm install -g @lhci/cli
+          # Запускаем аудит, сохраняем отчёт в папку ./lhci_reports
+          lhci autorun --url=$SITE_URL --upload.target=filesystem --outputDir=./lhci_reports
+          # Извлекаем итоговые баллы из отчёта (JSON)
+          # Сначала находим файл с результатами (может быть manifest.json)
+          # Упростим: отправим ссылку на артефакт, который будет опубликован GitHub
+          # Для этого используем встроенный upload-artifact, но проще отправить сообщение с текстом
+          # Сделаем так: прочитаем JSON и отправим краткие цифры
+          # Найдём последний отчёт:
+          REPORT_FILE=$(find ./lhci_reports -name "manifest.json" | head -1)
+          if [ -f "$REPORT_FILE" ]; then
+            # Извлекаем средние баллы (можно и детальнее)
+            SCORES=$(node -e "
+              const data = require('$REPORT_FILE');
+              const summary = data.summary || {};
+              const perf = summary.performance ? Math.round(summary.performance * 100) : '?';
+              const acc = summary.accessibility ? Math.round(summary.accessibility * 100) : '?';
+              const seo = summary.seo ? Math.round(summary.seo * 100) : '?';
+              const best = summary['best-practices'] ? Math.round(summary['best-practices'] * 100) : '?';
+              console.log(`⚡ Производительность: ${perf}%\n♿ Доступность: ${acc}%\n🔍 SEO: ${seo}%\n📐 Best Practices: ${best}%`);
+            ")
+            # Отправляем сообщение с результатами
+            MESSAGE="📊 Lighthouse отчёт для $SITE_URL%0A$SCORES"
+            curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+              -d chat_id="$TELEGRAM_CHAT_ID" \
+              -d text="$MESSAGE"
+          else
+            echo "Не удалось найти отчёт Lighthouse"
+          fi
