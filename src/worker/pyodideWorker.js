@@ -23,6 +23,8 @@ async function initPyodide() {
         pyodide = await loadPyodide({
         });
         await pyodide.loadPackage('requests');
+        await pyodide.loadPackage('pandas');
+        await pyodide.loadPackage('lxml');
         const stdout = new WorkerStdout();
         pyodide.runPython(`
 import sys

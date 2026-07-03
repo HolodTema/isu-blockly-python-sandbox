@@ -310,7 +310,7 @@
 
     {
         "type": "pandas_import_block",
-        "message0": "Импортировать pandas как pd",
+        "message0": "Подключить библиотеку pandas как pd",
         "previousStatement": null,
         "nextStatement": null,
         "colour": 270,
