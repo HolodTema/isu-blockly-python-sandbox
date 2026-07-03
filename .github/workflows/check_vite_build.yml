@@ -76,7 +76,7 @@ jobs:
             -d text="$MESSAGE" \
             -d parse_mode="HTML"
 
-      # ---- Скриншот сайта (уже был) ----
+      # ---- Скриншот сайта ----
       - name: Take screenshot and send to Telegram
         if: needs.deploy.result == 'success'
         env:
@@ -104,7 +104,7 @@ jobs:
             -F chat_id="$TELEGRAM_CHAT_ID" \
             -F caption="📸 Текущий вид сайта после деплоя"
 
-      # ---- НОВОЕ: QR-код сайта ----
+      # ---- QR-код сайта ----
       - name: Generate QR code and send to Telegram
         if: needs.deploy.result == 'success'
         env:
@@ -123,41 +123,36 @@ jobs:
             -F chat_id="$TELEGRAM_CHAT_ID" \
             -F caption="📱 QR-код на сайт (отсканируй телефоном)"
 
-      # ---- НОВОЕ: Lighthouse-отчёт (производительность, доступность, SEO) ----
-      - name: Run Lighthouse and send result link
+      # ---- ИСПРАВЛЕННЫЙ: Lighthouse-отчёт (прямой вызов lighthouse) ----
+      - name: Run Lighthouse and send results
         if: needs.deploy.result == 'success'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           SITE_URL: ${{ secrets.SITE_URL }}
         run: |
-          # Устанавливаем Lighthouse CLI
-          npm install -g @lhci/cli
-          # Запускаем аудит, сохраняем отчёт в папку ./lhci_reports
-          lhci autorun --url=$SITE_URL --upload.target=filesystem --outputDir=./lhci_reports
-          # Извлекаем итоговые баллы из отчёта (JSON)
-          # Сначала находим файл с результатами (может быть manifest.json)
-          # Упростим: отправим ссылку на артефакт, который будет опубликован GitHub
-          # Для этого используем встроенный upload-artifact, но проще отправить сообщение с текстом
-          # Сделаем так: прочитаем JSON и отправим краткие цифры
-          # Найдём последний отчёт:
-          REPORT_FILE=$(find ./lhci_reports -name "manifest.json" | head -1)
-          if [ -f "$REPORT_FILE" ]; then
-            # Извлекаем средние баллы (можно и детальнее)
+          # Устанавливаем Lighthouse
+          npm install -g lighthouse
+
+          # Запускаем аудит, сохраняем JSON-отчёт
+          lighthouse $SITE_URL --output=json --output-path=report.json --chrome-flags="--headless"
+
+          # Проверяем, что отчёт создался
+          if [ -f report.json ]; then
+            # Извлекаем баллы (производительность, доступность, SEO, Best Practices)
             SCORES=$(node -e "
-              const data = require('$REPORT_FILE');
-              const summary = data.summary || {};
-              const perf = summary.performance ? Math.round(summary.performance * 100) : '?';
-              const acc = summary.accessibility ? Math.round(summary.accessibility * 100) : '?';
-              const seo = summary.seo ? Math.round(summary.seo * 100) : '?';
-              const best = summary['best-practices'] ? Math.round(summary['best-practices'] * 100) : '?';
-              console.log(`⚡ Производительность: ${perf}%\n♿ Доступность: ${acc}%\n🔍 SEO: ${seo}%\n📐 Best Practices: ${best}%`);
+              const report = require('./report.json');
+              const categories = report.categories || {};
+              const perf = categories.performance ? Math.round(categories.performance.score * 100) : '?';
+              const acc = categories.accessibility ? Math.round(categories.accessibility.score * 100) : '?';
+              const seo = categories.seo ? Math.round(categories.seo.score * 100) : '?';
+              const best = categories['best-practices'] ? Math.round(categories['best-practices'].score * 100) : '?';
+              console.log(\`⚡ Производительность: \${perf}%\n♿ Доступность: \${acc}%\n🔍 SEO: \${seo}%\n📐 Best Practices: \${best}%\`);
             ")
-            # Отправляем сообщение с результатами
             MESSAGE="📊 Lighthouse отчёт для $SITE_URL%0A$SCORES"
             curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
               -d chat_id="$TELEGRAM_CHAT_ID" \
               -d text="$MESSAGE"
           else
-            echo "Не удалось найти отчёт Lighthouse"
+            echo "Lighthouse не создал отчёт"
           fi
