@@ -16,6 +16,8 @@ Frontend: Html, CSS, Vanila JS, Pyodide, CodeMirror, Blockly
 
 Добавляются по правилам из документации Blockly. 
 
+https://docs.blockly.com/guides/create-custom-blocks/define/json-and-js/
+
 Расскажу кратко:
 
 При помощи параметров JSON messageN и argN задается текст и места крепления
