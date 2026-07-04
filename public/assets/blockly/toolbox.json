@@ -193,6 +193,7 @@
         { "kind": "block", "type": "pandas_head_n_block" },
         { "kind": "block", "type": "pandas_tail_n_block" },
         { "kind": "block", "type": "pandas_append_to_list_block" },
+        { "kind": "block", "type": "pandas_to_csv_block" },
         { "kind": "block", "type": "pandas_info_block" }
       ]
     }

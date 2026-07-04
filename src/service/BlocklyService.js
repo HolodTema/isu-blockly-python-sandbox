@@ -263,6 +263,12 @@ await do_request()
             return `${listVar}.append(${item})\n`;
         };
 
+        pythonGenerator.forBlock["pandas_to_csv_block"] = function(block) {
+            const df = pythonGenerator.valueToCode(block, "DF", Order.ATOMIC) || '""';
+            const filePath = block.getFieldValue("FILE_PATH");
+            return `${df}.to_csv("${filePath}", index=False)\n`;
+        };
+
         pythonGenerator.forBlock["pandas_info_block"] = function(block) {
             const df = pythonGenerator.valueToCode(block, "DF", Order.ATOMIC) || '""';
             return `${df}.info()\n`;

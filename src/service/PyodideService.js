@@ -9,7 +9,10 @@ export class PyodideService {
     }
 
     init() {
-        this.worker = new Worker('src/worker/pyodideWorker.js');
+
+        this.worker = new Worker(
+            'src/worker/pyodideWorker.js'
+        );
 
         this.worker.addEventListener('message', (event) => {
             const msg = event.data;
