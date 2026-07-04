@@ -104,7 +104,10 @@ export class PyodideService {
     }
 
     runCurrentCodeFromWorkspace() {
-        const code = this.state.generatedCode?.trim();
+        let code = this.state.generatedCode;
+        if (code) {
+            code = code.trim();
+        }
         if (!code) {
             this.state.setCodeOutput('# Пустая программа\n');
             return;

@@ -295,7 +295,10 @@ await do_request()
         }
         pythonGenerator.init(this.workspace);
         let code = pythonGenerator.blockToCode(startBlock);
-        code = pythonGenerator.finish(code).trim();
+        code = pythonGenerator.finish(code)
+        if (code) {
+            code = code.trim();
+        }
         this.state.setGeneratedCode(code);
     }
 
