@@ -1,6 +1,6 @@
 import { AppState } from "./state/AppState.ts"
 import { BlocklyService } from './service/BlocklyService.js';
-import { CodeMirrorService } from './service/CodeMirrorService.js';
+import { CodeMirrorService } from './service/codeMirrorService.ts';
 import { PyodideService } from './service/PyodideService.js';
 import { ProjectService } from './service/ProjectService.js';
 import { UIService } from './ui/UIService.js';
