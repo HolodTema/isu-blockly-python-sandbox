@@ -2,14 +2,13 @@ import * as Blockly from 'blockly';
 import * as Ru from 'blockly/msg/ru';
 import { pythonGenerator } from "blockly/python";
 import { Order } from "blockly/python";
-import {python} from "@codemirror/lang-python";
+import {AppState} from "../state/AppState";
+import {WorkspaceSvg} from "blockly";
 
 export class BlocklyService {
-    constructor(state, htmlContainerId) {
-        this.state = state;
-        this.htmlContainerId = htmlContainerId;
-        this.workspace = undefined;
+    private workspace: WorkspaceSvg|undefined = undefined;
 
+    constructor(private state: AppState, private htmlContainerId: string) {
         this.init();
     }
 
@@ -22,11 +21,11 @@ export class BlocklyService {
             const jsonToolbox = await fetch("/assets/blockly/toolbox.json")
                 .then(r => r.json());
 
-            Blockly.setLocale(Ru);
+            // Blockly.setLocale(Ru);
 
             this.workspace = Blockly.inject(this.htmlContainerId, {
                 toolbox: jsonToolbox,
-                grid: {spacing: 20, length: 3, color: '#ccc', snap: true},
+                grid: {spacing: 20, length: 3, colour: '#ccc', snap: true},
                 zoom: {controls: true, wheel: true, startScale: 1.2},
                 trashcan: false
             });
@@ -41,21 +40,22 @@ export class BlocklyService {
                 }
 
                 this.saveWorkspaceState();
+                // for auto-update code when blockly workspace is changed
                 // this.generateAndUpdateCode();
             });
 
-            if (this.state.blocksState) {
-                Blockly.serialization.workspaces.load(this.state.blockState, this.workspace);
+            if (this.state.jsonBlocks) {
+                Blockly.serialization.workspaces.load(this.state.jsonBlocks, this.workspace);
             }
-
             console.log("Blockly: initialization complete");
-        } catch (e) {
+        }
+        catch (e) {
             console.error("Blockly init-error:", e);
         }
     }
 
-    configureCodeGenerator() {
-        pythonGenerator.INDENT = '    ';
+    private configureCodeGenerator() {
+        pythonGenerator.INDENT = "    ";
 
         pythonGenerator.forBlock["start_block"] = function (block) {
             return "";
@@ -158,7 +158,7 @@ export class BlocklyService {
                 path = `'http://185.105.109.140:8080/${path.substring(1, path.length)}`;
             }
             let queryItems = [];
-            let queryBlock = block.getInputTargetBlock("QUERY");
+            let queryBlock: Blockly.Block|null = block.getInputTargetBlock("QUERY");
             while (queryBlock) {
                 const queryItemCode = pythonGenerator.blockToCode(queryBlock, true);
                 console.log(queryItemCode);
@@ -166,9 +166,8 @@ export class BlocklyService {
                     console.log("push");
                     queryItems.push(queryItemCode);
                 }
-                queryBlock = queryBlock.nextConnection
-                if (queryBlock) {
-                    queryBlock = queryBlock.targetBlock();
+                if (queryBlock.nextConnection) {
+                    queryBlock = queryBlock.nextConnection.targetBlock();
                 }
             }
             console.log(queryItems);
@@ -180,9 +179,8 @@ export class BlocklyService {
                 if (headerItemCode) {
                     headerItems.push(headerItemCode);
                 }
-                headerBlock = headerBlock.nextConnection;
-                if (headerBlock) {
-                    headerBlock = headerBlock.targetBlock();
+                if (headerBlock.nextConnection) {
+                    headerBlock = headerBlock.nextConnection.targetBlock();
                 }
             }
 
@@ -194,17 +192,17 @@ export class BlocklyService {
             let codeOnResponse = pythonGenerator.statementToCode(block, "RESPONSE");
             let codeOnTimeout = pythonGenerator.statementToCode(block, "TIMEOUT");
 
-            const indentToTry = (code) => {
-                if (!code) return '';
-                return code.split('\n')
-                    .map(line => line ? '    ' + line : line) // 8 пробелов
-                    .join('\n');
+            const indentToTry = (code: string) => {
+                if (!code) return "";
+                return code.split("\n")
+                    .map(line => line ? "    " + line : line)
+                    .join("\n");
             };
             codeOnResponse = indentToTry(codeOnResponse);
             codeOnTimeout = indentToTry(codeOnTimeout);
 
-            var queryDict = queryItems.length ? '{' + queryItems.join(', ') + '}' : '{}';
-            var headerDict = headerItems.length ? '{' + headerItems.join(', ') + '}' : '{}';
+            const queryDict = queryItems.length ? '{' + queryItems.join(', ') + '}' : '{}';
+            const headerDict = headerItems.length ? '{' + headerItems.join(', ') + '}' : '{}';
 
             return `
 from pyodide.http import pyfetch
@@ -275,8 +273,8 @@ await do_request()
         };
     }
 
-    createStartBlock() {
-        const startBlock = this.workspace.newBlock('start_block');
+    private createStartBlock() {
+        const startBlock = this.workspace!.newBlock("start_block");
         startBlock.initSvg();
         startBlock.render();
         startBlock.moveBy(50, 30);
@@ -285,42 +283,35 @@ await do_request()
     }
 
     saveWorkspaceState() {
-        const stateToSave = Blockly.serialization.workspaces.save(this.workspace);
+        const stateToSave = Blockly.serialization.workspaces.save(this.workspace!);
         this.state.setJsonBlocks(stateToSave);
     }
 
     generateAndUpdateCode() {
-        const allBlocks = this.workspace.getTopBlocks(false);
+        const allBlocks = this.workspace!.getTopBlocks(false);
         const startBlock = allBlocks.find(block => block.type === "start_block");
         if (!startBlock) {
-
             console.error("Blockly: Error: there is no start_block on the workspace");
-
-            return "";
-
+            return;
         }
-        pythonGenerator.init(this.workspace);
-        let code = pythonGenerator.blockToCode(startBlock);
-        code = pythonGenerator.finish(code)
-        if (code) {
-            code = code.trim();
-        }
+        pythonGenerator.init(this.workspace!);
+        let code = pythonGenerator.blockToCode(startBlock) as string;
+        code = pythonGenerator.finish(code)?.trim();
         this.state.setGeneratedCode(code);
     }
 
-    clearWorkspace() {
-        this.workspace.clear();
-
+    private clearWorkspace() {
+        this.workspace!.clear();
         this.createStartBlock();
         this.saveWorkspaceState();
         this.generateAndUpdateCode();
     }
 
-    loadWorkspaceState(blocksState) {
-        this.workspace.clear();
+    loadWorkspaceState(blocksState: {[p: string]: any}) {
+        this.workspace!.clear();
         this.createStartBlock();
         if (blocksState) {
-            Blockly.serialization.workspaces.load(blocksState, this.workspace);
+            Blockly.serialization.workspaces.load(blocksState, this.workspace!);
         }
         this.saveWorkspaceState();
         this.generateAndUpdateCode();
