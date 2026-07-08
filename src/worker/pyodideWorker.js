@@ -1,3 +1,21 @@
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////
+////////////////////////
+////////////////////////
+////////////////////////
+
+
 importScripts('https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js');
 
 let pyodide = null;
