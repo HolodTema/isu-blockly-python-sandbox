@@ -55,17 +55,17 @@ export class ProjectService {
         fileReader.readAsText(file);
     }
 
-    // private createFileInput() {
-    //     const input: HTMLInputElement = document.createElement("input");
-    //     input.type = "file";
-    //     input.accept = ".chef";
-    //     input.style.display = "none";
-    //     document.body.appendChild(input);
-    //     input.addEventListener("change", (e: Event) => {
-    //         if (e.target!.files.length > 0) {
-    //             this.loadProjectFromFile(e.target.files[0]);
-    //         }
-    //     });
-    //     return input;
-    // }
+    createFileInput(): HTMLInputElement {
+        const input: HTMLInputElement = document.createElement("input");
+        input.type = "file";
+        input.accept = ".chef";
+        input.style.display = "none";
+        document.body.appendChild(input);
+        input.addEventListener("change", (e: Event) => {
+            if (input.files!.length > 0) {
+                this.loadProjectFromFile(input.files![0]);
+            }
+        });
+        return input;
+    }
 }

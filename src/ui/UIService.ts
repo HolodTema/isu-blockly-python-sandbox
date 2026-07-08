@@ -1,29 +1,37 @@
-export class UIService {
-    constructor(state, blocklyService, pyodideService, projectService, codeMirrorService, toastService) {
-        this.state = state;
-        this.blocklyService = blocklyService;
-        this.pyodideService = pyodideService;
-        this.projectService = projectService;
-        this.codeMirrorService = codeMirrorService;
-        this.toastService = toastService
+import {AppState} from "../state/AppState";
+import {BlocklyService} from "../service/BlocklyService";
+import {PyodideService} from "../service/PyodideService";
+import {ProjectService} from "../service/ProjectService";
+import {CodeMirrorService} from "../service/codeMirrorService";
+import {ToastService} from "../service/ToastService";
 
-        document.getElementById("button_convert_to_code")
-            .addEventListener("click", (e) => {
+
+export class UIService {
+    constructor(
+        private state: AppState,
+        private blocklyService: BlocklyService,
+        private pyodideService: PyodideService,
+        private projectService: ProjectService,
+        private codeMirrorService: CodeMirrorService,
+        private toastService: ToastService
+    ) {
+        document.getElementById("button_convert_to_code")!
+            .addEventListener("click", (e: PointerEvent) => {
                 this.blocklyService.generateAndUpdateCode();
             });
 
-        document.getElementById("button_run_code")
-            .addEventListener("click", (e) => {
+        document.getElementById("button_run_code")!
+            .addEventListener("click", (e: PointerEvent) => {
                 this.pyodideService.runCurrentCodeFromWorkspace();
             });
 
-        document.getElementById("button_save_project")
+        document.getElementById("button_save_project")!
             .addEventListener("click", (e) => {
                 this.projectService.saveProjectToFile();
             });
 
-        const divCodeWorkspace = document.getElementById("code_workspace");
-        const buttonExpandCode = document.getElementById("button_expand_code");
+        const divCodeWorkspace: HTMLElement = document.getElementById("code_workspace")!;
+        const buttonExpandCode: HTMLImageElement = document.getElementById("button_expand_code")! as HTMLImageElement;
         buttonExpandCode.addEventListener("click", () => {
             if (divCodeWorkspace.style.display !== "none") {
                 divCodeWorkspace.style.display = "none";
@@ -35,17 +43,14 @@ export class UIService {
             }
         });
 
-        const buttonOpenProject = document.getElementById("button_open_project");
-        let htmlElementFileInput = null;
+        const buttonOpenProject = document.getElementById("button_open_project")!;
         buttonOpenProject.addEventListener("click", (e) => {
-            if (!htmlElementFileInput) {
-                htmlElementFileInput = this.projectService.createFileInput();
-            }
-            htmlElementFileInput.click();
+            const fileInput: HTMLInputElement = this.projectService.createFileInput();
+            fileInput.click();
         });
 
-        const divCodeOutput = document.getElementById("code_output");
-        const buttonExpandOutput = document.getElementById("button_expand_output");
+        const divCodeOutput = document.getElementById("code_output")!;
+        const buttonExpandOutput = document.getElementById("button_expand_output")! as HTMLImageElement;
 
         buttonExpandOutput.addEventListener("click", (e) => {
             if (divCodeOutput.className.includes("code_output_expanded")) {
@@ -58,19 +63,22 @@ export class UIService {
             }
         });
 
-        const buttonAddInputFile = document.getElementById("button_add_input_file");
-        const inputAddInputFile = document.getElementById("input_add_input_file");
-        inputAddInputFile.addEventListener("change", (e) => {
-            const file = event.target.files[0];
+        const buttonAddInputFile = document.getElementById("button_add_input_file")!;
+        const inputAddInputFile = document.getElementById("input_add_input_file")! as HTMLInputElement;
+        inputAddInputFile.addEventListener("change", (e: Event) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
             if (!file) {
                 console.error("Error: unable to open input file to load it into pyodide");
                 return;
             }
-            const reader = new FileReader();
 
-            reader.onload = async (e) => {
+            const reader = new FileReader();
+            reader.onload = async (e: ProgressEvent<FileReader>) => {
                 try {
-                    const arrayBuffer = e.target.result;
+                    const arrayBuffer = e.target?.result as ArrayBuffer;
+                    if (!arrayBuffer) {
+                        throw new Error("Failed to read file content");
+                    }
                     const byteArray = new Uint8Array(arrayBuffer);
 
                     if (this.state.isInputFilenameInSet(file.name)) {
@@ -80,7 +88,7 @@ export class UIService {
                     this.pyodideService.saveInputFileToPyodideMemory(file.name, byteArray);
                     this.state.addInputFilename(file.name);
 
-                    const divInputFilesList = document.getElementById("input_files_list");
+                    const divInputFilesList = document.getElementById("input_files_list")!;
 
                     const divInputFile = document.createElement("div")
                     divInputFile.className = "input_file";
@@ -122,7 +130,7 @@ export class UIService {
             inputAddInputFile.click();
         });
 
-        const buttonDownloadResultFiles = document.getElementById("button_download_result_files");
+        const buttonDownloadResultFiles = document.getElementById("button_download_result_files")!;
         buttonDownloadResultFiles.addEventListener("click", (e) => {
             const promise = this.pyodideService.saveResultFilesIntoZipArchive();
             promise.then(isSuccessful => {
@@ -134,26 +142,24 @@ export class UIService {
 
         this.showSplashScreenWithHideTimer()
 
-        this.state.subscribe((key, st) => {
+        this.state.subscribe((key: string, state: AppState) => {
             if (key === "codeOutput") {
-                divCodeOutput.textContent = st.codeOutput;
+                divCodeOutput.textContent = state.codeOutput;
             }
         });
     }
 
-    showErrorToastNoResultFiles() {
-        console.log("toast");
+    private showErrorToastNoResultFiles() {
         this.toastService.showErrorToast("Выполненный код не сохранял результирующих файлов для загрузки");
     }
 
-    showSplashScreenWithHideTimer() {
-        const splash = document.getElementById('splash_screen_container');
+    private showSplashScreenWithHideTimer() {
+        const splash: HTMLElement = document.getElementById('splash_screen_container')!;
 
         setTimeout(() => {
-            splash.classList.add('hidden');
-
+            splash.classList.add("hidden");
             setTimeout(() => {
-                splash.classList.add('removed');
+                splash.classList.add("removed");
             }, 1500);
         }, 1500);
     }
