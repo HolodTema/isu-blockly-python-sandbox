@@ -1,51 +1,47 @@
-
 export class ToastService {
 
-    showToast(message, type = "info", duration = 3000, closeOnClick = true) {
-        const container = document.getElementById('toast_container');
-        if (!container) return;
-
-        const toast = document.createElement('div');
-        toast.className = `toast ${type === 'error' ? 'error' : ''}`;
-        toast.textContent = message;
-
-        container.appendChild(toast);
-
-        let hideTimeout = setTimeout(() => {
-            this.hideToast(toast);
-        }, duration);
-
-        if (closeOnClick) {
-            toast.addEventListener('click', () => {
-                clearTimeout(hideTimeout);
-                this.hideToast(toast);
-            });
-        }
-
-        return toast;
+    showErrorToast(message: string, durationMills: number = 3000) {
+        return this.showToast(message, "error", durationMills);
     }
 
+    showInfoToast(message: string, durationMills: number = 3000) {
+        return this.showToast(message, "info", durationMills);
+    }
 
-    hideToast(toast) {
-        if (toast.classList.contains('hiding')) {
+    private showToast(message: string, type: string = "info", durationMills: number = 3000, closeOnClick: boolean = true): HTMLDivElement {
+        const container: HTMLElement = document.getElementById("toast_container")!;
+
+        const divToast: HTMLDivElement = document.createElement("div");
+        divToast.className = `toast ${type === 'error' ? 'error' : ''}`;
+        divToast.textContent = message;
+        container.appendChild(divToast);
+
+        const hideTimeout: number = setTimeout(
+            () => {
+                this.hideToast(divToast);
+            },
+            durationMills
+        );
+
+        if (closeOnClick) {
+            divToast.addEventListener("click", () => {
+                clearTimeout(hideTimeout);
+                this.hideToast(divToast);
+            });
+        }
+        return divToast;
+    }
+
+    private hideToast(divToast: HTMLDivElement): void {
+        if (divToast.classList.contains("hiding")) {
             return;
         }
 
-        toast.classList.add('hiding');
-
-        toast.addEventListener('animationend', () => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
+        divToast.classList.add('hiding');
+        divToast.addEventListener("animationend", () => {
+            if (divToast.parentNode) {
+                divToast.parentNode.removeChild(divToast);
             }
-        }, { once: true });
+        }, {once: true});
     }
-
-    showErrorToast(message, duration = 3000) {
-        return this.showToast(message, 'error', duration);
-    }
-
-    showInfoToast(message, duration = 3000) {
-        return this.showToast(message, 'info', duration);
-    }
-
 }
