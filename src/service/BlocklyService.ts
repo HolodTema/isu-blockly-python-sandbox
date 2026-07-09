@@ -44,8 +44,9 @@ export class BlocklyService {
                 // this.generateAndUpdateCode();
             });
 
-            if (this.state.jsonBlocks) {
-                Blockly.serialization.workspaces.load(this.state.jsonBlocks, this.workspace);
+            const jsonBlocklyState = this.state.getJsonBlocklyState();
+            if (jsonBlocklyState) {
+                Blockly.serialization.workspaces.load(jsonBlocklyState, this.workspace);
             }
             console.log("Blockly: initialization complete");
         }
@@ -284,7 +285,7 @@ await do_request()
 
     saveWorkspaceState() {
         const stateToSave = Blockly.serialization.workspaces.save(this.workspace!);
-        this.state.setJsonBlocks(stateToSave);
+        this.state.setJsonBlocklyState(stateToSave);
     }
 
     generateAndUpdateCode() {
@@ -297,7 +298,7 @@ await do_request()
         pythonGenerator.init(this.workspace!);
         let code = pythonGenerator.blockToCode(startBlock) as string;
         code = pythonGenerator.finish(code)?.trim();
-        this.state.setGeneratedCode(code);
+        this.state.setStrGeneratedCode(code);
     }
 
     private clearWorkspace() {

@@ -1,4 +1,5 @@
 import {AppState} from "../state/AppState";
+import {AppStateKey} from "../state/AppStateKey";
 import {BlocklyService} from "../service/BlocklyService";
 import {PyodideService} from "../service/PyodideService";
 import {ProjectService} from "../service/ProjectService";
@@ -28,8 +29,8 @@ export class UIService {
         this.showSplashScreenWithHideTimer();
 
         this.state.subscribe((key: string, state: AppState) => {
-            if (key === "codeOutput") {
-                divCodeOutput.textContent = state.codeOutput;
+            if (key === AppStateKey.StrCodeOutput) {
+                divCodeOutput.textContent = state.getStrCodeOutput();
             }
         });
     }

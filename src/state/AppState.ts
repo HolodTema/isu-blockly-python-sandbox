@@ -1,29 +1,29 @@
+import {AppStateKey} from "./AppStateKey";
 
 export class AppState {
-    jsonBlocks: any = null;
-    generatedCode: string|null = null;
-    codeOutput: string|null = null;
-    setInputFilenames: Set<string> = new Set();
+    private jsonBlocklyState: {[p: string]: any}|null = null;
+    private strGeneratedCode: string = "";
+    private strCodeOutput: string = "";
+    private setInputFilenames: Set<string> = new Set();
+    private listeners: Array<(key: AppStateKey, state: AppState)=>void> = [];
 
-    private listeners: Array<(key: string, state: AppState)=>void> = [];
-
-    subscribe(listener: (key: string, state: AppState)=>void) {
+    subscribe(listener: (key: AppStateKey, state: AppState)=>void) {
         this.listeners.push(listener);
     }
 
-    setJsonBlocks(jsonBlocks: any) {
-        this.jsonBlocks = jsonBlocks;
-        this.notifyAllListeners("jsonBlocks");
+    setJsonBlocklyState(jsonBlocklyState: any) {
+        this.jsonBlocklyState = jsonBlocklyState;
+        this.notifyAllListeners(AppStateKey.JsonBlocklyState);
     }
 
-    setGeneratedCode(generatedCode: string) {
-        this.generatedCode = generatedCode;
-        this.notifyAllListeners("generatedCode");
+    setStrGeneratedCode(strGeneratedCode: string) {
+        this.strGeneratedCode = strGeneratedCode;
+        this.notifyAllListeners(AppStateKey.StrGeneratedCode);
     }
 
-    setCodeOutput(codeOutput: string) {
-        this.codeOutput = codeOutput;
-        this.notifyAllListeners("codeOutput");
+    setStrCodeOutput(strCodeOutput: string) {
+        this.strCodeOutput = strCodeOutput;
+        this.notifyAllListeners(AppStateKey.StrCodeOutput);
     }
 
     isInputFilenameInSet(inputFilename: string): boolean {
@@ -32,15 +32,27 @@ export class AppState {
 
     addInputFilename(inputFilename: string) {
         this.setInputFilenames.add(inputFilename);
-        this.notifyAllListeners("inputFilename");
+        this.notifyAllListeners(AppStateKey.AddInputFilename);
     }
 
     removeInputFilename(inputFilename: string) {
         this.setInputFilenames.delete(inputFilename);
-        // TODO: I suppose to notify all listeners that I deleted input filename...
+        this.notifyAllListeners(AppStateKey.RemoveInputFilename);
     }
 
-    private notifyAllListeners(updatedKey: string) {
+    getJsonBlocklyState(): {[p: string]: any}|null {
+        return this.jsonBlocklyState;
+    }
+
+    getStrGeneratedCode(): string {
+        return this.strGeneratedCode;
+    }
+
+    getStrCodeOutput(): string {
+        return this.strCodeOutput;
+    }
+
+    private notifyAllListeners(updatedKey: AppStateKey) {
         this.listeners.forEach((listener) => {
             listener(updatedKey, this);
         });

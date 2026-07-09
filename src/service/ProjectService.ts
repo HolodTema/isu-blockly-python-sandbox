@@ -11,8 +11,8 @@ export class ProjectService {
 
     saveProjectToFile() {
         const data = {
-            python: this.state.generatedCode,
-            blocklyState: this.state.jsonBlocks,
+            python: this.state.getStrGeneratedCode(),
+            blocklyState: this.state.getJsonBlocklyState(),
         }
 
         const strJson: string = JSON.stringify(data)
@@ -40,8 +40,8 @@ export class ProjectService {
                     return;
                 }
 
-                this.state.setGeneratedCode(data.python);
-                this.state.setJsonBlocks(data.blocklyState);
+                this.state.setStrGeneratedCode(data.python);
+                this.state.setJsonBlocklyState(data.blocklyState);
 
                 this.codeMirrorService.setCodeString(data.python);
                 this.blocklyService.loadWorkspaceState(data.blocklyState);

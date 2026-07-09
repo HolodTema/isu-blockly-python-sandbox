@@ -17,8 +17,8 @@ export class PyodideService {
                 return;
             }
             if (msg.type === "stdout") {
-                const currentCodeOutput = this.state.codeOutput || "";
-                this.state.setCodeOutput(currentCodeOutput + msg.payload);
+                const currentCodeOutput = this.state.getStrCodeOutput();
+                this.state.setStrCodeOutput(currentCodeOutput + msg.payload);
                 return;
             }
             if (msg.type === "log") {
@@ -26,7 +26,7 @@ export class PyodideService {
                 return;
             }
             if (msg.type === "error") {
-                this.state.setCodeOutput(`Error: ${msg.payload}`);
+                this.state.setStrCodeOutput(`Error: ${msg.payload}`);
                 return;
             }
             if (msg.type === "zipReady") {
@@ -76,12 +76,12 @@ export class PyodideService {
                 check();
             });
         }
-        this.state.setCodeOutput("");
+        this.state.setStrCodeOutput("");
         try {
             await this.sendCommand("run", code);
         }
         catch (error: any) {
-            this.state.setCodeOutput(`Runtime error: ${error.message}`);
+            this.state.setStrCodeOutput(`Runtime error: ${error.message}`);
             console.error("Pyodide error:", error);
         }
     }
@@ -105,9 +105,9 @@ export class PyodideService {
     }
 
     runCurrentCodeFromWorkspace() {
-        let code: string|null = (this.state.generatedCode || "").trim()
+        let code: string|null = (this.state.getStrGeneratedCode()).trim()
         if (code.length === 0) {
-            this.state.setCodeOutput('# Пустая программа\n');
+            this.state.setStrCodeOutput('# Пустая программа\n');
             return;
         }
         this.runPythonCode(code);
