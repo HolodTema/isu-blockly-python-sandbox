@@ -13,4 +13,4 @@ const codeMirrorService: CodeMirrorService = new CodeMirrorService(state, "codem
 const pyodideService: PyodideService = new PyodideService(state);
 const projectService: ProjectService = new ProjectService(state, blocklyService, codeMirrorService);
 const toastService: ToastService = new ToastService();
-const uiService = new UIService(state, blocklyService, pyodideService, projectService, codeMirrorService, toastService);
+const uiService = new UIService(state, blocklyService, pyodideService, projectService, toastService);

@@ -2,34 +2,74 @@ import {AppState} from "../state/AppState";
 import {BlocklyService} from "../service/BlocklyService";
 import {PyodideService} from "../service/PyodideService";
 import {ProjectService} from "../service/ProjectService";
-import {CodeMirrorService} from "../service/codeMirrorService";
 import {ToastService} from "../service/ToastService";
 
 
 export class UIService {
+
     constructor(
         private state: AppState,
         private blocklyService: BlocklyService,
         private pyodideService: PyodideService,
         private projectService: ProjectService,
-        private codeMirrorService: CodeMirrorService,
         private toastService: ToastService
     ) {
+        const divCodeOutput: HTMLElement = document.getElementById("code_output")!;
+
+        this.configureButtonConvertToCode();
+        this.configureButtonRunCode();
+        this.configureButtonSaveProject();
+        this.configureButtonExpandOutput(divCodeOutput);
+        this.configureButtonExpandCode();
+        this.configureButtonOpenProject();
+        this.configureButtonDownloadResultFiles();
+        this.configureButtonAddInputFile();
+
+        this.showSplashScreenWithHideTimer();
+
+        this.state.subscribe((key: string, state: AppState) => {
+            if (key === "codeOutput") {
+                divCodeOutput.textContent = state.codeOutput;
+            }
+        });
+    }
+
+    private configureButtonConvertToCode() {
         document.getElementById("button_convert_to_code")!
             .addEventListener("click", (e: PointerEvent) => {
                 this.blocklyService.generateAndUpdateCode();
             });
+    }
 
+    private configureButtonRunCode() {
         document.getElementById("button_run_code")!
             .addEventListener("click", (e: PointerEvent) => {
                 this.pyodideService.runCurrentCodeFromWorkspace();
             });
+    }
 
+    private configureButtonSaveProject() {
         document.getElementById("button_save_project")!
             .addEventListener("click", (e) => {
                 this.projectService.saveProjectToFile();
             });
+    }
 
+    private configureButtonExpandOutput(divCodeOutput: HTMLElement) {
+        const buttonExpandOutput = document.getElementById("button_expand_output")! as HTMLImageElement;
+        buttonExpandOutput.addEventListener("click", (e) => {
+            if (divCodeOutput.className.includes("code_output_expanded")) {
+                divCodeOutput.className = 'font_powered_cascadia_code code_output_not_expanded';
+                buttonExpandOutput.src = '/assets/images/ic_expand_up.svg';
+            }
+            else {
+                divCodeOutput.className = "font_powered_cascadia_code code_output_expanded";
+                buttonExpandOutput.src = "/assets/images/ic_expand_down.svg";
+            }
+        });
+    }
+
+    private configureButtonExpandCode() {
         const divCodeWorkspace: HTMLElement = document.getElementById("code_workspace")!;
         const buttonExpandCode: HTMLImageElement = document.getElementById("button_expand_code")! as HTMLImageElement;
         buttonExpandCode.addEventListener("click", () => {
@@ -42,27 +82,29 @@ export class UIService {
                 buttonExpandCode.src = "assets/images/ic_expand_right.svg";
             }
         });
+    }
 
+    private configureButtonOpenProject() {
         const buttonOpenProject = document.getElementById("button_open_project")!;
         buttonOpenProject.addEventListener("click", (e) => {
             const fileInput: HTMLInputElement = this.projectService.createFileInput();
             fileInput.click();
         });
+    }
 
-        const divCodeOutput = document.getElementById("code_output")!;
-        const buttonExpandOutput = document.getElementById("button_expand_output")! as HTMLImageElement;
-
-        buttonExpandOutput.addEventListener("click", (e) => {
-            if (divCodeOutput.className.includes("code_output_expanded")) {
-                divCodeOutput.className = 'font_powered_cascadia_code code_output_not_expanded';
-                buttonExpandOutput.src = '/assets/images/ic_expand_up.svg';
-            }
-            else {
-                divCodeOutput.className = "font_powered_cascadia_code code_output_expanded";
-                buttonExpandOutput.src = "/assets/images/ic_expand_down.svg";
-            }
+    private configureButtonDownloadResultFiles() {
+        const buttonDownloadResultFiles = document.getElementById("button_download_result_files")!;
+        buttonDownloadResultFiles.addEventListener("click", (e) => {
+            const promise: Promise<Boolean> = this.pyodideService.saveResultFilesIntoZipArchive();
+            promise.then(isSuccessful => {
+                if (!isSuccessful) {
+                    this.showErrorToastNoResultFiles();
+                }
+            });
         });
+    }
 
+    private configureButtonAddInputFile() {
         const buttonAddInputFile = document.getElementById("button_add_input_file")!;
         const inputAddInputFile = document.getElementById("input_add_input_file")! as HTMLInputElement;
         inputAddInputFile.addEventListener("change", (e: Event) => {
@@ -128,24 +170,6 @@ export class UIService {
         });
         buttonAddInputFile.addEventListener("click", (e) => {
             inputAddInputFile.click();
-        });
-
-        const buttonDownloadResultFiles = document.getElementById("button_download_result_files")!;
-        buttonDownloadResultFiles.addEventListener("click", (e) => {
-            const promise = this.pyodideService.saveResultFilesIntoZipArchive();
-            promise.then(isSuccessful => {
-                if (!isSuccessful) {
-                    this.showErrorToastNoResultFiles();
-                }
-            });
-        });
-
-        this.showSplashScreenWithHideTimer()
-
-        this.state.subscribe((key: string, state: AppState) => {
-            if (key === "codeOutput") {
-                divCodeOutput.textContent = state.codeOutput;
-            }
         });
     }
 
