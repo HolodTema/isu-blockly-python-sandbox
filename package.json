@@ -4,6 +4,8 @@
   "description": "Codechef is online IDE for visual programming.",
   "main": "index.js",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,6 +21,8 @@
   },
   "homepage": "https://github.com/HolodTema/isu-blockly-python-sandbox#readme",
   "devDependencies": {
+    "@types/node": "^26.1.0",
+    "typescript": "^6.0.3",
     "vite": "^8.1.0"
   },
   "dependencies": {

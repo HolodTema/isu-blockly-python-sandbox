@@ -81,7 +81,7 @@ input - это поле находится внутри поля argN и отв�
 
 ### 3. Написать JS-функцию, которая возвращает Python-код из нашего блока
 
-Это делается в файле /src/service/BlocklyService.js в методе 
+Это делается в файле /src/service/BlocklyService.ts в методе 
 configureCodeGenerator()
 
 ```js
