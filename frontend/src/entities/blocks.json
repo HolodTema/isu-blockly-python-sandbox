@@ -1,0 +1,448 @@
+[
+    {
+        "type": "start_block",
+        "message0": "Начало программы",
+        "nextStatement": null,
+        "colour": 0,
+        "tooltip": "Программа начинается с этого блока"
+    },
+
+    {
+        "type": "custom_if_block",
+        "message0": "если %1 то %2",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "CONDITION",
+                "check": "Boolean"
+            },
+            {
+                "type": "input_statement",
+                "name": "THEN"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 210,
+        "tooltip": "Условный оператор if"
+    },
+    {
+        "type": "custom_if_else_block",
+        "message0": "если %1 то %2 иначе %3",
+        "args0": [
+            { "type": "input_value", "name": "CONDITION", "check": "Boolean" },
+            { "type": "input_statement", "name": "THEN" },
+            { "type": "input_statement", "name": "ELSE" }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 210,
+        "tooltip": "Условный оператор if-else"
+    },
+    {
+        "type": "custom_if_elif_else_block",
+        "message0": "если %1 то %2 иначе если %3 то %4 иначе %5",
+        "args0": [
+            { "type": "input_value", "name": "COND1", "check": "Boolean" },
+            { "type": "input_statement", "name": "THEN1" },
+            { "type": "input_value", "name": "COND2", "check": "Boolean" },
+            { "type": "input_statement", "name": "THEN2" },
+            { "type": "input_statement", "name": "ELSE" }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 210,
+        "tooltip": "Условный оператор if-elif-else"
+    },
+
+    {
+        "type": "text_file_open_block",
+        "message0": "открыть текстовый файл %1 в режиме %2 в переменную %3",
+        "args0": [
+            {
+                "type": "field_input",
+                "name": "FILE_PATH",
+                "text": "file.txt"
+            },
+            {
+                "type": "field_dropdown",
+                "name": "MODE",
+                "options": [
+                    ["чтение ('r')", "r"],
+                    ["запись ('w')", "w"],
+                    ["добавление ('a')", "a"]
+                ]
+            },
+            {
+                "type": "input_value",
+                "name": "FILE_VARIABLE",
+                "check": "File"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 160,
+        "tooltip": "Открывает файл и сохраняет его в переменную",
+        "helpUrl": ""
+    },
+    {
+        "type": "text_file_read_block",
+        "message0": "прочитать текст из файла %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "FILE_VARIABLE",
+                "check": "File"
+            }
+        ],
+        "output": "String",
+        "colour": 160,
+        "tooltip": "Возвращает весь текст из открытого файла",
+        "helpUrl": ""
+    },
+    {
+        "type": "text_file_read_lines_block",
+        "message0": "прочитать строки из файла %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "FILE_VARIABLE",
+                "check": "File"
+            }
+        ],
+        "output": "Array",
+        "colour": 160,
+        "tooltip": "Возвращает список строк из открытого файла",
+        "helpUrl": ""
+    },
+    {
+        "type": "text_file_write_to_end_block",
+        "message0": "Записать текст %1 в конец файла %2",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT_TO_WRITE"
+            },
+            {
+                "type": "input_value",
+                "name": "FILE_VARIABLE",
+                "check": "File"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 160,
+        "tooltip": "Записывает текст в конец открытого файла. Файл должен быть открыт в режиме append ('a')."
+    },
+    {
+        "type": "text_file_close_block",
+        "message0": "Закрыть файл %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "FILE_VARIABLE",
+                "check": "File"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 160,
+        "tooltip": "Сохраняет записанную в файл информацию и закрывает файл. Нужно обязательно закрывать файлы, открытые в режиме 'w' или 'a'."
+    },
+    {
+        "type": "text_join_block",
+        "message0": "Объединить текст %1 и текст %2",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT_LEFT",
+                "check": "String"
+            },
+            {
+                "type": "input_value",
+                "name": "TEXT_RIGHT",
+                "check": "String"
+            }
+        ],
+        "output": "String",
+        "colour": 160,
+        "tooltip": "Объединяет тексты друг с другом."
+    },
+
+    {
+        "type": "print_block",
+        "message0": "напечатать %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 160,
+        "tooltip": "Печатает текст в консоль"
+    },
+
+    {
+        "type": "import_lib_requests_block",
+        "message0": "Подключить библиотеку requests",
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 26,
+        "tooltip": "Подключает python-библиотеку requests для работы с HTTP-запросами"
+    },
+    {
+        "type": "http_query_block",
+        "message0": "HTTP-параметр\nключ %1\nзначение %2",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "KEY",
+                "check": "String"
+            },
+            {
+                "type": "input_value",
+                "name": "VALUE",
+                "check": "String"
+            }
+        ],
+        "previousStatement": "HttpQueryBlock",
+        "nextStatement": "HttpQueryBlock",
+        "colour": 26,
+        "tooltip": "Добавляет параметр http-запроса (query)"
+    },
+    {
+        "type": "http_header_block",
+        "message0": "HTTP-заголовок\nназвание %1\nзначение %2",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "NAME",
+                "check": "String"
+            },
+            {
+                "type": "input_value",
+                "name": "VALUE",
+                "check": "String"
+            }
+        ],
+        "previousStatement": "HttpHeaderBlock",
+        "nextStatement": "HttpHeaderBlock",
+        "colour": 26,
+        "tooltip": "Добавляет заголовок к http-запросу (header)"
+    },
+    {
+        "type": "http_get_request_block",
+        "message0": "HTTP %1 запрос по адресу %2",
+        "args0": [
+            {
+                "type": "field_dropdown",
+                "name": "REQUEST_TYPE",
+                "options": [
+                    ["GET", "GET"],
+                    ["POST", "POST"]
+                ]
+            },
+            {
+                "type": "input_value",
+                "name": "PATH",
+                "check": "String"
+            }
+        ],
+        "message1": "параметры: %1",
+        "args1": [
+            {
+                "type": "input_statement",
+                "name": "QUERY",
+                "check": "HttpQueryBlock"
+            }
+        ],
+        "message2": "заголовки: %1",
+        "args2": [
+            {
+                "type": "input_statement",
+                "name": "HEADERS",
+                "check": "HttpHeaderBlock"
+            }
+        ],
+        "message3": "Тело запроса: %1",
+        "args3": [
+            {
+                "type": "input_value",
+                "name": "REQUEST_BODY",
+                "check": "String"
+            }
+        ],
+        "message4": "сохранить статус-код в переменную %1",
+        "args4": [
+            {
+                "type": "input_value",
+                "name": "STATUS_CODE"
+            }
+        ],
+        "message5": "сохранить тело ответа в переменную %1",
+        "args5": [
+            {
+                "type": "input_value",
+                "name": "RESPONSE_BODY"
+            }
+        ],
+        "message6": "Если сервер ответил: %1",
+        "args6": [
+            {
+                "type": "input_statement",
+                "name": "RESPONSE"
+            }
+        ],
+        "message7": "Иначе, при таймауте: %1",
+        "args7": [
+            {
+                "type": "input_statement",
+                "name": "TIMEOUT"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 26,
+        "tooltip": "HTTP GET-запрос. Параметры и заголовки – горизонтальные цепочки, ответ и таймаут – вертикальные контейнеры."
+    },
+
+    {
+        "type": "pandas_import_block",
+        "message0": "Подключить библиотеку pandas как pd",
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 270,
+        "tooltip": "Импортирует библиотеку pandas"
+    },
+    {
+        "type": "pandas_read_html_block",
+        "message0": "прочитать HTML‑таблицу из HTML-текста %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "HTML_TEXT",
+                "check": "String"
+            }
+        ],
+        "output": null,
+        "colour": 270,
+        "tooltip": "Парсит HTML‑строку и возвращает первую таблицу как DataFrame"
+    },
+    {
+        "type": "pandas_concat_block",
+        "message0": "Объединить список таблиц в %1 в одну таблицу",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "LIST",
+                "check": "Array"
+            }
+        ],
+        "output": null,
+        "colour": 270,
+        "tooltip": "Объединяет все DataFrame из списка в один"
+    },
+    {
+        "type": "pandas_head_block",
+        "message0": "Первые 5 строк таблицы %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "DF"
+            }
+        ],
+        "output": null,
+        "colour": 270,
+        "tooltip": "Возвращает первые 5 строк DataFrame"
+    },
+    {
+        "type": "pandas_head_n_block",
+        "message0": "Первые %1 строк таблицы %2",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "N",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "DF"
+            }
+        ],
+        "output": null,
+        "colour": 270,
+        "tooltip": "Возвращает первые N строк DataFrame"
+    },
+    {
+        "type": "pandas_tail_n_block",
+        "message0": "Последние %2 строк таблицы %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "DF"
+            },
+            {
+                "type": "input_value",
+                "name": "N",
+                "check": "Number"
+            }
+        ],
+        "output": null,
+        "colour": 270,
+        "tooltip": "Возвращает последние N строк DataFrame"
+    },
+    {
+        "type": "pandas_append_to_list_block",
+        "message0": "Добавить элемент %2 в список %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "LIST",
+                "check": "Array"
+            },
+            {
+                "type": "input_value",
+                "name": "ITEM"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 270,
+        "tooltip": "Добавляет элемент в конец списка"
+    },
+    {
+        "type": "pandas_info_block",
+        "message0": "Показать информацию о таблице %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "DF"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 270,
+        "tooltip": "Выводит в консоль информацию о DataFrame: типы столбцов, количество ненулевых значений, память"
+    },
+    {
+        "type": "pandas_to_csv_block",
+        "message0": "Сохранить таблицу %1 в CSV-файл с именем %2",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "DF"
+            },
+            {
+                "type": "field_input",
+                "name": "FILE_PATH",
+                "text": "data.csv"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 270,
+        "tooltip": "Сохраняет DataFrame в CSV-файл (без индекса)"
+    }
+]
