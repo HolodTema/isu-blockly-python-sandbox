@@ -2,7 +2,7 @@ import {AppState} from "../state/AppState";
 
 export class PyodideService {
     private worker: Worker = new Worker(
-        new URL("./worker/pyodideWorker.js", import.meta.url)
+        new URL("../worker/pyodideWorker.js", import.meta.url)
     );
     private isReady: boolean = false;
     private mapPendingPromises: Map<number, {resolve: Function; reject: Function}> = new Map();
