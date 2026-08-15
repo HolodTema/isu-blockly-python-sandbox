@@ -1,4 +1,4 @@
-import HButton from "../../shared/types";
+import type { HButton } from "../../shared/types";
 
 function HeaderButton({ img, text, onClick }: HButton) {
   return (
@@ -8,3 +8,4 @@ function HeaderButton({ img, text, onClick }: HButton) {
     </button>
   );
 }
+export { HeaderButton };
