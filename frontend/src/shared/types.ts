@@ -5,3 +5,6 @@ export interface HButton {
     text: string
     onClick: () => void
 }
+export interface Props {
+  onStateChange?: (state: object) => void;
+}
