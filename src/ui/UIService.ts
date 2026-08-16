@@ -71,15 +71,14 @@ export class UIService {
     }
 
     private configureButtonExpandCode() {
-        const divCodeWorkspace: HTMLElement = document.getElementById("code_workspace")!;
+        const main: HTMLElement = document.querySelector("main")!;
         const buttonExpandCode: HTMLImageElement = document.getElementById("button_expand_code")! as HTMLImageElement;
         buttonExpandCode.addEventListener("click", () => {
-            if (divCodeWorkspace.style.display !== "none") {
-                divCodeWorkspace.style.display = "none";
+            const isHidden = main.classList.toggle("code-hidden");
+            if (isHidden) {
                 buttonExpandCode.src = "assets/images/ic_expand_left.svg";
             }
             else {
-                divCodeWorkspace.style.display = "";
                 buttonExpandCode.src = "assets/images/ic_expand_right.svg";
             }
         });

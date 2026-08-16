@@ -1,10 +1,12 @@
 import {AppState} from "../state/AppState";
+import {CodePreviewTransformer} from "../util/CodePreviewTransformer";
 import {EditorView, keymap, gutter, GutterMarker} from '@codemirror/view';
 import {EditorState, Compartment, Extension} from '@codemirror/state';
 import {python} from '@codemirror/lang-python';
 import {oneDark} from '@codemirror/theme-one-dark';
 import {defaultKeymap} from '@codemirror/commands';
 import {basicSetup} from 'codemirror';
+import {AppStateKey} from "../state/AppStateKey";
 
 
 export class CodeMirrorService {
@@ -43,20 +45,24 @@ export class CodeMirrorService {
         });
 
         this.state.subscribe((key: string, state: AppState) => {
-            if (key === "generatedCode") {
+            if (key === AppStateKey.StrGeneratedCode) {
                 this.setCodeString(state.getStrGeneratedCode());
             }
         });
     }
 
     setCodeString(codeString: string) {
+        console.log(codeString);
         const currentCodeString = this.getCodeString();
         if (currentCodeString !== codeString) {
+            const transformer = new CodePreviewTransformer(codeString)
+            const codeToPreview = transformer.convertToPreviewCode()
+            console.log(codeToPreview);
             const transaction = this.editor.state.update({
                 changes: {
                     from: 0,
                     to: this.editor.state.doc.length,
-                    insert: codeString
+                    insert: codeToPreview
                 },
             });
             this.editor.dispatch(transaction);

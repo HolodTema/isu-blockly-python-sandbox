@@ -2,6 +2,8 @@ import {AppStateKey} from "./AppStateKey";
 
 export class AppState {
     private jsonBlocklyState: {[p: string]: any}|null = null;
+    private strCodeToLaunch: string = "";
+    private strCodeToShow: string = "";
     private strGeneratedCode: string = "";
     private strCodeOutput: string = "";
     private setInputFilenames: Set<string> = new Set();

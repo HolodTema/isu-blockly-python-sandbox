@@ -7,6 +7,7 @@ import {WorkspaceSvg} from "blockly";
 
 export class BlocklyService {
     private workspace: WorkspaceSvg|undefined = undefined;
+    private resizeObserver: ResizeObserver|undefined = undefined;
 
     constructor(private state: AppState, private htmlContainerId: string) {
         this.init();
@@ -49,6 +50,14 @@ export class BlocklyService {
                 Blockly.serialization.workspaces.load(jsonBlocklyState, this.workspace);
             }
             console.log("Blockly: initialization complete");
+
+            this.resizeObserver = new ResizeObserver(() => {
+                this.workspace?.resize();
+            });
+            const container = document.getElementById(this.htmlContainerId);
+            if (container) {
+                this.resizeObserver.observe(container);
+            }
         }
         catch (e) {
             console.error("Blockly init-error:", e);
@@ -156,8 +165,9 @@ export class BlocklyService {
             let path = pythonGenerator.valueToCode(block, "PATH", Order.ATOMIC) || `""`
 
             if (path !== `""`) {
-                path = `'http://185.105.109.140:8080/${path.substring(1, path.length)}`;
+                path = `'http://130.49.175.150:8080/${path.substring(1, path.length)}`;
             }
+            console.log(path);
             let queryItems = [];
             let queryBlock: Blockly.Block|null = block.getInputTargetBlock("QUERY");
             while (queryBlock) {
@@ -316,5 +326,12 @@ await do_request()
         }
         this.saveWorkspaceState();
         this.generateAndUpdateCode();
+    }
+
+    resizeWorkspace() {
+        if (this.workspace) {
+            console.log("resize!");
+            this.workspace.resize();
+        }
     }
 }
