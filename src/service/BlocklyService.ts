@@ -1,15 +1,19 @@
 import * as Blockly from 'blockly';
 import * as Ru from 'blockly/msg/ru';
-import { pythonGenerator } from "blockly/python";
+import {PythonGenerator, pythonGenerator} from "blockly/python";
 import { Order } from "blockly/python";
 import {AppState} from "../state/AppState";
 import {WorkspaceSvg} from "blockly";
 
 export class BlocklyService {
     private workspace: WorkspaceSvg|undefined = undefined;
+    private codeToLaunchGenerator: PythonGenerator;
+    private codeToShowGenerator: PythonGenerator;
     private resizeObserver: ResizeObserver|undefined = undefined;
 
     constructor(private state: AppState, private htmlContainerId: string) {
+        this.codeToLaunchGenerator = new PythonGenerator("Python");
+        this.codeToShowGenerator = new PythonGenerator("Python");
         this.init();
     }
 
@@ -30,6 +34,8 @@ export class BlocklyService {
                 zoom: {controls: true, wheel: true, startScale: 1.2},
                 trashcan: false
             });
+
+            this.configureG
 
             this.configureCodeGenerator();
 

@@ -28,14 +28,14 @@ export class CodeMirrorService {
             EditorView.updateListener.of((update) => {
                 if (update.docChanged) {
                     const code = update.state.doc.toString();
-                    this.state.setStrGeneratedCode(code);
+                    this.state.setStrCodeToShow(code);
                 }
             }),
             keymap.of(defaultKeymap),
         ];
 
         const startEditorState = EditorState.create({
-            doc: this.state.getStrGeneratedCode(),
+            doc: this.state.getStrCodeToShow(),
             extensions: listExtensions,
         });
 
@@ -45,8 +45,8 @@ export class CodeMirrorService {
         });
 
         this.state.subscribe((key: string, state: AppState) => {
-            if (key === AppStateKey.StrGeneratedCode) {
-                this.setCodeString(state.getStrGeneratedCode());
+            if (key === AppStateKey.StrCodeToShow) {
+                this.setCodeString(state.getStrCodeToShow());
             }
         });
     }

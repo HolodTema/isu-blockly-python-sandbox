@@ -105,7 +105,7 @@ export class PyodideService {
     }
 
     runCurrentCodeFromWorkspace() {
-        let code: string|null = (this.state.getStrGeneratedCode()).trim()
+        let code: string|null = (this.state.getStrCodeToLaunch()).trim()
         if (code.length === 0) {
             this.state.setStrCodeOutput('# Пустая программа\n');
             return;
