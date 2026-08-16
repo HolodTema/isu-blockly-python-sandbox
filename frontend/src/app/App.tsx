@@ -1,11 +1,11 @@
-
-
-import './App.css'
+import { CodeRunnerPage } from '../pages/CodeRunnerPage'
+import '../index.css'
 
 export function App() {
 
   return ( 
-<div></div>
-  );
+    <CodeRunnerPage />
+
+  )
 
 }
