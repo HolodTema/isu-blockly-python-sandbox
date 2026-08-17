@@ -1,201 +1,277 @@
 {
-  "kind": "categoryToolbox",
-  "contents": [
-    {
-      "kind": "category",
-      "name": "Логика",
-      "colour": "#5C81A6",
-      "contents": [
+    "kind": "categoryToolbox",
+    "contents": [
         {
-          "kind": "block",
-          "type": "custom_if_block"
+            "kind": "category",
+            "name": "Логика",
+            "colour": "#5C81A6",
+            "contents": [
+                {
+                    "kind": "block",
+                    "type": "custom_if_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "custom_if_else_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "custom_if_elif_else_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "logic_compare"
+                },
+                {
+                    "kind": "block",
+                    "type": "logic_operation"
+                },
+                {
+                    "kind": "block",
+                    "type": "logic_negate"
+                },
+                {
+                    "kind": "block",
+                    "type": "logic_boolean"
+                }
+            ]
         },
         {
-          "kind": "block",
-          "type": "custom_if_else_block"
+            "kind": "category",
+            "name": "Циклы",
+            "colour": "#5CA65C",
+            "contents": [
+                {
+                    "kind": "block",
+                    "type": "controls_repeat_ext"
+                },
+                {
+                    "kind": "block",
+                    "type": "controls_whileUntil"
+                },
+                {
+                    "kind": "block",
+                    "type": "controls_for"
+                }
+            ]
         },
         {
-          "kind": "block",
-          "type": "custom_if_elif_else_block"
+            "kind": "category",
+            "name": "Математика",
+            "colour": "#5B67A5",
+            "contents": [
+                {
+                    "kind": "block",
+                    "type": "math_number"
+                },
+                {
+                    "kind": "block",
+                    "type": "math_arithmetic"
+                },
+                {
+                    "kind": "block",
+                    "type": "math_single"
+                },
+                {
+                    "kind": "block",
+                    "type": "math_trig"
+                }
+            ]
         },
         {
-          "kind": "block",
-          "type": "logic_compare"
+            "kind": "category",
+            "name": "Текст",
+            "colour": "#5BA58C",
+            "contents": [
+                {
+                    "kind": "block",
+                    "type": "print_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "text"
+                },
+                {
+                    "kind": "block",
+                    "type": "text_length"
+                },
+                {
+                    "kind": "block",
+                    "type": "text_isEmpty"
+                },
+                {
+                    "kind": "block",
+                    "type": "text_join_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "text_file_open_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "text_file_read_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "text_file_read_lines_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "text_file_write_to_end_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "text_file_close_block"
+                }
+            ]
         },
         {
-          "kind": "block",
-          "type": "logic_operation"
+            "kind": "category",
+            "name": "Преобразование",
+            "colour": "#C9CE64",
+            "contents": [
+                {
+                    "kind": "block",
+                    "type": "convert_to_int_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "convert_to_float_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "convert_to_str_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "convert_to_bool_block"
+                }
+            ]
         },
         {
-          "kind": "block",
-          "type": "logic_negate"
+            "kind": "category",
+            "name": "Переменные",
+            "custom": "VARIABLE",
+            "colour": "#A55B80",
+            "contents": [
+                {
+                    "kind": "block",
+                    "type": "variables_get"
+                },
+                {
+                    "kind": "block",
+                    "type": "variables_set"
+                }
+            ]
         },
         {
-          "kind": "block",
-          "type": "logic_boolean"
+            "kind": "category",
+            "name": "Списки",
+            "colour": "#5B67A5",
+            "contents": [
+                {
+                    "kind": "block",
+                    "type": "lists_create_with"
+                },
+                {
+                    "kind": "block",
+                    "type": "lists_repeat"
+                },
+                {
+                    "kind": "block",
+                    "type": "lists_length"
+                },
+                {
+                    "kind": "block",
+                    "type": "lists_isEmpty"
+                },
+                {
+                    "kind": "block",
+                    "type": "lists_getIndex"
+                },
+                {
+                    "kind": "block",
+                    "type": "lists_setIndex"
+                },
+                {
+                    "kind": "block",
+                    "type": "lists_getSublist"
+                },
+                {
+                    "kind": "block",
+                    "type": "lists_split"
+                },
+                {
+                    "kind": "block",
+                    "type": "lists_sort"
+                },
+                {
+                    "kind": "block",
+                    "type": "lists_indexOf"
+                }
+            ]
+        },
+        {
+            "kind": "category",
+            "name": "HTTP",
+            "colour": "#FF6F00",
+            "contents": [
+                {
+                    "kind": "block",
+                    "type": "import_lib_requests_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "http_query_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "http_header_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "http_get_request_block"
+                }
+            ]
+        },
+        {
+            "kind": "category",
+            "name": "Pandas",
+            "colour": "#9C27B0",
+            "contents": [
+                {
+                    "kind": "block",
+                    "type": "pandas_import_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "pandas_read_html_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "pandas_concat_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "pandas_head_n_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "pandas_tail_n_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "pandas_append_to_list_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "pandas_to_csv_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "pandas_info_block"
+                }
+            ]
         }
-      ]
-    },
-    {
-      "kind": "category",
-      "name": "Циклы",
-      "colour": "#5CA65C",
-      "contents": [
-        {
-          "kind": "block",
-          "type": "controls_repeat_ext"
-        },
-        {
-          "kind": "block",
-          "type": "controls_whileUntil"
-        },
-        {
-          "kind": "block",
-          "type": "controls_for"
-        }
-      ]
-    },
-    {
-      "kind": "category",
-      "name": "Математика",
-      "colour": "#5B67A5",
-      "contents": [
-        {
-          "kind": "block",
-          "type": "math_number"
-        },
-        {
-          "kind": "block",
-          "type": "math_arithmetic"
-        },
-        {
-          "kind": "block",
-          "type": "math_single"
-        },
-        {
-          "kind": "block",
-          "type": "math_trig"
-        }
-      ]
-    },
-    {
-      "kind": "category",
-      "name": "Текст",
-      "colour": "#5BA58C",
-      "contents": [
-        {
-          "kind": "block",
-          "type": "print_block"
-        },
-        {
-          "kind": "block",
-          "type": "text"
-        },
-        {
-          "kind": "block",
-          "type": "text_length"
-        },
-        {
-          "kind": "block",
-          "type": "text_isEmpty"
-        },
-        {
-          "kind": "block",
-          "type": "text_join_block"
-        },
-        {
-          "kind": "block",
-          "type": "text_file_open_block"
-        },
-        {
-          "kind": "block",
-          "type": "text_file_read_block"
-        },
-        {
-          "kind": "block",
-          "type": "text_file_read_lines_block"
-        },
-        {
-          "kind": "block",
-          "type": "text_file_write_to_end_block"
-        },
-        {
-          "kind": "block",
-          "type": "text_file_close_block"
-        }
-      ]
-    },
-    {
-      "kind": "category",
-      "name": "Переменные",
-      "custom": "VARIABLE",
-      "colour": "#A55B80",
-      "contents": [
-        {
-          "kind": "block",
-          "type": "variables_get"
-        },
-        {
-          "kind": "block",
-          "type": "variables_set"
-        }
-      ]
-    },
-    {
-      "kind": "category",
-      "name": "Списки",
-      "colour": "#5B67A5",
-      "contents": [
-        { "kind": "block", "type": "lists_create_with" },
-
-        { "kind": "block", "type": "lists_repeat" },
-        { "kind": "block", "type": "lists_length" },
-        { "kind": "block", "type": "lists_isEmpty" },
-        { "kind": "block", "type": "lists_getIndex" },
-        { "kind": "block", "type": "lists_setIndex" },
-        { "kind": "block", "type": "lists_getSublist" },
-        { "kind": "block", "type": "lists_split" },
-        { "kind": "block", "type": "lists_sort" },
-        { "kind": "block", "type": "lists_indexOf" }
-      ]
-    },
-    {
-      "kind": "category",
-      "name": "HTTP",
-      "colour": "#FF6F00",
-      "contents": [
-        {
-          "kind": "block",
-          "type": "import_lib_requests_block"
-        },
-        {
-          "kind": "block",
-          "type": "http_query_block"
-        },
-        {
-          "kind": "block",
-          "type": "http_header_block"
-        },
-        {
-          "kind": "block",
-          "type": "http_get_request_block"
-        }
-      ]
-    },
-    {
-      "kind": "category",
-      "name": "Pandas",
-      "colour": "#9C27B0",
-      "contents": [
-        { "kind": "block", "type": "pandas_import_block" },
-        { "kind": "block", "type": "pandas_read_html_block" },
-        { "kind": "block", "type": "pandas_concat_block" },
-        { "kind": "block", "type": "pandas_head_n_block" },
-        { "kind": "block", "type": "pandas_tail_n_block" },
-        { "kind": "block", "type": "pandas_append_to_list_block" },
-        { "kind": "block", "type": "pandas_to_csv_block" },
-        { "kind": "block", "type": "pandas_info_block" }
-      ]
-    }
-  ]
+    ]
 }

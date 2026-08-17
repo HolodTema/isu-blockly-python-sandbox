@@ -353,6 +353,26 @@ await do_request()
             const df = generator.valueToCode(block, "DF", Order.ATOMIC) || '""';
             return `${df}.info()\n`;
         };
+
+        generator.forBlock["convert_to_int_block"] = function (block) {
+            const valueToConvert = generator.valueToCode(block, "VALUE_TO_CONVERT", Order.ATOMIC) || "";
+            return [`int(${valueToConvert})`, Order.FUNCTION_CALL];
+        }
+
+        generator.forBlock["convert_to_str_block"] = function (block) {
+            const valueToConvert = generator.valueToCode(block, "VALUE_TO_CONVERT", Order.ATOMIC) || "";
+            return [`str(${valueToConvert})`, Order.FUNCTION_CALL];
+        }
+
+        generator.forBlock["convert_to_float_block"] = function (block) {
+            const valueToConvert = generator.valueToCode(block, "VALUE_TO_CONVERT", Order.ATOMIC) || "";
+            return [`float(${valueToConvert})`, Order.FUNCTION_CALL];
+        }
+
+        generator.forBlock["convert_to_bool_block"] = function (block) {
+            const valueToConvert = generator.valueToCode(block, "VALUE_TO_CONVERT", Order.ATOMIC) || "";
+            return [`bool(${valueToConvert})`, Order.FUNCTION_CALL];
+        }
     }
 
     private createStartBlock() {
