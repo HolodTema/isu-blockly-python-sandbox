@@ -80,14 +80,8 @@
 #tab_button_output {
     padding: 5px 10px;
     margin: 0 0 0 10px;
-    background-color: #ffffff;
-    color: #066C08;
-}
-
-#tab_button_debug {
-    padding: 5px 10px;
-    background-color: #066C08;
-    color: white;
+    /*background-color: #ffffff;*/
+    color: #ffffff;
 }
 
 #codemirror_workspace {
