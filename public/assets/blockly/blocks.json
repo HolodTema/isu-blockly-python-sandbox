@@ -500,5 +500,21 @@
         "output": null,
         "colour": 63,
         "tooltip": "Конвертирует строку или число в логическое значение True или False"
+    },
+
+    {
+        "type":  "comment_block",
+        "message0": "#%1",
+        "args0": [
+            {
+                "type": "field_input",
+                "name": "COMMENT_TEXT",
+                "text": "комментарий"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 63,
+        "tooltip": "Простой python-комментарий. Он не влияет на выполнение прогрмммы и объясняет, что происходит в коде"
     }
 ]

@@ -85,10 +85,6 @@
             "contents": [
                 {
                     "kind": "block",
-                    "type": "print_block"
-                },
-                {
-                    "kind": "block",
                     "type": "text"
                 },
                 {
@@ -145,6 +141,21 @@
                 {
                     "kind": "block",
                     "type": "convert_to_bool_block"
+                }
+            ]
+        },
+        {
+            "kind": "category",
+            "name": "Ввод-вывод",
+            "colour": "#FFFFFF",
+            "contents": [
+                {
+                    "kind": "block",
+                    "type": "print_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "comment_block"
                 }
             ]
         },

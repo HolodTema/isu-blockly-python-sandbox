@@ -373,6 +373,11 @@ await do_request()
             const valueToConvert = generator.valueToCode(block, "VALUE_TO_CONVERT", Order.ATOMIC) || "";
             return [`bool(${valueToConvert})`, Order.FUNCTION_CALL];
         }
+
+        generator.forBlock["comment_block"] = function (block) {
+            const commentText = block.getFieldValue("COMMENT_TEXT");
+            return `# ${commentText}\n`;
+        }
     }
 
     private createStartBlock() {
