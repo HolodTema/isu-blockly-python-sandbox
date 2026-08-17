@@ -1,14 +1,19 @@
 import * as Blockly from 'blockly';
 import * as Ru from 'blockly/msg/ru';
-import { pythonGenerator } from "blockly/python";
-import { Order } from "blockly/python";
+import {pythonGenerator, PythonGenerator} from "blockly/python";
+import {Order} from "blockly/python";
 import {AppState} from "../state/AppState";
 import {WorkspaceSvg} from "blockly";
 
 export class BlocklyService {
-    private workspace: WorkspaceSvg|undefined = undefined;
+    private workspace: WorkspaceSvg | undefined = undefined;
+    private codeToLaunchGenerator: PythonGenerator;
+    private codeToShowGenerator: PythonGenerator;
+    private resizeObserver: ResizeObserver | undefined = undefined;
 
     constructor(private state: AppState, private htmlContainerId: string) {
+        this.codeToLaunchGenerator = new PythonGenerator("Python");
+        this.codeToShowGenerator = new PythonGenerator("Python");
         this.init();
     }
 
@@ -21,7 +26,7 @@ export class BlocklyService {
             const jsonToolbox = await fetch("/assets/blockly/toolbox.json")
                 .then(r => r.json());
 
-            // Blockly.setLocale(Ru);
+            Blockly.setLocale(Ru);
 
             this.workspace = Blockly.inject(this.htmlContainerId, {
                 toolbox: jsonToolbox,
@@ -30,7 +35,11 @@ export class BlocklyService {
                 trashcan: false
             });
 
-            this.configureCodeGenerator();
+            const originalForBlockFunctions = pythonGenerator.forBlock;
+            Object.assign(this.codeToLaunchGenerator.forBlock, originalForBlockFunctions);
+            Object.assign(this.codeToShowGenerator.forBlock, originalForBlockFunctions);
+            this.configureCodeGenerator(this.codeToLaunchGenerator, "execution")
+            this.configureCodeGenerator(this.codeToShowGenerator, "display")
 
             this.createStartBlock();
 
@@ -49,78 +58,85 @@ export class BlocklyService {
                 Blockly.serialization.workspaces.load(jsonBlocklyState, this.workspace);
             }
             console.log("Blockly: initialization complete");
-        }
-        catch (e) {
+
+            this.resizeObserver = new ResizeObserver(() => {
+                this.workspace?.resize();
+            });
+            const container = document.getElementById(this.htmlContainerId);
+            if (container) {
+                this.resizeObserver.observe(container);
+            }
+        } catch (e) {
             console.error("Blockly init-error:", e);
         }
     }
 
-    private configureCodeGenerator() {
-        pythonGenerator.INDENT = "    ";
+    private configureCodeGenerator(generator: PythonGenerator, mode: "display" | "execution") {
+        generator.INDENT = "    ";
 
-        pythonGenerator.forBlock["start_block"] = function (block) {
+        generator.forBlock["start_block"] = function (block) {
             return "";
         };
 
-        pythonGenerator.forBlock["custom_if_block"] = function (block) {
-            let condition = pythonGenerator.valueToCode(block, "CONDITION", Order.ATOMIC) || "False";
-            let codeInsideIf = pythonGenerator.statementToCode(block, "THEN");
+        generator.forBlock["custom_if_block"] = function (block) {
+            let condition = generator.valueToCode(block, "CONDITION", Order.ATOMIC) || "False";
+            let codeInsideIf = generator.statementToCode(block, "THEN");
             return `if ${condition}:\n${codeInsideIf}\n`;
         };
 
-        pythonGenerator.forBlock["custom_if_else_block"] = function(block) {
-            const condition = pythonGenerator.valueToCode(block, "CONDITION", Order.ATOMIC) || "False";
-            const thenCode = pythonGenerator.statementToCode(block, "THEN");
-            const elseCode = pythonGenerator.statementToCode(block, "ELSE");
+        generator.forBlock["custom_if_else_block"] = function (block) {
+            const condition = generator.valueToCode(block, "CONDITION", Order.ATOMIC) || "False";
+            const thenCode = generator.statementToCode(block, "THEN");
+            const elseCode = generator.statementToCode(block, "ELSE");
             return `if ${condition}:\n${thenCode}else:\n${elseCode}\n`;
         };
 
-        pythonGenerator.forBlock["custom_if_elif_else_block"] = function(block) {
-            const cond1 = pythonGenerator.valueToCode(block, "COND1", Order.ATOMIC) || "False";
-            const then1 = pythonGenerator.statementToCode(block, "THEN1");
-            const cond2 = pythonGenerator.valueToCode(block, "COND2", Order.ATOMIC) || "False";
-            const then2 = pythonGenerator.statementToCode(block, "THEN2");
-            const elseCode = pythonGenerator.statementToCode(block, "ELSE");
+        generator.forBlock["custom_if_elif_else_block"] = function (block) {
+            const cond1 = generator.valueToCode(block, "COND1", Order.ATOMIC) || "False";
+            const then1 = generator.statementToCode(block, "THEN1");
+            const cond2 = generator.valueToCode(block, "COND2", Order.ATOMIC) || "False";
+            const then2 = generator.statementToCode(block, "THEN2");
+            const elseCode = generator.statementToCode(block, "ELSE");
             return `if ${cond1}:\n${then1}elif ${cond2}:\n${then2}else:\n${elseCode}\n`;
         };
 
-        pythonGenerator.forBlock["text_file_open_block"] = function(block) {
+        generator.forBlock["text_file_open_block"] = function (block) {
             const filePath = block.getFieldValue("FILE_PATH");
             const fileMode = block.getFieldValue("MODE");
-            const variableCode = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+            const variableCode = generator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
             return `${variableCode} = open("${filePath}", '${fileMode}')\n`;
         };
 
-        pythonGenerator.forBlock["text_file_read_block"] = function (block) {
-            const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+        generator.forBlock["text_file_read_block"] = function (block) {
+            const fileVariable = generator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
             const code = `${fileVariable}.read()`;
             return [code, Order.FUNCTION_CALL];
         };
 
-        pythonGenerator.forBlock["text_file_read_lines_block"] = function(block) {
-            const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+        generator.forBlock["text_file_read_lines_block"] = function (block) {
+            const fileVariable = generator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
             const code = `${fileVariable}.readlines()`;
             return [code, Order.FUNCTION_CALL];
         };
 
-        pythonGenerator.forBlock["text_file_write_to_end_block"] = function(block) {
-            const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
-            const textToWrite = pythonGenerator.valueToCode(block, "TEXT_TO_WRITE", Order.ATOMIC) || "";
+        generator.forBlock["text_file_write_to_end_block"] = function (block) {
+            const fileVariable = generator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+            const textToWrite = generator.valueToCode(block, "TEXT_TO_WRITE", Order.ATOMIC) || "";
             return `${fileVariable}.write(${textToWrite})\n`;
         };
 
-        pythonGenerator.forBlock["text_file_close_block"] = function(block) {
-            const fileVariable = pythonGenerator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
+        generator.forBlock["text_file_close_block"] = function (block) {
+            const fileVariable = generator.valueToCode(block, "FILE_VARIABLE", Order.ATOMIC) || "file";
             return `${fileVariable}.close()\n`;
         };
 
-        pythonGenerator.forBlock["text_join_block"] = function(block) {
-            let textLeft = pythonGenerator.valueToCode(block, "TEXT_LEFT", Order.NONE) || "";
+        generator.forBlock["text_join_block"] = function (block) {
+            let textLeft = generator.valueToCode(block, "TEXT_LEFT", Order.NONE) || "";
             if (textLeft.length > 0) {
                 textLeft = textLeft.substring(1, textLeft.length - 1);
             }
 
-            let textRight = pythonGenerator.valueToCode(block, "TEXT_RIGHT", Order.NONE) || "";
+            let textRight = generator.valueToCode(block, "TEXT_RIGHT", Order.NONE) || "";
             if (textRight.length > 0) {
                 textRight = textRight.substring(1, textRight.length - 1);
             }
@@ -129,83 +145,84 @@ export class BlocklyService {
             return [code, Order.FUNCTION_CALL];
         }
 
-        pythonGenerator.forBlock["print_block"] = function (block) {
-            const text = pythonGenerator.valueToCode(block, "TEXT", Order.NONE) || '""';
+        generator.forBlock["print_block"] = function (block) {
+            const text = generator.valueToCode(block, "TEXT", Order.NONE) || '""';
             return "print(" + text + ")\n";
         };
 
-        pythonGenerator.forBlock["import_lib_requests_block"] = function (block) {
+        generator.forBlock["import_lib_requests_block"] = function (block) {
             return "import requests\n";
         };
 
-        pythonGenerator.forBlock["http_query_block"] = function (block) {
-            const queryKey = pythonGenerator.valueToCode(block, "KEY", Order.ATOMIC) || "''";
-            const queryValue = pythonGenerator.valueToCode(block, "VALUE", Order.ATOMIC) || "''";
+        generator.forBlock["http_query_block"] = function (block) {
+            const queryKey = generator.valueToCode(block, "KEY", Order.ATOMIC) || "''";
+            const queryValue = generator.valueToCode(block, "VALUE", Order.ATOMIC) || "''";
             return `${queryKey}: ${queryValue}`;
         };
 
-        pythonGenerator.forBlock["http_header_block"] = function (block) {
-            const headerName = pythonGenerator.valueToCode(block, "NAME", Order.ATOMIC) || "''";
-            const headerValue = pythonGenerator.valueToCode(block, "VALUE", Order.ATOMIC) || "''";
+        generator.forBlock["http_header_block"] = function (block) {
+            const headerName = generator.valueToCode(block, "NAME", Order.ATOMIC) || "''";
+            const headerValue = generator.valueToCode(block, "VALUE", Order.ATOMIC) || "''";
             return `${headerName}: ${headerValue}`;
         };
 
-        pythonGenerator.forBlock["http_get_request_block"] = function (block) {
-            const requestType = block.getFieldValue("REQUEST_TYPE");
+        generator.forBlock["http_get_request_block"] = function (block) {
+            if (mode == "execution") {
+                const requestType = block.getFieldValue("REQUEST_TYPE");
 
-            let path = pythonGenerator.valueToCode(block, "PATH", Order.ATOMIC) || `""`
+                let path = generator.valueToCode(block, "PATH", Order.ATOMIC) || `""`
 
-            if (path !== `""`) {
-                path = `'http://185.105.109.140:8080/${path.substring(1, path.length)}`;
-            }
-            let queryItems = [];
-            let queryBlock: Blockly.Block|null = block.getInputTargetBlock("QUERY");
-            while (queryBlock) {
-                const queryItemCode = pythonGenerator.blockToCode(queryBlock, true);
-                console.log(queryItemCode);
-                if (queryItemCode) {
-                    console.log("push");
-                    queryItems.push(queryItemCode);
+                if (path !== `""`) {
+                    path = `'http://130.49.175.150:8080/${path.substring(1, path.length)}`;
                 }
-                if (queryBlock.nextConnection) {
-                    queryBlock = queryBlock.nextConnection.targetBlock();
+                console.log(path);
+                let queryItems = [];
+                let queryBlock: Blockly.Block | null = block.getInputTargetBlock("QUERY");
+                while (queryBlock) {
+                    const queryItemCode = generator.blockToCode(queryBlock, true);
+                    console.log(queryItemCode);
+                    if (queryItemCode) {
+                        console.log("push");
+                        queryItems.push(queryItemCode);
+                    }
+                    if (queryBlock.nextConnection) {
+                        queryBlock = queryBlock.nextConnection.targetBlock();
+                    }
                 }
-            }
-            console.log(queryItems);
+                console.log(queryItems);
 
-            let headerItems = [];
-            let headerBlock = block.getInputTargetBlock("HEADERS");
-            while (headerBlock) {
-                const headerItemCode = pythonGenerator.blockToCode(headerBlock, true);
-                if (headerItemCode) {
-                    headerItems.push(headerItemCode);
+                let headerItems = [];
+                let headerBlock = block.getInputTargetBlock("HEADERS");
+                while (headerBlock) {
+                    const headerItemCode = generator.blockToCode(headerBlock, true);
+                    if (headerItemCode) {
+                        headerItems.push(headerItemCode);
+                    }
+                    if (headerBlock.nextConnection) {
+                        headerBlock = headerBlock.nextConnection.targetBlock();
+                    }
                 }
-                if (headerBlock.nextConnection) {
-                    headerBlock = headerBlock.nextConnection.targetBlock();
-                }
-            }
 
-            const strRequestBody = pythonGenerator.valueToCode(block, "REQUEST_BODY", Order.ATOMIC) || null;
+                const strRequestBody = generator.valueToCode(block, "REQUEST_BODY", Order.ATOMIC) || null;
 
-            const variableStatusCode = pythonGenerator.valueToCode(block, "STATUS_CODE", Order.ATOMIC) || "status_code";
-            const variableResponseBody = pythonGenerator.valueToCode(block, "RESPONSE_BODY", Order.ATOMIC) || "response_body";
+                const variableStatusCode = generator.valueToCode(block, "STATUS_CODE", Order.ATOMIC) || "status_code";
+                const variableResponseBody = generator.valueToCode(block, "RESPONSE_BODY", Order.ATOMIC) || "response_body";
 
-            let codeOnResponse = pythonGenerator.statementToCode(block, "RESPONSE");
-            let codeOnTimeout = pythonGenerator.statementToCode(block, "TIMEOUT");
+                let codeOnResponse = generator.statementToCode(block, "RESPONSE");
+                let codeOnTimeout = generator.statementToCode(block, "TIMEOUT");
 
-            const indentToTry = (code: string) => {
-                if (!code) return "";
-                return code.split("\n")
-                    .map(line => line ? "    " + line : line)
-                    .join("\n");
-            };
-            codeOnResponse = indentToTry(codeOnResponse);
-            codeOnTimeout = indentToTry(codeOnTimeout);
+                const indentToTry = (code: string) => {
+                    if (!code) return "";
+                    return code.split("\n")
+                        .map(line => line ? "    " + line : line)
+                        .join("\n");
+                };
+                codeOnResponse = indentToTry(codeOnResponse);
+                codeOnTimeout = indentToTry(codeOnTimeout);
 
-            const queryDict = queryItems.length ? '{' + queryItems.join(', ') + '}' : '{}';
-            const headerDict = headerItems.length ? '{' + headerItems.join(', ') + '}' : '{}';
-
-            return `
+                const queryDict = queryItems.length ? '{' + queryItems.join(', ') + '}' : '{}';
+                const headerDict = headerItems.length ? '{' + headerItems.join(', ') + '}' : '{}';
+                return `
 from pyodide.http import pyfetch
 
 async def do_request():
@@ -227,49 +244,113 @@ ${codeOnResponse}
 ${codeOnTimeout}
 
 await do_request()
-            `;
+                `;
+            } else if (mode == "display") {
+                generator.forBlock["http_get_request_block"] = function(block) {
+                    const requestType = block.getFieldValue("REQUEST_TYPE");
+                    let path = generator.valueToCode(block, "PATH", Order.ATOMIC) || `""`;
+
+                    let queryItems = [];
+                    let queryBlock = block.getInputTargetBlock("QUERY");
+                    while (queryBlock) {
+                        const queryItemCode = generator.blockToCode(queryBlock, true);
+                        if (queryItemCode) queryItems.push(queryItemCode);
+                        if (queryBlock.nextConnection) {
+                            queryBlock = queryBlock.nextConnection.targetBlock();
+                        }
+                    }
+                    const queryDict = queryItems.length ? '{' + queryItems.join(', ') + '}' : '{}';
+
+                    let headerItems = [];
+                    let headerBlock = block.getInputTargetBlock("HEADERS");
+                    while (headerBlock) {
+                        const headerItemCode = generator.blockToCode(headerBlock, true);
+                        if (headerItemCode) headerItems.push(headerItemCode);
+                        if (headerBlock.nextConnection) {
+                            headerBlock = headerBlock.nextConnection.targetBlock();
+                        }
+                    }
+                    const headerDict = headerItems.length ? '{' + headerItems.join(', ') + '}' : '{}';
+
+                    const strRequestBody = generator.valueToCode(block, "REQUEST_BODY", Order.ATOMIC) || null;
+                    const variableStatusCode = generator.valueToCode(block, "STATUS_CODE", Order.ATOMIC) || "status_code";
+                    const variableResponseBody = generator.valueToCode(block, "RESPONSE_BODY", Order.ATOMIC) || "response_body";
+
+                    let codeOnResponse = generator.statementToCode(block, "RESPONSE");
+                    let codeOnTimeout = generator.statementToCode(block, "TIMEOUT");
+
+                    const indent = (code: string) => {
+                        if (!code) return "";
+                        return code.split("\n")
+                            .map(line => line ? "    " + line : line)
+                            .join("\n");
+                    };
+                    const codeOnResponseIndented = indent(codeOnResponse);
+                    const codeOnTimeoutIndented = indent(codeOnTimeout);
+
+                    let code = "import requests\n\n";
+                    code += "def do_request():\n";
+                    code += `    url = ${path}\n`;
+                    code += `    params = ${queryDict}\n`;
+                    code += `    headers = ${headerDict}\n`;
+                    if (strRequestBody) {
+                        code += `    request_body = ${strRequestBody}\n`;
+                    }
+                    code += "    try:\n";
+                    code += `        response = requests.request(method="${requestType}", url=url, params=params, headers=headers, ${strRequestBody ? 'data=request_body,' : ''} timeout=10)\n`;
+                    code += `        ${variableStatusCode} = response.status_code\n`;
+                    code += `        ${variableResponseBody} = response.text\n`;
+                    code += codeOnResponseIndented;
+                    code += "    except Exception as e:\n";
+                    code += codeOnTimeoutIndented;
+                    code += "\ndo_request()\n";
+
+                    return code;
+                };
+            }
+            return "";
         };
 
-        pythonGenerator.forBlock["pandas_import_block"] = function(block) {
+        generator.forBlock["pandas_import_block"] = function (block) {
             return "import pandas as pd\n";
         };
 
-        pythonGenerator.forBlock["pandas_read_html_block"] = function(block) {
-            const htmlText = pythonGenerator.valueToCode(block, "HTML_TEXT", Order.ATOMIC) || '""';
+        generator.forBlock["pandas_read_html_block"] = function (block) {
+            const htmlText = generator.valueToCode(block, "HTML_TEXT", Order.ATOMIC) || '""';
             return [`pd.read_html(${htmlText})[0]`, Order.FUNCTION_CALL];
         };
 
-        pythonGenerator.forBlock["pandas_concat_block"] = function(block) {
-            const listVar = pythonGenerator.valueToCode(block, "LIST", Order.ATOMIC) || '[]';
+        generator.forBlock["pandas_concat_block"] = function (block) {
+            const listVar = generator.valueToCode(block, "LIST", Order.ATOMIC) || '[]';
             return [`pd.concat(${listVar})`, Order.FUNCTION_CALL];
         };
 
-        pythonGenerator.forBlock["pandas_head_n_block"] = function(block) {
-            const df = pythonGenerator.valueToCode(block, "DF", Order.ATOMIC) || '""';
-            const n = pythonGenerator.valueToCode(block, "N", Order.ATOMIC) || '5';
+        generator.forBlock["pandas_head_n_block"] = function (block) {
+            const df = generator.valueToCode(block, "DF", Order.ATOMIC) || '""';
+            const n = generator.valueToCode(block, "N", Order.ATOMIC) || '5';
             return [`${df}.head(${n})`, Order.FUNCTION_CALL];
         };
 
-        pythonGenerator.forBlock["pandas_tail_n_block"] = function(block) {
-            const df = pythonGenerator.valueToCode(block, "DF", Order.ATOMIC) || '""';
-            const n = pythonGenerator.valueToCode(block, "N", Order.ATOMIC) || '5';
+        generator.forBlock["pandas_tail_n_block"] = function (block) {
+            const df = generator.valueToCode(block, "DF", Order.ATOMIC) || '""';
+            const n = generator.valueToCode(block, "N", Order.ATOMIC) || '5';
             return [`${df}.tail(${n})`, Order.FUNCTION_CALL];
         };
 
-        pythonGenerator.forBlock["pandas_append_to_list_block"] = function(block) {
-            const listVar = pythonGenerator.valueToCode(block, "LIST", Order.ATOMIC) || '[]';
-            const item = pythonGenerator.valueToCode(block, "ITEM", Order.ATOMIC) || 'None';
+        generator.forBlock["pandas_append_to_list_block"] = function (block) {
+            const listVar = generator.valueToCode(block, "LIST", Order.ATOMIC) || '[]';
+            const item = generator.valueToCode(block, "ITEM", Order.ATOMIC) || 'None';
             return `${listVar}.append(${item})\n`;
         };
 
-        pythonGenerator.forBlock["pandas_to_csv_block"] = function(block) {
-            const df = pythonGenerator.valueToCode(block, "DF", Order.ATOMIC) || '""';
+        generator.forBlock["pandas_to_csv_block"] = function (block) {
+            const df = generator.valueToCode(block, "DF", Order.ATOMIC) || '""';
             const filePath = block.getFieldValue("FILE_PATH");
             return `${df}.to_csv("${filePath}", index=False)\n`;
         };
 
-        pythonGenerator.forBlock["pandas_info_block"] = function(block) {
-            const df = pythonGenerator.valueToCode(block, "DF", Order.ATOMIC) || '""';
+        generator.forBlock["pandas_info_block"] = function (block) {
+            const df = generator.valueToCode(block, "DF", Order.ATOMIC) || '""';
             return `${df}.info()\n`;
         };
     }
@@ -295,10 +376,16 @@ await do_request()
             console.error("Blockly: Error: there is no start_block on the workspace");
             return;
         }
-        pythonGenerator.init(this.workspace!);
-        let code = pythonGenerator.blockToCode(startBlock) as string;
-        code = pythonGenerator.finish(code)?.trim();
-        this.state.setStrGeneratedCode(code);
+
+        this.codeToLaunchGenerator.init(this.workspace!);
+        let codeToLaunch = this.codeToLaunchGenerator.blockToCode(startBlock) as string;
+        codeToLaunch = this.codeToLaunchGenerator.finish(codeToLaunch)?.trim();
+        this.state.setStrCodeToLaunch(codeToLaunch);
+
+        this.codeToShowGenerator.init(this.workspace!);
+        let codeToShow = this.codeToShowGenerator.blockToCode(startBlock) as string;
+        codeToShow = this.codeToShowGenerator.finish(codeToShow)?.trim();
+        this.state.setStrCodeToShow(codeToShow);
     }
 
     private clearWorkspace() {
@@ -308,7 +395,7 @@ await do_request()
         this.generateAndUpdateCode();
     }
 
-    loadWorkspaceState(blocksState: {[p: string]: any}) {
+    loadWorkspaceState(blocksState: { [p: string]: any }) {
         this.workspace!.clear();
         this.createStartBlock();
         if (blocksState) {
@@ -316,5 +403,12 @@ await do_request()
         }
         this.saveWorkspaceState();
         this.generateAndUpdateCode();
+    }
+
+    resizeWorkspace() {
+        if (this.workspace) {
+            console.log("resize!");
+            this.workspace.resize();
+        }
     }
 }

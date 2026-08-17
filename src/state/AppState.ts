@@ -2,7 +2,8 @@ import {AppStateKey} from "./AppStateKey";
 
 export class AppState {
     private jsonBlocklyState: {[p: string]: any}|null = null;
-    private strGeneratedCode: string = "";
+    private strCodeToLaunch: string = "";
+    private strCodeToShow: string = "";
     private strCodeOutput: string = "";
     private setInputFilenames: Set<string> = new Set();
     private listeners: Array<(key: AppStateKey, state: AppState)=>void> = [];
@@ -16,9 +17,14 @@ export class AppState {
         this.notifyAllListeners(AppStateKey.JsonBlocklyState);
     }
 
-    setStrGeneratedCode(strGeneratedCode: string) {
-        this.strGeneratedCode = strGeneratedCode;
-        this.notifyAllListeners(AppStateKey.StrGeneratedCode);
+    setStrCodeToLaunch(strCodeToLaunch: string) {
+        this.strCodeToLaunch = strCodeToLaunch;
+        this.notifyAllListeners(AppStateKey.StrCodeToLaunch);
+    }
+
+    setStrCodeToShow(strCodeToShow: string) {
+        this.strCodeToShow = strCodeToShow;
+        this.notifyAllListeners(AppStateKey.StrCodeToShow);
     }
 
     setStrCodeOutput(strCodeOutput: string) {
@@ -44,8 +50,12 @@ export class AppState {
         return this.jsonBlocklyState;
     }
 
-    getStrGeneratedCode(): string {
-        return this.strGeneratedCode;
+    getStrCodeToLaunch(): string {
+        return this.strCodeToLaunch;
+    }
+
+    getStrCodeToShow(): string {
+        return this.strCodeToShow;
     }
 
     getStrCodeOutput(): string {

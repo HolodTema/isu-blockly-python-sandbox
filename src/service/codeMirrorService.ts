@@ -1,10 +1,12 @@
 import {AppState} from "../state/AppState";
+import {CodePreviewTransformer} from "../util/CodePreviewTransformer";
 import {EditorView, keymap, gutter, GutterMarker} from '@codemirror/view';
 import {EditorState, Compartment, Extension} from '@codemirror/state';
 import {python} from '@codemirror/lang-python';
 import {oneDark} from '@codemirror/theme-one-dark';
 import {defaultKeymap} from '@codemirror/commands';
 import {basicSetup} from 'codemirror';
+import {AppStateKey} from "../state/AppStateKey";
 
 
 export class CodeMirrorService {
@@ -26,14 +28,14 @@ export class CodeMirrorService {
             EditorView.updateListener.of((update) => {
                 if (update.docChanged) {
                     const code = update.state.doc.toString();
-                    this.state.setStrGeneratedCode(code);
+                    this.state.setStrCodeToShow(code);
                 }
             }),
             keymap.of(defaultKeymap),
         ];
 
         const startEditorState = EditorState.create({
-            doc: this.state.getStrGeneratedCode(),
+            doc: this.state.getStrCodeToShow(),
             extensions: listExtensions,
         });
 
@@ -43,20 +45,24 @@ export class CodeMirrorService {
         });
 
         this.state.subscribe((key: string, state: AppState) => {
-            if (key === "generatedCode") {
-                this.setCodeString(state.getStrGeneratedCode());
+            if (key === AppStateKey.StrCodeToShow) {
+                this.setCodeString(state.getStrCodeToShow());
             }
         });
     }
 
     setCodeString(codeString: string) {
+        console.log(codeString);
         const currentCodeString = this.getCodeString();
         if (currentCodeString !== codeString) {
+            const transformer = new CodePreviewTransformer(codeString)
+            const codeToPreview = transformer.convertToPreviewCode()
+            console.log(codeToPreview);
             const transaction = this.editor.state.update({
                 changes: {
                     from: 0,
                     to: this.editor.state.doc.length,
-                    insert: codeString
+                    insert: codeToPreview
                 },
             });
             this.editor.dispatch(transaction);
