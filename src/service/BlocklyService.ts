@@ -378,6 +378,17 @@ await do_request()
             const commentText = block.getFieldValue("COMMENT_TEXT");
             return `# ${commentText}\n`;
         }
+
+        generator.forBlock["print_two_values_block"] = function (block) {
+            const text1 = generator.valueToCode(block, "TEXT1", Order.NONE) || '""';
+            const text2 = generator.valueToCode(block, "TEXT2", Order.NONE) || '""';
+            return `print(${text1}, ${text2})`;
+        }
+
+        generator.forBlock["input_block"] = function (block) {
+            const text = generator.valueToCode(block, "TEXT", Order.NONE) || '""';
+            return [`input(${text})`, Order.FUNCTION_CALL];
+        }
     }
 
     private createStartBlock() {

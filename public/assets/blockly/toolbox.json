@@ -147,11 +147,70 @@
         {
             "kind": "category",
             "name": "Ввод-вывод",
-            "colour": "#FFFFFF",
+            "colour": "#7A7A7A",
             "contents": [
                 {
                     "kind": "block",
+                    "type": "input_block",
+                    "inputs": {
+                        "TEXT": {
+                            "block": {
+                                "type": "text",
+                                "fields": {
+                                    "TEXT": ""
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "kind": "block",
+                    "type": "variables_set",
+                    "fields": {
+                        "VAR": "x"
+                    },
+                    "inputs": {
+                        "VALUE": {
+                            "block": {
+                                "type": "convert_to_int_block",
+                                "inputs": {
+                                    "VALUE_TO_CONVERT": {
+                                        "block": {
+                                            "type": "input_block",
+                                            "inputs": {
+                                                "TEXT": {
+                                                    "block": {
+                                                        "type": "text",
+                                                        "fields": {
+                                                            "TEXT": ""
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "kind": "block",
                     "type": "print_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "print_two_values_block",
+                    "inputs": {
+                        "TEXT1": {
+                            "block": {
+                                "type": "text",
+                                "fields": {
+                                    "TEXT": ""
+                                }
+                            }
+                        }
+                    }
                 },
                 {
                     "kind": "block",
