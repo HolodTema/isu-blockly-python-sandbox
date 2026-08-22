@@ -147,7 +147,7 @@
         {
             "kind": "category",
             "name": "Ввод-вывод",
-            "colour": "#7A7A7A",
+            "colour": "#FF0000",
             "contents": [
                 {
                     "kind": "block",

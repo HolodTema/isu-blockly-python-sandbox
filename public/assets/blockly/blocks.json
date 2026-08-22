@@ -180,7 +180,7 @@
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": 160,
+        "colour": 0,
         "tooltip": "Печатает текст в консоль"
     },
 
@@ -514,7 +514,7 @@
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": 63,
+        "colour": 0,
         "tooltip": "Простой python-комментарий. Он не влияет на выполнение прогрмммы и объясняет, что происходит в коде"
     },
 
@@ -533,7 +533,7 @@
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": 160,
+        "colour": 0,
         "tooltip": "Печатает текст в консоль"
     },
 
@@ -547,7 +547,7 @@
             }
         ],
         "output": "String",
-        "colour": "160",
+        "colour": "0",
         "tooltip": "Выводит строку на экран и ждет ввода строки от пользователя. Возвращает введенную пользователем строку"
     }
 ]
