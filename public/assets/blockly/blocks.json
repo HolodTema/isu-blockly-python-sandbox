@@ -171,7 +171,7 @@
 
     {
         "type": "print_block",
-        "message0": "напечатать %1",
+        "message0": "вывести ( %1 )",
         "args0": [
             {
                 "type": "input_value",
@@ -180,7 +180,7 @@
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": 160,
+        "colour": 0,
         "tooltip": "Печатает текст в консоль"
     },
 
@@ -444,5 +444,110 @@
         "nextStatement": null,
         "colour": 270,
         "tooltip": "Сохраняет DataFrame в CSV-файл (без индекса)"
+    },
+
+    {
+        "type":  "convert_to_int_block",
+        "message0": "Целое %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "VALUE_TO_CONVERT"
+            }
+        ],
+        "output": null,
+        "colour": 63,
+        "tooltip": "Конвертирует строку, логическое значение или дробное число в целое число"
+    },
+
+    {
+        "type":  "convert_to_str_block",
+        "message0": "Строка %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "VALUE_TO_CONVERT"
+            }
+        ],
+        "output": null,
+        "colour": 63,
+        "tooltip": "Конвертирует число, логическое значение или другой объект в строку"
+    },
+
+    {
+        "type":  "convert_to_float_block",
+        "message0": "Дробное %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "VALUE_TO_CONVERT"
+            }
+        ],
+        "output": null,
+        "colour": 63,
+        "tooltip": "Конвертирует строку или целое число в дробное число"
+    },
+
+    {
+        "type":  "convert_to_bool_block",
+        "message0": "Логическое %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "VALUE_TO_CONVERT"
+            }
+        ],
+        "output": null,
+        "colour": 63,
+        "tooltip": "Конвертирует строку или число в логическое значение True или False"
+    },
+
+    {
+        "type":  "comment_block",
+        "message0": "#%1",
+        "args0": [
+            {
+                "type": "field_input",
+                "name": "COMMENT_TEXT",
+                "text": "комментарий"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 0,
+        "tooltip": "Простой python-комментарий. Он не влияет на выполнение прогрмммы и объясняет, что происходит в коде"
+    },
+
+    {
+        "type": "print_two_values_block",
+        "message0": "вывести ( %1 %2 )",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT1"
+            },
+            {
+                "type": "input_value",
+                "name": "TEXT2"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 0,
+        "tooltip": "Печатает текст в консоль"
+    },
+
+    {
+        "type": "input_block",
+        "message0": "ввести ( %1 )",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT"
+            }
+        ],
+        "output": "String",
+        "colour": "0",
+        "tooltip": "Выводит строку на экран и ждет ввода строки от пользователя. Возвращает введенную пользователем строку"
     }
 ]
