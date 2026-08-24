@@ -138,25 +138,21 @@ await do_request()
                         .map(line => line ? "    " + line : line)
                         .join("\n");
                 };
-                const codeOnResponseIndented = indent(codeOnResponse);
-                const codeOnTimeoutIndented = indent(codeOnTimeout);
 
-                let code = "import requests\n\n";
-                code += "def do_request():\n";
-                code += `    url = ${path}\n`;
-                code += `    params = ${queryDict}\n`;
-                code += `    headers = ${headerDict}\n`;
+                let code = "";
+                code += `url = ${path}\n`;
+                code += `params = ${queryDict}\n`;
+                code += `headers = ${headerDict}\n`;
                 if (strRequestBody) {
-                    code += `    request_body = ${strRequestBody}\n`;
+                    code += `request_body = ${strRequestBody}\n`;
                 }
-                code += "    try:\n";
-                code += `        response = requests.request(method="${requestType}", url=url, params=params, headers=headers, ${strRequestBody ? 'data=request_body,' : ''} timeout=10)\n`;
-                code += `        ${variableStatusCode} = response.status_code\n`;
-                code += `        ${variableResponseBody} = response.text\n`;
-                code += codeOnResponseIndented;
-                code += "    except Exception as e:\n";
-                code += codeOnTimeoutIndented;
-                code += "\ndo_request()\n";
+                code += "try:\n";
+                code += `    response = requests.request(method="${requestType}", url=url, params=params, headers=headers, ${strRequestBody ? 'data=request_body,' : ''} timeout=10)\n`;
+                code += `    ${variableStatusCode} = response.status_code\n`;
+                code += `    ${variableResponseBody} = response.text\n`;
+                code += codeOnResponse;
+                code += "except Exception as e:\n";
+                code += codeOnTimeout;
 
                 return code;
             };

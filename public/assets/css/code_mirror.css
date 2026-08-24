@@ -5,6 +5,11 @@
 .breakpoints-gutter {
     width: 24px !important;
     min-width: 24px !important;
+    background-color: #1e1f22;   /* Задайте нужный цвет */
+}
+
+.cm-gutter {
+    background-color: #1e1f22;   /* Задайте нужный цвет */
 }
 
 .breakpoint-marker {
@@ -16,4 +21,8 @@
     background-color: #e74c3c;
     cursor: pointer;
     flex-shrink: 0;
+}
+
+.cm-activeLine {
+    background-color: transparent !important;
 }
