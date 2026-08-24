@@ -81,6 +81,10 @@ export class UIService {
             else {
                 buttonExpandCode.src = "assets/images/ic_expand_right.svg";
             }
+
+            requestAnimationFrame(() => {
+                this.blocklyService.resizeWorkspace();
+            })
         });
     }
 
