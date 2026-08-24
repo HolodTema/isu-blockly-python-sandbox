@@ -1,7 +1,7 @@
 [
     {
         "type": "start_block",
-        "message0": "Начало программы",
+        "message0": "начало программы",
         "nextStatement": null,
         "colour": 0,
         "tooltip": "Программа начинается с этого блока"
@@ -117,11 +117,12 @@
     },
     {
         "type": "text_file_write_to_end_block",
-        "message0": "Записать текст %1 в конец файла %2",
+        "message0": "записать текст %1 в конец файла %2",
         "args0": [
             {
                 "type": "input_value",
-                "name": "TEXT_TO_WRITE"
+                "name": "TEXT_TO_WRITE",
+                "check": "String"
             },
             {
                 "type": "input_value",
@@ -136,7 +137,7 @@
     },
     {
         "type": "text_file_close_block",
-        "message0": "Закрыть файл %1",
+        "message0": "закрыть файл %1",
         "args0": [
             {
                 "type": "input_value",
@@ -151,7 +152,7 @@
     },
     {
         "type": "text_join_block",
-        "message0": "Объединить текст %1 и текст %2",
+        "message0": "объединить текст %1 и текст %2",
         "args0": [
             {
                 "type": "input_value",
@@ -186,7 +187,7 @@
 
     {
         "type": "import_lib_requests_block",
-        "message0": "Подключить библиотеку requests",
+        "message0": "подключить библиотеку requests",
         "previousStatement": null,
         "nextStatement": null,
         "colour": 26,
@@ -278,7 +279,8 @@
         "args4": [
             {
                 "type": "input_value",
-                "name": "STATUS_CODE"
+                "name": "STATUS_CODE",
+                "check": "Number"
             }
         ],
         "message5": "сохранить тело ответа в переменную %1",
@@ -310,7 +312,7 @@
 
     {
         "type": "pandas_import_block",
-        "message0": "Подключить библиотеку pandas как pd",
+        "message0": "подключить библиотеку pandas как pd",
         "previousStatement": null,
         "nextStatement": null,
         "colour": 270,
@@ -326,13 +328,13 @@
                 "check": "String"
             }
         ],
-        "output": null,
+        "output": "PandasDataFrame",
         "colour": 270,
         "tooltip": "Парсит HTML‑строку и возвращает первую таблицу как DataFrame"
     },
     {
         "type": "pandas_concat_block",
-        "message0": "Объединить список таблиц в %1 в одну таблицу",
+        "message0": "объединить список таблиц %1 в одну таблицу",
         "args0": [
             {
                 "type": "input_value",
@@ -340,26 +342,26 @@
                 "check": "Array"
             }
         ],
-        "output": null,
+        "output": "PandasDataFrame",
         "colour": 270,
         "tooltip": "Объединяет все DataFrame из списка в один"
     },
     {
         "type": "pandas_head_block",
-        "message0": "Первые 5 строк таблицы %1",
+        "message0": "первые 5 строк таблицы %1",
         "args0": [
             {
                 "type": "input_value",
-                "name": "DF"
+                "name": "PandasDataFrame"
             }
         ],
-        "output": null,
+        "output": "PandasDataFrame",
         "colour": 270,
         "tooltip": "Возвращает первые 5 строк DataFrame"
     },
     {
         "type": "pandas_head_n_block",
-        "message0": "Первые %1 строк таблицы %2",
+        "message0": "первые %1 строк таблицы %2",
         "args0": [
             {
                 "type": "input_value",
@@ -368,20 +370,20 @@
             },
             {
                 "type": "input_value",
-                "name": "DF"
+                "name": "PandasDataFrame"
             }
         ],
-        "output": null,
+        "output": "PandasDataFrame",
         "colour": 270,
         "tooltip": "Возвращает первые N строк DataFrame"
     },
     {
         "type": "pandas_tail_n_block",
-        "message0": "Последние %2 строк таблицы %1",
+        "message0": "последние %2 строк таблицы %1",
         "args0": [
             {
                 "type": "input_value",
-                "name": "DF"
+                "name": "PandasDataFrame"
             },
             {
                 "type": "input_value",
@@ -389,18 +391,18 @@
                 "check": "Number"
             }
         ],
-        "output": null,
+        "output": "PandasDataFrame",
         "colour": 270,
         "tooltip": "Возвращает последние N строк DataFrame"
     },
     {
         "type": "pandas_append_to_list_block",
-        "message0": "Добавить элемент %2 в список %1",
+        "message0": "добавить элемент %2 в список %1",
         "args0": [
             {
                 "type": "input_value",
                 "name": "LIST",
-                "check": "Array"
+                "check": "PandasSeries"
             },
             {
                 "type": "input_value",
@@ -414,11 +416,12 @@
     },
     {
         "type": "pandas_info_block",
-        "message0": "Показать информацию о таблице %1",
+        "message0": "показать информацию о таблице %1",
         "args0": [
             {
                 "type": "input_value",
-                "name": "DF"
+                "name": "DF",
+                "check": "PandasDataFrame"
             }
         ],
         "previousStatement": null,
@@ -428,11 +431,12 @@
     },
     {
         "type": "pandas_to_csv_block",
-        "message0": "Сохранить таблицу %1 в CSV-файл с именем %2",
+        "message0": "сохранить таблицу %1 в CSV-файл с именем %2",
         "args0": [
             {
                 "type": "input_value",
-                "name": "DF"
+                "name": "DF",
+                "check": "PandasDataFrame"
             },
             {
                 "type": "field_input",
@@ -448,56 +452,64 @@
 
     {
         "type":  "convert_to_int_block",
-        "message0": "Целое %1",
+        "message0": "целое %1",
         "args0": [
             {
                 "type": "input_value",
-                "name": "VALUE_TO_CONVERT"
+                "name": "VALUE_TO_CONVERT",
+                "check": ["String", "Number", "Boolean"]
             }
         ],
-        "output": null,
+        "output": "Number",
         "colour": 63,
         "tooltip": "Конвертирует строку, логическое значение или дробное число в целое число"
     },
 
     {
         "type":  "convert_to_str_block",
-        "message0": "Строка %1",
+        "message0": "строка %1",
         "args0": [
             {
                 "type": "input_value",
-                "name": "VALUE_TO_CONVERT"
+                "name": "VALUE_TO_CONVERT",
+                "Check": ["Number", "String", "Boolean"]
             }
         ],
-        "output": null,
+        "output": "String",
         "colour": 63,
         "tooltip": "Конвертирует число, логическое значение или другой объект в строку"
     },
 
     {
         "type":  "convert_to_float_block",
-        "message0": "Дробное %1",
+        "message0": "дробное %1",
         "args0": [
             {
                 "type": "input_value",
-                "name": "VALUE_TO_CONVERT"
+                "name": "VALUE_TO_CONVERT",
+                "check": ["Number", "String", "Boolean"]
             }
         ],
-        "output": null,
+        "output": "Number",
         "colour": 63,
         "tooltip": "Конвертирует строку или целое число в дробное число"
     },
 
     {
         "type":  "convert_to_bool_block",
-        "message0": "Логическое %1",
+        "message0": "логическое %1",
         "args0": [
             {
                 "type": "input_value",
-                "name": "VALUE_TO_CONVERT"
+                "name": "VALUE_TO_CONVERT",
+                "check": [
+                    "Number",
+                    "String",
+                    "Boolean"
+                ]
             }
         ],
-        "output": null,
+        "output": "Boolean",
         "colour": 63,
         "tooltip": "Конвертирует строку или число в логическое значение True или False"
     },
@@ -543,7 +555,8 @@
         "args0": [
             {
                 "type": "input_value",
-                "name": "TEXT"
+                "name": "TEXT",
+                "check": "String"
             }
         ],
         "output": "String",
