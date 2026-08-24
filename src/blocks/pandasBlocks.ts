@@ -1,10 +1,6 @@
 import {Order, PythonGenerator} from "blockly/python";
 import * as Blockly from "blockly";
 
-function isValidHttpUrl(string: string): boolean {
-    const pattern = /^https?:\/\/[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+([\/?#][^\s]*)?$/;
-    return pattern.test(string);
-}
 
 export function initPandasBlocks(generator: PythonGenerator, mode: "display"|"execution") {
     generator.forBlock["pandas_import_block"] = function(block: Blockly.Block): string {
@@ -17,25 +13,17 @@ export function initPandasBlocks(generator: PythonGenerator, mode: "display"|"ex
             return [`pd.read_html(${blockArg})[0]`, Order.FUNCTION_CALL];
         }
         else {
-            if (isValidHttpUrl(blockArg)) {
-                const path = `'http://130.49.175.150:8080/${blockArg}'`;
-                return [`
-from pyodide.http import pyfetch
-
-async def do_request():
-    url = ${path}
-    try:
-        response = await pyfetch(url, method="GET", timeout=10)
-        bodyHtmlText = await response.text()
-        pd.read_html(bodyHtmlText)
-    except Exception as e:
-        print(e)
-await do_request()
-                `, Order.FUNCTION_CALL];
-            }
-            else {
-                return [`pd.read_html(${blockArg})[0]`, Order.FUNCTION_CALL];
-            }
+            return [
+                `await (async () => {
+                let blockArg = ${blockArg};
+                if (typeof blockArg === 'string' && (blockArg.startsWith('http://') || blockArg.startsWith('https://'))) {
+                    const response = await pyodide.pyimport('pyodide.http').pyfetch(html);
+                    blockArg = await response.text();
+                }
+                return pd.read_html(html)[0];
+            })()`,
+                Order.ATOMIC
+            ];
         }
     };
 
