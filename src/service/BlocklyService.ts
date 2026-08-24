@@ -2,7 +2,7 @@ import * as Blockly from 'blockly';
 import * as Ru from 'blockly/msg/ru';
 import {pythonGenerator, PythonGenerator} from "blockly/python";
 import {AppState} from "../state/AppState";
-import {WorkspaceSvg} from "blockly";
+import {Block, WorkspaceSvg} from "blockly";
 import {initBaseBlocks} from "../blocks/baseBlocks";
 import {initPandasBlocks} from "../blocks/pandasBlocks";
 import {initConvertBlocks} from "../blocks/convertBlocks";
@@ -16,6 +16,7 @@ export class BlocklyService {
     private blocklyDiv: HTMLElement | null = null;
     private codeToLaunchGenerator: PythonGenerator;
     private codeToShowGenerator: PythonGenerator;
+    private codegenTimeout: number | null = null;
 
     constructor(private state: AppState, private htmlContainerId: string) {
         this.blocklyArea = document.getElementById(this.htmlContainerId)!;
@@ -63,8 +64,43 @@ export class BlocklyService {
                 return;
             }
             this.saveWorkspaceState();
-            // for auto-update code when blockly workspace is changed
-            // this.generateAndUpdateCode();
+
+            let shouldGenerateCode = false;
+            if (event.type === Blockly.Events.BLOCK_CHANGE ||
+                event.type === Blockly.Events.BLOCK_CREATE) {
+                const blockId = (event as Blockly.Events.BlockDelete).blockId;
+                if (blockId) {
+                    const block = this.workspace!.getBlockById(blockId);
+                    if (block && this.isBlockInStartBlockChain(block)) {
+                        shouldGenerateCode = true
+                    }
+                }
+            } else if (event.type === Blockly.Events.BLOCK_MOVE) {
+                const moveEvent = event as Blockly.Events.BlockMove
+                const blockId = moveEvent.blockId;
+                if (blockId) {
+                    const block = this.workspace!.getBlockById(blockId);
+                    if (block) {
+                        if (this.isBlockInStartBlockChain(block)) {
+                            shouldGenerateCode = true;
+                        }
+                        else {
+                            if (moveEvent.oldParentId) {
+                                const oldParent = this.workspace!.getBlockById(moveEvent.oldParentId);
+                                if (oldParent && this.isBlockInStartBlockChain(oldParent)) {
+                                    shouldGenerateCode = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (event.type === Blockly.Events.BLOCK_DELETE) {
+                shouldGenerateCode = true
+            }
+
+            if (shouldGenerateCode) {
+                this.scheduleCodeGeneration();
+            }
         });
         const jsonBlocklyState = this.state.getJsonBlocklyState();
         if (jsonBlocklyState) {
@@ -111,6 +147,21 @@ export class BlocklyService {
         startBlock.moveBy(50, 30);
         startBlock.setDeletable(false);
         startBlock.setMovable(false);
+    }
+
+    private isBlockInStartBlockChain(block: Blockly.Block): boolean {
+        const root = block.getRootBlock();
+        return root && root.type == "start_block";
+    }
+
+    private scheduleCodeGeneration() {
+        if (this.codegenTimeout) {
+            clearTimeout(this.codegenTimeout);
+        }
+        this.codegenTimeout = window.setTimeout(() => {
+            this.generateAndUpdateCode();
+            this.codegenTimeout = null
+        }, 100);
     }
 
     saveWorkspaceState() {
