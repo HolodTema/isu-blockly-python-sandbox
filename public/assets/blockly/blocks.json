@@ -320,17 +320,23 @@
     },
     {
         "type": "pandas_read_html_block",
-        "message0": "прочитать HTML‑таблицу из HTML-текста %1",
+        "message0": "прочитать HTML‑таблицу из %1 в переменную %2",
         "args0": [
             {
                 "type": "input_value",
-                "name": "HTML_TEXT",
+                "name": "TEXT_WITH_TABLE",
                 "check": "String"
+            },
+            {
+                "type": "field_variable",
+                "name": "RESULT_VAR",
+                "variable": "df"
             }
         ],
-        "output": "PandasDataFrame",
+        "previousStatement": null,
+        "nextStatement": null,
         "colour": 270,
-        "tooltip": "Парсит HTML‑строку и возвращает первую таблицу как DataFrame"
+        "tooltip": "Получает таблицу из HTML-строки или по HTTP-адресу и помещает ее как pandas DataFrame объект в переменную."
     },
     {
         "type": "pandas_concat_block",

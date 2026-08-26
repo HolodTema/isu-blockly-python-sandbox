@@ -7,23 +7,29 @@ export function initPandasBlocks(generator: PythonGenerator, mode: "display"|"ex
         return "import pandas as pd\n";
     };
 
-    generator.forBlock["pandas_read_html_block"] = function(block: Blockly.Block): [string, Order] {
-        const blockArg = generator.valueToCode(block, "HTML_TEXT", Order.ATOMIC) || '""';
-        if (mode == "display") {
-            return [`pd.read_html(${blockArg})[0]`, Order.FUNCTION_CALL];
-        }
-        else {
-            return [
-                `await (async () => {
-                let blockArg = ${blockArg};
-                if (typeof blockArg === 'string' && (blockArg.startsWith('http://') || blockArg.startsWith('https://'))) {
-                    const response = await pyodide.pyimport('pyodide.http').pyfetch(html);
-                    blockArg = await response.text();
-                }
-                return pd.read_html(html)[0];
-            })()`,
-                Order.ATOMIC
-            ];
+    generator.forBlock["pandas_read_html_block"] = function(block: Blockly.Block): string {
+        const blockArg = generator.valueToCode(block, "TEXT_WITH_TABLE", Order.ATOMIC) || '""';
+        const resultVar = block.getFieldValue("RESULT_VAR").value || "df";
+        if (mode === "display") {
+            return `${resultVar} = pd.read_html(${blockArg})[0]\n`;
+        } else {
+//             return `
+// from pyodide.http import pyfetch
+// async def __load_html():
+//     html = ${blockArg}
+//     if isinstance(html, str) and (html.startswith('http://') or html.startswith('https://')):
+//         html = "http://130.49.175.150:8080/" + html
+//         response = await pyfetch(html)
+//         html = await response.text()
+//     return pd.read_html(html)[0]
+// ${resultVar} = await __load_html()
+// `;
+            return `
+if isinstance(${blockArg}, str) and (${blockArg}.startswith('http://') or ${blockArg}.startswith('https://')):
+    ${resultVar} = pd.read_html("http://130.49.175.150:8080/" + ${blockArg})[0]
+else:
+    ${resultVar} = pd.read_html(${blockArg})[0]
+`;
         }
     };
 
