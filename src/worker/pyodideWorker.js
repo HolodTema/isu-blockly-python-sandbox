@@ -25,6 +25,7 @@ async function initPyodide() {
         await pyodide.loadPackage('requests');
         await pyodide.loadPackage('pandas');
         await pyodide.loadPackage('lxml');
+        await pyodide.loadPackage('micropip');
         const stdout = new WorkerStdout();
         pyodide.runPython(`
 import sys
@@ -41,6 +42,13 @@ sys.stdout = StringIO()
 import sys
 sys.stdout = worker_stdout
         `);
+
+        pyodide.runPythonAsync(`
+import micropip
+await micropip.install('pyodide-http')
+import pyodide_http
+pyodide_http.patch_all()  # Патчит все стандартные библиотеки
+        `)
         isInitialized = true;
         self.postMessage({ type: 'init', payload: 'ok' });
     } catch (e) {
