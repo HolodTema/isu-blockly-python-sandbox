@@ -455,6 +455,27 @@
         "colour": 270,
         "tooltip": "Сохраняет DataFrame в CSV-файл (без индекса)"
     },
+    {
+        "type": "pandas_read_json_block",
+        "message0": "Прочитать JSON-таблицу из %1 в переменную %2",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT_WITH_TABLE",
+                "check": "String"
+            },
+            {
+                "type": "field_variable",
+                "name": "RESULT_VAR",
+                "text": "df"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 270,
+        "tooltip": "Считывает pandas-таблицу из JSON-строки или по HTTP-адресу, по которому лежит JSON-файл. Сохраняет считанную таблицу в переменную."
+    },
+
 
     {
         "type":  "convert_to_int_block",

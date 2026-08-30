@@ -13,17 +13,6 @@ export function initPandasBlocks(generator: PythonGenerator, mode: "display"|"ex
         if (mode === "display") {
             return `${resultVar} = pd.read_html(${blockArg})[0]\n`;
         } else {
-//             return `
-// from pyodide.http import pyfetch
-// async def __load_html():
-//     html = ${blockArg}
-//     if isinstance(html, str) and (html.startswith('http://') or html.startswith('https://')):
-//         html = "http://130.49.175.150:8080/" + html
-//         response = await pyfetch(html)
-//         html = await response.text()
-//     return pd.read_html(html)[0]
-// ${resultVar} = await __load_html()
-// `;
             return `
 if isinstance(${blockArg}, str) and (${blockArg}.startswith('http://') or ${blockArg}.startswith('https://')):
     ${resultVar} = pd.read_html("http://130.49.175.150:8080/" + ${blockArg})[0]
@@ -33,7 +22,22 @@ else:
         }
     };
 
-    generator.forBlock["pandas_concat_block"] = function(block: Blockly.Block): [string, Order] {
+    generator.forBlock["pandas_read_json_block"] = function(block: Blockly.Block): string {
+        const blockArg = generator.valueToCode(block, "TEXT_WITH_TABLE", Order.ATOMIC) || '""';
+        const resultVar = block.getFieldValue("RESULT_VAR").value || "df";
+        if (mode === "display") {
+            return `${resultVar} = pd.read_json(${blockArg})\n`;
+        } else {
+            return `
+if isinstance(${blockArg}, str) and (${blockArg}.startswith('http://') or ${blockArg}.startswith('https://')):
+    ${resultVar} = pd.read_json("http://130.49.175.150:8080/" + ${blockArg})
+else:
+    ${resultVar} = pd.read_json(${blockArg})
+`;
+        }
+    }
+
+        generator.forBlock["pandas_concat_block"] = function(block: Blockly.Block): [string, Order] {
         const listVar = generator.valueToCode(block, "LIST", Order.ATOMIC) || '[]';
         return [`pd.concat(${listVar})`, Order.FUNCTION_CALL];
     };

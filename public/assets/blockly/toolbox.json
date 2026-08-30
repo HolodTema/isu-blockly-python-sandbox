@@ -319,6 +319,10 @@
                 },
                 {
                     "kind": "block",
+                    "type": "pandas_read_json_block"
+                },
+                {
+                    "kind": "block",
                     "type": "pandas_concat_block"
                 },
                 {
