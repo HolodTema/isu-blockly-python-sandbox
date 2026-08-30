@@ -24,15 +24,16 @@ else:
 
     generator.forBlock["pandas_read_json_block"] = function(block: Blockly.Block): string {
         const blockArg = generator.valueToCode(block, "TEXT_WITH_TABLE", Order.ATOMIC) || '""';
-        const resultVar = block.getFieldValue("RESULT_VAR").value || "df";
+        const orient = block.getFieldValue("ORIENT") || "records";
+        const resultVar = block.getFieldValue("RESULT_VAR")?.value || "df";
         if (mode === "display") {
-            return `${resultVar} = pd.read_json(${blockArg})\n`;
+            return `${resultVar} = pd.read_json(${blockArg}, orient="${orient}")\n`;
         } else {
             return `
 if isinstance(${blockArg}, str) and (${blockArg}.startswith('http://') or ${blockArg}.startswith('https://')):
-    ${resultVar} = pd.read_json("http://130.49.175.150:8080/" + ${blockArg})
+    ${resultVar} = pd.read_json(requests.get("http://130.49.175.150:8080/" + ${blockArg}).text, orient="${orient}")
 else:
-    ${resultVar} = pd.read_json(${blockArg})
+    ${resultVar} = pd.read_json(${blockArg}, orient="${orient}")
 `;
         }
     }
