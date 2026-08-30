@@ -455,6 +455,69 @@
         "colour": 270,
         "tooltip": "Сохраняет DataFrame в CSV-файл (без индекса)"
     },
+    {
+        "type": "pandas_read_json_block",
+        "message0": "Прочитать JSON-таблицу из %1 с форматом %2 в переменную %3",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT_WITH_TABLE",
+                "check": "String"
+            },
+            {
+                "type": "field_dropdown",
+                "name": "ORIENT",
+                "options": [
+                    ["индекс (index)", "index"],
+                    ["столбцы (columns)", "columns"],
+                    ["записи (records)", "records"],
+                    ["раздельно (split)", "split"],
+                    ["таблица (table)", "table"],
+                    ["значения (values)", "values"]
+                ]
+            },
+            {
+                "type": "field_variable",
+                "name": "RESULT_VAR",
+                "variable": "df"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 270,
+        "tooltip": "Считывает pandas-таблицу из JSON-строки или по HTTP-адресу, по которому лежит JSON-файл. Сохраняет считанную таблицу в переменную. Параметр 'формат' задаёт структуру JSON (чаще всего используют 'записи' для списка объектов)."
+    },
+    {
+        "type": "pandas_read_csv_block",
+        "message0": "Прочитать CSV-таблицу из %1 с разделителем %2 в переменную %3",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT_WITH_TABLE",
+                "check": "String"
+            },
+            {
+                "type": "field_dropdown",
+                "name": "SEP",
+                "options": [
+                    ["запятая", ","],
+                    ["точка с запятой", ";"],
+                    ["пробел", " "],
+                    ["табуляция", "\t"]
+                ]
+            },
+            {
+                "type": "field_variable",
+                "name": "RESULT_VAR",
+                "variable": "df"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 270,
+        "tooltip": "Считывает pandas-таблицу из CSV-таблицы или по HTTP-адресу, по которому лежит CSV-файл. Сохраняет считанную таблицу в переменную. Параметр 'разделитель' задаёт символ, который разделяет ячейки таблицы (обычно это пробел, запятая и тд.)"
+    },
+
 
     {
         "type":  "convert_to_int_block",
