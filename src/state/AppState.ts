@@ -73,6 +73,10 @@ export class AppState {
         return this.currentCodeOutputTabType;
     }
 
+    getInputFilenames(): Set<string> {
+        return this.setInputFilenames;
+    }
+
     private notifyAllListeners(updatedKey: AppStateKey) {
         this.listeners.forEach((listener) => {
             listener(updatedKey, this);

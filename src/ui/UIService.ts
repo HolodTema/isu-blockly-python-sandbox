@@ -5,6 +5,7 @@ import {PyodideService} from "../service/PyodideService";
 import {ProjectService} from "../service/ProjectService";
 import {ToastService} from "../service/ToastService";
 import {CodeOutputTabType} from "../state/CodeOutputTabType";
+import {fieldRegistry} from "blockly";
 
 
 export class UIService {
@@ -24,7 +25,6 @@ export class UIService {
         this.configureButtonExpandOutput(divCodeOutput);
         this.configureButtonExpandCode();
         this.configureButtonOpenProject();
-        // this.configureButtonDownloadResultFiles();
         this.configureButtonAddInputFile();
         this.showSplashScreenWithHideTimer();
         this.configureCodeOutputTabButtons();
@@ -48,10 +48,10 @@ export class UIService {
         if (divCodeExecutionStatusText && divCodeExecutionStatus) {
             divCodeExecutionStatus.classList.add("active");
             if (mode === "run") {
-                divCodeExecutionStatusText.textContent = "Код выполняется"
+                divCodeExecutionStatusText.textContent = "Запуск"
             }
             if (mode === "debug") {
-                divCodeExecutionStatusText.textContent = "Код отлаживается"
+                divCodeExecutionStatusText.textContent = "Отладка"
             }
         }
     }
@@ -81,6 +81,9 @@ export class UIService {
                     await this.pyodideService.runCurrentCodeFromWorkspace();
                 }
                 finally {
+                    if (this.state.getCurrentCodeOutputTabType() === CodeOutputTabType.OutputFiles) {
+                        await this.refreshOutputFilesList();
+                    }
                     this.hideCodeExecutionStatus();
                 }
             });
@@ -130,18 +133,6 @@ export class UIService {
             fileInput.click();
         });
     }
-
-    // private configureButtonDownloadResultFiles() {
-    //     const buttonDownloadResultFiles = document.getElementById("button_download_result_files")!;
-    //     buttonDownloadResultFiles.addEventListener("click", (e) => {
-    //         const promise: Promise<Boolean> = this.pyodideService.saveResultFilesIntoZipArchive();
-    //         promise.then(isSuccessful => {
-    //             if (!isSuccessful) {
-    //                 this.showErrorToastNoResultFiles();
-    //             }
-    //         });
-    //     });
-    // }
 
     private configureButtonAddInputFile() {
         const buttonAddInputFile = document.getElementById("button_add_input_file")!;
@@ -261,6 +252,8 @@ export class UIService {
     private async refreshOutputFilesList() {
         try {
             const listOutputFiles: string[] = await this.pyodideService.listOutputFiles();
+            const listOutputFilesWithoutInputFiles = listOutputFiles.filter(filename => !this.state.isInputFilenameInSet(filename));
+
             const divOutputFilesList = document.getElementById("output_files_list");
             const divOutputFilesPreview = document.getElementById("output_files_preview");
             if (!divOutputFilesList || !divOutputFilesPreview) {
@@ -270,12 +263,12 @@ export class UIService {
             divOutputFilesList.innerHTML = "";
             divOutputFilesPreview.textContent = "";
 
-            if (listOutputFiles.length == 0) {
+            if (listOutputFilesWithoutInputFiles.length == 0) {
                 divOutputFilesList.innerHTML = '<div style="color: #888; padding: 8px;">Программа еще не создавала файлы</div>';
                 return;
             }
 
-            listOutputFiles.forEach(filename => {
+            listOutputFilesWithoutInputFiles.forEach(filename => {
                 const divFileItem = document.createElement("div");
                 divFileItem.className = 'file_item';
                 divFileItem.textContent = filename;

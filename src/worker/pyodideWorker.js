@@ -56,8 +56,25 @@ pyodide_http.patch_all()  # Патчит все стандартные библ�
     }
 }
 
-async function handleRunCode(code, id) {
+async function handleRunCode(payload, id) {
     try {
+        const { code, inputFilenames } = payload;
+        const setInputFilenames = new Set(inputFilenames);
+
+        const listAllFiles = pyodide.FS.readdir("/home/pyodide/")
+            .filter(filename => name !== "." && name !== ".." && !name.startsWith("__"));
+
+        for (const filename of listAllFiles) {
+            if (!setInputFilenames.has(filename)) {
+                try {
+                    pyodide.FS.unlink(`/home/pyodide/${filename}`);
+                }
+                catch (e) {
+                    console.log(`Error: unable to delete from pyodide.FS file ${filename}`);
+                }
+            }
+        }
+
         console.log(code);
         const result = await pyodide.runPythonAsync(code);
         console.log("code is done", result);
@@ -91,7 +108,7 @@ async function handleSaveResultZip() {
         const scriptResponse = await fetch('/assets/python/createZipArchiveOfResultFiles.py');
         const script = await scriptResponse.text();
         pyodide.runPython(script);
-        const zipData = pyodide.FS.readFile('/home/pyodide/exported_files.zip');
+        const zipData = pyodide.FS.readFile('/home/pyodide/__exported_files.zip');
         self.postMessage({
             type: 'zipReady',
             payload: zipData.buffer,
