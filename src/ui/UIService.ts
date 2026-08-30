@@ -35,6 +35,29 @@ export class UIService {
         });
     }
 
+    showCodeExecutionStatus(mode: "run" | "debug") {
+        const divCodeExecutionStatus = document.getElementById("code_execution_status");
+        const divCodeExecutionStatusText = document.getElementById("code_execution_status_text");
+        if (divCodeExecutionStatusText && divCodeExecutionStatus) {
+            divCodeExecutionStatus.classList.add("active");
+            if (mode === "run") {
+                divCodeExecutionStatusText.textContent = "Код выполняется"
+            }
+            if (mode === "debug") {
+                divCodeExecutionStatusText.textContent = "Код отлаживается"
+            }
+        }
+    }
+
+    hideCodeExecutionStatus() {
+        const divCodeExecutionStatus = document.getElementById("code_execution_status");
+        const divCodeExecutionStatusText = document.getElementById("code_execution_status_text");
+        if (divCodeExecutionStatusText && divCodeExecutionStatus) {
+            divCodeExecutionStatus.classList.remove("active");
+            divCodeExecutionStatusText.textContent = "";
+        }
+    }
+
     private configureButtonConvertToCode() {
         document.getElementById("button_convert_to_code")!
             .addEventListener("click", (e: PointerEvent) => {
@@ -44,8 +67,15 @@ export class UIService {
 
     private configureButtonRunCode() {
         document.getElementById("button_run_code")!
-            .addEventListener("click", (e: PointerEvent) => {
-                this.pyodideService.runCurrentCodeFromWorkspace();
+            .addEventListener("click", async (e: PointerEvent) => {
+                this.showCodeExecutionStatus("run");
+                await new Promise(resolve => requestAnimationFrame(resolve));
+                try {
+                    await this.pyodideService.runCurrentCodeFromWorkspace();
+                }
+                finally {
+                    this.hideCodeExecutionStatus();
+                }
             });
     }
 
@@ -62,8 +92,7 @@ export class UIService {
             if (divCodeOutput.className.includes("code_output_expanded")) {
                 divCodeOutput.className = 'font_powered_cascadia_code code_output_not_expanded';
                 buttonExpandOutput.src = '/assets/images/ic_expand_up.svg';
-            }
-            else {
+            } else {
                 divCodeOutput.className = "font_powered_cascadia_code code_output_expanded";
                 buttonExpandOutput.src = "/assets/images/ic_expand_down.svg";
             }
@@ -77,8 +106,7 @@ export class UIService {
             const isHidden = main.classList.toggle("code-hidden");
             if (isHidden) {
                 buttonExpandCode.src = "assets/images/ic_expand_left.svg";
-            }
-            else {
+            } else {
                 buttonExpandCode.src = "assets/images/ic_expand_right.svg";
             }
 
@@ -165,8 +193,7 @@ export class UIService {
                     divInputFilesList.appendChild(divInputFile);
 
                     console.log("Input file added to UI successfully!");
-                }
-                catch (e) {
+                } catch (e) {
                     console.error("Error: unable to open input file to load it into pyodide:", e);
                 }
             };
