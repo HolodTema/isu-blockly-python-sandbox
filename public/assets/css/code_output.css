@@ -1,12 +1,11 @@
 #code_output {
+    display: flex;
+    flex-direction: column;
     background-color: black;
     color: white;
     padding: 5px;
     width: 100%;
-    height: 100%;
     overflow: hidden;
-    white-space: pre-wrap;
-    overflow-y: auto;
 }
 
 #code_output::selection {
@@ -82,13 +81,14 @@
 
 .tab_content {
     display: none;
-    flex: 1;                /* забирает всё свободное пространство */
-    overflow-y: auto;       /* скролл внутри вкладки */
+    flex: 1 1 auto;
+    overflow-y: auto;
     white-space: pre-wrap;
+    min-height: 0;
 }
 
 .tab_content.active {
-    display: flex;          /* или block, но для OutputFiles нужен flex */
+    display: block;
 }
 
 #tab_content_OutputFiles.active {
@@ -97,6 +97,10 @@
     gap: 10px;
     height: 100%;
     padding: 5px;
+}
+
+#tab_content_Output.active {
+    display: block;
 }
 
 #output_files_list {
