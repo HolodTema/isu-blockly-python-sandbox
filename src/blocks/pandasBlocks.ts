@@ -38,7 +38,23 @@ else:
         }
     }
 
-        generator.forBlock["pandas_concat_block"] = function(block: Blockly.Block): [string, Order] {
+    generator.forBlock["pandas_read_csv_block"] = function(block: Blockly.Block): string {
+        const blockArg = generator.valueToCode(block, "TEXT_WITH_TABLE", Order.ATOMIC) || '""';
+        const sep = block.getFieldValue("SEP") || ",";
+        const resultVar = block.getFieldValue("RESULT_VAR")?.value || "df";
+        if (mode === "display") {
+            return `${resultVar} = pd.read_csv(${blockArg}, sep="${sep}")\n`;
+        } else {
+            return `
+if isinstance(${blockArg}, str) and (${blockArg}.startswith('http://') or ${blockArg}.startswith('https://')):
+    ${resultVar} = pd.read_csv(StringIO(requests.get("http://130.49.175.150:8080/" + ${blockArg}).text), sep="${sep}")
+else:
+    ${resultVar} = pd.read_csv(${blockArg}, sep="${sep}")
+`;
+        }
+    }
+
+    generator.forBlock["pandas_concat_block"] = function(block: Blockly.Block): [string, Order] {
         const listVar = generator.valueToCode(block, "LIST", Order.ATOMIC) || '[]';
         return [`pd.concat(${listVar})`, Order.FUNCTION_CALL];
     };

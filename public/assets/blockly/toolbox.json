@@ -323,6 +323,10 @@
                 },
                 {
                     "kind": "block",
+                    "type": "pandas_read_csv_block"
+                },
+                {
+                    "kind": "block",
                     "type": "pandas_concat_block"
                 },
                 {
