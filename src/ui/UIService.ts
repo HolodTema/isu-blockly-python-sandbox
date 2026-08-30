@@ -4,6 +4,7 @@ import {BlocklyService} from "../service/BlocklyService";
 import {PyodideService} from "../service/PyodideService";
 import {ProjectService} from "../service/ProjectService";
 import {ToastService} from "../service/ToastService";
+import {CodeOutputTabType} from "../state/CodeOutputTabType";
 
 
 export class UIService {
@@ -25,12 +26,14 @@ export class UIService {
         this.configureButtonOpenProject();
         // this.configureButtonDownloadResultFiles();
         this.configureButtonAddInputFile();
-
         this.showSplashScreenWithHideTimer();
 
         this.state.subscribe((key: string, state: AppState) => {
             if (key === AppStateKey.StrCodeOutput) {
                 divCodeOutput.textContent = state.getStrCodeOutput();
+            }
+            if (key === AppStateKey.CurrentCodeOutputTabType) {
+                this.switchCodeOutputTab(state.getCurrentCodeOutputTabType());
             }
         });
     }
@@ -217,5 +220,29 @@ export class UIService {
                 splash.classList.add("removed");
             }, 1500);
         }, 1500);
+    }
+
+    private switchCodeOutputTab(tabType: CodeOutputTabType) {
+        document.querySelectorAll(".tab_button").forEach((tabButton) => {
+           tabButton.classList.toggle("active", tabButton.getAttribute("data-tab") === tabType);
+        });
+        document.querySelectorAll(".tab_content").forEach((tabContent) => {
+            tabContent.classList.toggle("active", tabContent.id === `tab_content_${tabType}`);
+        });
+        if (tabType === CodeOutputTabType.OutputFiles) {
+            this.refreshOutputFilesList();
+        }
+    }
+
+    private async refreshOutputFilesList() {
+        try {
+            const files = await this.pyodideService.listFiles();
+            const divOutputFilesList = document.getElementById("output_files_list");
+            const divOutputFilesPreview = document.getElementById("output_files_preview");
+            if (!divOutputFilesList || !divOutputFilesPreview) {
+                return;
+            }
+            
+        }
     }
 }
