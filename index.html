@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="assets/css/toast.css">
     <link rel="stylesheet" href="assets/css/splash_screen.css">
     <link rel="stylesheet" href="assets/css/code_execution_status.css">
+    <link rel="stylesheet" href="assets/css/code_output.css">
 
     <link rel="icon" href="assets/images/logo.png" type="image/png">
 
@@ -67,7 +68,10 @@
         <div id="code_output_header">
             <div id="code_output_header_left">
                 <img id="button_expand_output" src="assets/images/ic_expand_down.svg" alt="expand">
-                <div id="tab_button_output" class="font_powered_mclaren">Вывод</div>
+                <div id="code_output_tab_bar">
+                    <button class="tab_button active" data-tab="output">Вывод</button>
+                    <button class="tab_button" data-tab="output_files">Итоговые файлы</button>
+                </div>
             </div>
             <div id="code_output_header_right">
                 <div id="code_execution_status">
@@ -76,11 +80,20 @@
                         <div id="code_execution_status_progress_bar"></div>
                     </div>
                 </div>
-                <img id="img_download_result_files" src="assets/images/ic_download_result_files.svg" alt=""/>
-                <a id="button_download_result_files" class="font_powered_mclaren">Скачать итоговые файлы</a>
             </div>
         </div>
-        <div id="code_output" class="font_powered_cascadia_code code_output_expanded">Запусти код и посмотри результат его работы здесь!</div>
+        <div id="code_output" class="font_powered_cascadia_code code_output_expanded">
+            <div id="tab_content_output" class="tab_content active">Запусти код и посмотри результат его работы здесь!
+            </div>
+            <div id="tab_content_output_files" class="tab_content">
+                <div id="output_files_list">
+
+                </div>
+                <div id="output_files_preview">
+
+                </div>
+            </div>
+        </div>
 
     </div>
 </main>

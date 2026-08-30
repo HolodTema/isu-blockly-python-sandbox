@@ -23,7 +23,7 @@ export class UIService {
         this.configureButtonExpandOutput(divCodeOutput);
         this.configureButtonExpandCode();
         this.configureButtonOpenProject();
-        this.configureButtonDownloadResultFiles();
+        // this.configureButtonDownloadResultFiles();
         this.configureButtonAddInputFile();
 
         this.showSplashScreenWithHideTimer();
@@ -124,17 +124,17 @@ export class UIService {
         });
     }
 
-    private configureButtonDownloadResultFiles() {
-        const buttonDownloadResultFiles = document.getElementById("button_download_result_files")!;
-        buttonDownloadResultFiles.addEventListener("click", (e) => {
-            const promise: Promise<Boolean> = this.pyodideService.saveResultFilesIntoZipArchive();
-            promise.then(isSuccessful => {
-                if (!isSuccessful) {
-                    this.showErrorToastNoResultFiles();
-                }
-            });
-        });
-    }
+    // private configureButtonDownloadResultFiles() {
+    //     const buttonDownloadResultFiles = document.getElementById("button_download_result_files")!;
+    //     buttonDownloadResultFiles.addEventListener("click", (e) => {
+    //         const promise: Promise<Boolean> = this.pyodideService.saveResultFilesIntoZipArchive();
+    //         promise.then(isSuccessful => {
+    //             if (!isSuccessful) {
+    //                 this.showErrorToastNoResultFiles();
+    //             }
+    //         });
+    //     });
+    // }
 
     private configureButtonAddInputFile() {
         const buttonAddInputFile = document.getElementById("button_add_input_file")!;
