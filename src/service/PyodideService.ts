@@ -111,4 +111,14 @@ export class PyodideService {
         }
         await this.runPythonCode(code);
     }
+
+    async listOutputFiles(): Promise<string[]> {
+        const result = await this.sendCommand("listOutputFiles", null);
+        return result as string[];
+    }
+
+    async readOutputFile(filename: string): Promise<string> {
+        const result = await this.sendCommand("readOutputFile", filename);
+        return result as string;
+    }
 }

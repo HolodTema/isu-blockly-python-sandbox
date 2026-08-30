@@ -101,6 +101,25 @@ async function handleSaveResultZip() {
     }
 }
 
+async function handleListOutputFiles(id) {
+    try {
+        const listFiles = pyodide.FS.readdir("/home/pyodide/")
+            .filter(name => name !== "." && name !== ".." && !name.startsWith("__"));
+        self.postMessage({ id, type: "listOutputFiles", payload: listFiles });
+    } catch (e) {
+        self.postMessage({ id, type: "error", payload: e.message });
+    }
+}
+
+async function handleReadOutputFile(filename, id) {
+    try {
+        const content = pyodide.FS.readFile(filename, { encoding: "utf8" });
+        self.postMessage({ id, type: 'readOutputFile', payload: content });
+    } catch (e) {
+        self.postMessage({ id, type: 'error', payload: e.message });
+    }
+}
+
 self.addEventListener('message', async (event) => {
     const { id, type, payload } = event.data;
 
@@ -119,6 +138,12 @@ self.addEventListener('message', async (event) => {
             break;
         case 'saveZip':
             await handleSaveResultZip();
+            break;
+        case 'listOutputFiles':
+            await handleListOutputFiles(id);
+            break;
+        case 'readOutputFile':
+            await handleReadOutputFile(payload, id);
             break;
         default:
             self.postMessage({ id, type: 'error', payload: `Неизвестная команда: ${type}` });

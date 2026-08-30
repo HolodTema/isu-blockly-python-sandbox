@@ -27,10 +27,14 @@ export class UIService {
         // this.configureButtonDownloadResultFiles();
         this.configureButtonAddInputFile();
         this.showSplashScreenWithHideTimer();
+        this.configureCodeOutputTabButtons();
 
         this.state.subscribe((key: string, state: AppState) => {
             if (key === AppStateKey.StrCodeOutput) {
-                divCodeOutput.textContent = state.getStrCodeOutput();
+                const outputTab = document.getElementById('tab_content_Output');
+                if (outputTab) {
+                    outputTab.textContent = state.getStrCodeOutput();
+                }
             }
             if (key === AppStateKey.CurrentCodeOutputTabType) {
                 this.switchCodeOutputTab(state.getCurrentCodeOutputTabType());
@@ -222,6 +226,20 @@ export class UIService {
         }, 1500);
     }
 
+    private configureCodeOutputTabButtons() {
+        document.querySelectorAll('.tab_button').forEach(btn => {
+            btn.addEventListener("click", () => {
+                const tab = btn.getAttribute('data-tab');
+                if (tab) {
+                    const tabType = tab as CodeOutputTabType;
+                    this.state.setCurrentCodeOutputTabType(tabType);
+                }
+            });
+        });
+
+        this.switchCodeOutputTab(this.state.getCurrentCodeOutputTabType());
+    }
+
     private switchCodeOutputTab(tabType: CodeOutputTabType) {
         document.querySelectorAll(".tab_button").forEach((tabButton) => {
            tabButton.classList.toggle("active", tabButton.getAttribute("data-tab") === tabType);
@@ -229,6 +247,12 @@ export class UIService {
         document.querySelectorAll(".tab_content").forEach((tabContent) => {
             tabContent.classList.toggle("active", tabContent.id === `tab_content_${tabType}`);
         });
+        if (tabType === CodeOutputTabType.Output) {
+            const divTabContentOutput = document.getElementById('tab_content_Output');
+            if (divTabContentOutput) {
+                divTabContentOutput.textContent = this.state.getStrCodeOutput();
+            }
+        }
         if (tabType === CodeOutputTabType.OutputFiles) {
             this.refreshOutputFilesList();
         }
@@ -236,13 +260,69 @@ export class UIService {
 
     private async refreshOutputFilesList() {
         try {
-            const files = await this.pyodideService.listFiles();
+            const listOutputFiles: string[] = await this.pyodideService.listOutputFiles();
             const divOutputFilesList = document.getElementById("output_files_list");
             const divOutputFilesPreview = document.getElementById("output_files_preview");
             if (!divOutputFilesList || !divOutputFilesPreview) {
                 return;
             }
-            
+
+            divOutputFilesList.innerHTML = "";
+            divOutputFilesPreview.textContent = "";
+
+            if (listOutputFiles.length == 0) {
+                divOutputFilesList.innerHTML = '<div style="color: #888; padding: 8px;">Программа еще не создавала файлы</div>';
+                return;
+            }
+
+            listOutputFiles.forEach(filename => {
+                const divFileItem = document.createElement("div");
+                divFileItem.className = 'file_item';
+                divFileItem.textContent = filename;
+                divFileItem.dataset.filename = filename;
+                divFileItem.addEventListener("click", () => {
+                    divOutputFilesList.querySelectorAll('.file_item').forEach(el => el.classList.remove("active"));
+                    divFileItem.classList.add('active');
+                    this.previewOutputFile(filename);
+                });
+                divOutputFilesList.appendChild(divFileItem);
+            });
+
+            const buttonDownloadAllFiles = document.createElement("button");
+            buttonDownloadAllFiles.textContent = 'Скачать все файлы';
+            buttonDownloadAllFiles.className = 'file_item button_download_all_output_files';
+            buttonDownloadAllFiles.style.cssText = `
+                margin-top: 10px;
+                background: #07830a;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 6px 12px;
+                cursor: pointer;
+                font-family: 'mclaren', sans-serif;
+                font-size: 14px;
+            `;
+            buttonDownloadAllFiles.addEventListener('click', () => {
+                this.pyodideService.saveResultFilesIntoZipArchive();
+            });
+            divOutputFilesList.appendChild(buttonDownloadAllFiles);
+        }
+        catch (e) {
+            console.error("Error while getting list of code-output-files:", e);
+        }
+    }
+
+    private async previewOutputFile(filename: string) {
+        const divOutputFilesPreview = document.getElementById("output_files_preview");
+        if (!divOutputFilesPreview) {
+            return;
+        }
+        try {
+            const outputFileText = await this.pyodideService.readOutputFile(filename);
+            divOutputFilesPreview.textContent = outputFileText;
+        }
+        catch (e) {
+            divOutputFilesPreview.textContent = `Ошибка чтения файла: ${e}`;
         }
     }
 }
