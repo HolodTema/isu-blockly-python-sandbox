@@ -27,7 +27,6 @@ export class PyodideService {
             }
             if (msg.type === "error") {
                 this.state.setStrCodeOutput(`Error: ${msg.payload}`);
-                return;
             }
             if (msg.type === "zipReady") {
                 const blob: Blob = new Blob([msg.payload], {type: "application/zip"});
@@ -104,12 +103,12 @@ export class PyodideService {
         return true;
     }
 
-    runCurrentCodeFromWorkspace() {
+    async runCurrentCodeFromWorkspace() {
         let code: string|null = (this.state.getStrCodeToLaunch()).trim()
         if (code.length === 0) {
             this.state.setStrCodeOutput('# Пустая программа\n');
             return;
         }
-        this.runPythonCode(code);
+        await this.runPythonCode(code);
     }
 }

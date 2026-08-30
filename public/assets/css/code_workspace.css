@@ -37,8 +37,9 @@
     padding: 0 15px;
     background-color: #07830a;
     flex-direction: row;
-    align-content: center;
+    align-items: center;
     justify-content: space-between;
+    height: 40px;
 }
 
 #code_output_header_left {
@@ -52,6 +53,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: end;
+    gap: 10px;
 }
 
 #img_download_result_files {
@@ -152,4 +154,44 @@
     width: 24px;
     height: 24px;
     display: block;
+}
+
+#code_execution_status {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+}
+
+#code_execution_status.active {
+    display: flex;
+}
+
+#code_execution_status_text {
+    font-size: 16px;
+    color: white;
+    white-space: nowrap;
+}
+
+#code_execution_status_progress_bar_container {
+    width: 100px;
+    height: 4px;
+    background-color: #444;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+#code_execution_status_progress_bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ffe241, #ff5a2d);
+    border-radius: 3px;
+    animation: codeExecutionStatusProgressAnimation 1.5s ease-in-out infinite;
+}
+
+@keyframes codeExecutionStatusProgressAnimation {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
 }
