@@ -5,5 +5,6 @@ export enum AppStateKey {
     StrCodeToShow = "StrCodeToShow",
     StrCodeOutput = "StrCodeOutput",
     AddInputFilename = "AddInputFilename",
-    RemoveInputFilename = "RemoveInputFilename"
+    RemoveInputFilename = "RemoveInputFilename",
+    CurrentCodeOutputTabType = "CurrentCodeOutputTab",
 }

@@ -1,0 +1,156 @@
+#code_output {
+    display: flex;
+    flex-direction: column;
+    background-color: black;
+    color: white;
+    padding: 5px;
+    width: 100%;
+    overflow: hidden;
+}
+
+#code_output::selection {
+    background-color: white;
+    color: black;
+}
+
+.code_output_expanded {
+    height: 50%;
+}
+
+.code_output_not_expanded {
+    height: 0;
+}
+
+#code_output_header {
+    display: flex;
+    padding: 0 15px;
+    background-color: #07830a;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: 40px;
+}
+
+#code_output_header_left {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    align-content: center;
+}
+#code_output_header_right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: end;
+    gap: 10px;
+}
+
+#button_expand_output {
+    display: block;
+    width: 16px;
+    height: 16px;
+    color: white;
+}
+
+#code_output_tab_bar {
+    display: flex;
+    gap: 5px;
+    margin-left: 10px;
+}
+
+.tab_button {
+    background: transparent;
+    border: none;
+    padding: 6px 12px;
+    color: rgba(255,255,255,0.6);
+    font-family: 'mclaren', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.3s, border-color 0.3s;
+}
+
+.tab_button:hover {
+    color: white;
+}
+
+.tab_button.active {
+    color: white;
+    border-bottom-color: white;
+}
+
+.tab_content {
+    display: none;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    min-height: 0;
+}
+
+.tab_content.active {
+    display: block;
+}
+
+#tab_content_OutputFiles.active {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    height: 100%;
+    padding: 5px;
+}
+
+#tab_content_Output.active {
+    display: block;
+}
+
+#output_files_list {
+    flex: 0 0 200px;
+    border-right: 1px solid #444;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+#output_files_preview {
+    flex: 1;
+    overflow-y: auto;
+    padding-left: 10px;
+    white-space: pre-wrap;
+    font-family: 'Cascadia Code', monospace;
+    font-size: 14px;
+}
+
+.file_item {
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    color: #ccc;
+    transition: background 0.2s;
+}
+
+.file_item:hover {
+    background-color: #2a2a2a;
+}
+
+.file_item.active {
+    background-color: #3a3a3a;
+    color: #8BC34A;
+}
+
+.button_download_all_output_files {
+    margin-top: 10px;
+    background: #07830a;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-family: 'mclaren', sans-serif;
+    font-size: 14px;
+    width: 100%;
+    text-align: center;
+}
+
+.button_download_all_output_files:hover {
+    background: #0a9e0d;
+}

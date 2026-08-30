@@ -56,8 +56,25 @@ pyodide_http.patch_all()  # Патчит все стандартные библ�
     }
 }
 
-async function handleRunCode(code, id) {
+async function handleRunCode(payload, id) {
     try {
+        const { code, inputFilenames } = payload;
+        const setInputFilenames = new Set(inputFilenames);
+
+        const listAllFiles = pyodide.FS.readdir("/home/pyodide/")
+            .filter(filename => name !== "." && name !== ".." && !name.startsWith("__"));
+
+        for (const filename of listAllFiles) {
+            if (!setInputFilenames.has(filename)) {
+                try {
+                    pyodide.FS.unlink(`/home/pyodide/${filename}`);
+                }
+                catch (e) {
+                    console.log(`Error: unable to delete from pyodide.FS file ${filename}`);
+                }
+            }
+        }
+
         console.log(code);
         const result = await pyodide.runPythonAsync(code);
         console.log("code is done", result);
@@ -91,13 +108,32 @@ async function handleSaveResultZip() {
         const scriptResponse = await fetch('/assets/python/createZipArchiveOfResultFiles.py');
         const script = await scriptResponse.text();
         pyodide.runPython(script);
-        const zipData = pyodide.FS.readFile('/home/pyodide/exported_files.zip');
+        const zipData = pyodide.FS.readFile('/home/pyodide/__exported_files.zip');
         self.postMessage({
             type: 'zipReady',
             payload: zipData.buffer,
         }, [zipData.buffer]);
     } catch (e) {
         self.postMessage({ type: 'error', payload: `Ошибка создания zip: ${e.message}` });
+    }
+}
+
+async function handleListOutputFiles(id) {
+    try {
+        const listFiles = pyodide.FS.readdir("/home/pyodide/")
+            .filter(name => name !== "." && name !== ".." && !name.startsWith("__"));
+        self.postMessage({ id, type: "listOutputFiles", payload: listFiles });
+    } catch (e) {
+        self.postMessage({ id, type: "error", payload: e.message });
+    }
+}
+
+async function handleReadOutputFile(filename, id) {
+    try {
+        const content = pyodide.FS.readFile(filename, { encoding: "utf8" });
+        self.postMessage({ id, type: 'readOutputFile', payload: content });
+    } catch (e) {
+        self.postMessage({ id, type: 'error', payload: e.message });
     }
 }
 
@@ -119,6 +155,12 @@ self.addEventListener('message', async (event) => {
             break;
         case 'saveZip':
             await handleSaveResultZip();
+            break;
+        case 'listOutputFiles':
+            await handleListOutputFiles(id);
+            break;
+        case 'readOutputFile':
+            await handleReadOutputFile(payload, id);
             break;
         default:
             self.postMessage({ id, type: 'error', payload: `Неизвестная команда: ${type}` });

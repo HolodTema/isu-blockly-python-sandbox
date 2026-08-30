@@ -61,7 +61,7 @@ export class PyodideService {
         });
     }
 
-    async runPythonCode(code: string): Promise<void> {
+    async runPythonCode(code: string, inputFilenames: string[] = []): Promise<void> {
         if (!this.isReady) {
             await new Promise((resolve: Function) => {
                 const check = () => {
@@ -77,7 +77,7 @@ export class PyodideService {
         }
         this.state.setStrCodeOutput("");
         try {
-            await this.sendCommand("run", code);
+            await this.sendCommand("run", { code, inputFilenames });
         }
         catch (error: any) {
             this.state.setStrCodeOutput(`Runtime error: ${error.message}`);
@@ -104,11 +104,22 @@ export class PyodideService {
     }
 
     async runCurrentCodeFromWorkspace() {
-        let code: string|null = (this.state.getStrCodeToLaunch()).trim()
+        const code = this.state.getStrCodeToLaunch().trim();
         if (code.length === 0) {
             this.state.setStrCodeOutput('# Пустая программа\n');
             return;
         }
-        await this.runPythonCode(code);
+        const inputFiles = Array.from(this.state.getInputFilenames());
+        await this.runPythonCode(code, inputFiles);
+    }
+
+    async listOutputFiles(): Promise<string[]> {
+        const result = await this.sendCommand("listOutputFiles", null);
+        return result as string[];
+    }
+
+    async readOutputFile(filename: string): Promise<string> {
+        const result = await this.sendCommand("readOutputFile", filename);
+        return result as string;
     }
 }

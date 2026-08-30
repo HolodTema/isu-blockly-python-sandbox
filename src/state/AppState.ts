@@ -1,4 +1,5 @@
 import {AppStateKey} from "./AppStateKey";
+import {CodeOutputTabType} from "./CodeOutputTabType";
 
 export class AppState {
     private jsonBlocklyState: {[p: string]: any}|null = null;
@@ -6,6 +7,7 @@ export class AppState {
     private strCodeToShow: string = "";
     private strCodeOutput: string = "";
     private setInputFilenames: Set<string> = new Set();
+    private currentCodeOutputTabType: CodeOutputTabType = CodeOutputTabType.Output;
     private listeners: Array<(key: AppStateKey, state: AppState)=>void> = [];
 
     subscribe(listener: (key: AppStateKey, state: AppState)=>void) {
@@ -30,6 +32,11 @@ export class AppState {
     setStrCodeOutput(strCodeOutput: string) {
         this.strCodeOutput = strCodeOutput;
         this.notifyAllListeners(AppStateKey.StrCodeOutput);
+    }
+
+    setCurrentCodeOutputTabType(tabType: CodeOutputTabType) {
+        this.currentCodeOutputTabType = tabType;
+        this.notifyAllListeners(AppStateKey.CurrentCodeOutputTabType);
     }
 
     isInputFilenameInSet(inputFilename: string): boolean {
@@ -60,6 +67,14 @@ export class AppState {
 
     getStrCodeOutput(): string {
         return this.strCodeOutput;
+    }
+
+    getCurrentCodeOutputTabType(): CodeOutputTabType {
+        return this.currentCodeOutputTabType;
+    }
+
+    getInputFilenames(): Set<string> {
+        return this.setInputFilenames;
     }
 
     private notifyAllListeners(updatedKey: AppStateKey) {
