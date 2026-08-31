@@ -1,0 +1,36 @@
+#tab_content_Debug.active {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+#debug_variables_container {
+    flex: 1;
+    overflow: auto;
+}
+#debug_variables_table {
+    width: 100%;
+    border-collapse: collapse;
+    color: white;
+}
+#debug_variables_table th, #debug_variables_table td {
+    border: 1px solid #444;
+    padding: 4px 8px;
+    text-align: left;
+}
+#debug_controls {
+    padding: 8px;
+    display: flex;
+    gap: 10px;
+}
+#debug_controls button {
+    padding: 6px 16px;
+    background: #07830a;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+#debug_controls button:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
