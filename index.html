@@ -70,6 +70,7 @@
                 <img id="button_expand_output" src="assets/images/ic_expand_down.svg" alt="expand">
                 <div id="code_output_tab_bar">
                     <button class="tab_button active" data-tab="Output">Вывод</button>
+                    <button class="tab_button active" data-tab="Debug">Отладка</button>
                     <button class="tab_button" data-tab="OutputFiles">Итоговые файлы</button>
                 </div>
             </div>
@@ -84,6 +85,24 @@
         </div>
         <div id="code_output" class="font_powered_cascadia_code code_output_expanded">
             <div id="tab_content_Output" class="tab_content active">Запусти код и посмотри результат его работы здесь!
+            </div>
+            <div id="tab_content_Debug" class="tab_content">
+                <div id="debug_variables_container">
+                    <table id="debug_variables_table">
+                        <thead>
+                        <tr>
+                            <th>Переменная</th>
+                            <th>Значение</th>
+                        </tr>
+                        </thead>
+                        <tbody id="debug_variables_table_body"></tbody>
+                    </table>
+                </div>
+                <div id="debug_controls">
+                    <button id="button_debug_continue">Продолжить</button>
+                    <button id="button_debug_step">Шаг вперед</button>
+                    <button id="button_debug_stop">Завершить</button>
+                </div>
             </div>
             <div id="tab_content_OutputFiles" class="tab_content">
                 <div id="output_files_list">
