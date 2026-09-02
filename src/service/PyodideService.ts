@@ -1,4 +1,5 @@
 import {AppState} from "../state/AppState";
+import {CodeOutputTabType} from "../state/CodeOutputTabType";
 
 export class PyodideService {
     private worker: Worker = new Worker(
@@ -23,6 +24,18 @@ export class PyodideService {
             }
             if (msg.type === "log") {
                 console.log("Pyodide worker:", msg.payload);
+                return;
+            }
+            if (msg.type === "debugBreakpoint") {
+                const { line, variables } = msg.payload;
+                this.state.setRecordDebugVariables(variables);
+                this.state.setDebugCurrentLine(line);
+                this.state.setCurrentCodeOutputTabType(CodeOutputTabType.Debug);
+                return;
+            }
+            if (msg.type === "debugDone") {
+                this.state.setIsDebugging(false);
+                this.state.setDebugCurrentLine(null);
                 return;
             }
             if (msg.type === "error") {
@@ -98,6 +111,10 @@ export class PyodideService {
             .catch(e => console.warn(e));
     }
 
+    sendDebugCommand(cmd: "debugContinue" | "debugStep" | "debugStop") {
+        this.worker.postMessage({ type: "debugCommand", payload: cmd });
+    }
+
     async saveResultFilesIntoZipArchive(): Promise<boolean> {
         await this.sendCommand("saveZip", null);
         return true;
@@ -121,5 +138,36 @@ export class PyodideService {
     async readOutputFile(filename: string): Promise<string> {
         const result = await this.sendCommand("readOutputFile", filename);
         return result as string;
+    }
+
+    async startDebug(code: string, breakpoints: number[], inputFilenames: string[] = []): Promise<void> {
+        if (!this.isReady) {
+            await new Promise((resolve) => {
+                const check = () => {
+                    if (this.isReady) {
+                        resolve({});
+                    }
+                    else {
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+        }
+
+        this.state.setStrCodeOutput("")
+        this.state.setRecordDebugVariables({});
+        this.state.setDebugCurrentLine(null);
+        this.state.setIsDebugging(true);
+
+        try {
+            await this.sendCommand("debug", { code, breakpoints, inputFilenames });
+            this.state.setIsDebugging(false);
+        }
+        catch (e) {
+            this.state.setStrCodeOutput(`Debug error: ${e}`);
+            this.state.setIsDebugging(false);
+            console.error("Debug error:", e);
+        }
     }
 }

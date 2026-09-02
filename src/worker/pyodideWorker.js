@@ -7,6 +7,7 @@ class WorkerStdout {
     constructor() {
         this.buffer = '';
     }
+
     write(text) {
         this.buffer += text;
         self.postMessage({
@@ -16,12 +17,50 @@ class WorkerStdout {
     }
 }
 
+function getTransformedDebugReadyCode(originalCode, breakpoints) {
+    const transformScript = `
+import ast
+import asyncio
+import sys
+
+class BreakpointInserter(ast.NodeTransformer):
+    def __init__(self, breakpoints):
+        self.breakpoints = set(breakpoints)
+        self.lineno = 0
+
+    def visit(self, node):
+        # Вставляем вызов check_breakpoint перед исполняемыми узлами
+        if hasattr(node, 'lineno') and node.lineno != self.lineno:
+            self.lineno = node.lineno
+            # Пропускаем объявления функций, классов, импорты и т.п.
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Import, ast.ImportFrom)):
+                # Создаём узел: await check_breakpoint(lineno)
+                call = ast.Call(
+                    func=ast.Name(id='check_breakpoint', ctx=ast.Load()),
+                    args=[ast.Constant(value=node.lineno)],
+                    keywords=[]
+                )
+                await_node = ast.Await(value=call)
+                # Возвращаем список из двух узлов: await и исходный узел
+                return [await_node, node]
+        return self.generic_visit(node)
+
+def transform_code(code, breakpoints):
+    tree = ast.parse(code)
+    transformer = BreakpointInserter(breakpoints)
+    new_tree = transformer.visit(tree)
+    ast.fix_missing_locations(new_tree)
+    return ast.unparse(new_tree)
+`;
+    pyodide.runPython(transformScript);
+    return pyodide.runPython(`transform_code(${JSON.stringify(originalCode)}, ${JSON.stringify(breakpoints)})`);
+}
+
 async function initPyodide() {
     if (isInitialized) return;
     try {
-        self.postMessage({ type: 'log', payload: 'Pyodide: загрузка...' });
-        pyodide = await loadPyodide({
-        });
+        self.postMessage({type: 'log', payload: 'Pyodide: загрузка...'});
+        pyodide = await loadPyodide({});
         await pyodide.loadPackage('requests');
         await pyodide.loadPackage('pandas');
         await pyodide.loadPackage('lxml');
@@ -35,7 +74,8 @@ sys.stdout = StringIO()
         `);
         const jsStdout = {
             write: (text) => stdout.write(text),
-            flush: () => {},
+            flush: () => {
+            },
         };
         pyodide.globals.set('worker_stdout', jsStdout);
         pyodide.runPython(`
@@ -50,15 +90,15 @@ import pyodide_http
 pyodide_http.patch_all()  # Патчит все стандартные библиотеки
         `)
         isInitialized = true;
-        self.postMessage({ type: 'init', payload: 'ok' });
+        self.postMessage({type: 'init', payload: 'ok'});
     } catch (e) {
-        self.postMessage({ type: 'error', payload: e.message });
+        self.postMessage({type: 'error', payload: e.message});
     }
 }
 
 async function handleRunCode(payload, id) {
     try {
-        const { code, inputFilenames } = payload;
+        const {code, inputFilenames} = payload;
         const setInputFilenames = new Set(inputFilenames);
 
         const listAllFiles = pyodide.FS.readdir("/home/pyodide/")
@@ -68,8 +108,7 @@ async function handleRunCode(payload, id) {
             if (!setInputFilenames.has(filename)) {
                 try {
                     pyodide.FS.unlink(`/home/pyodide/${filename}`);
-                }
-                catch (e) {
+                } catch (e) {
                     console.log(`Error: unable to delete from pyodide.FS file ${filename}`);
                 }
             }
@@ -78,9 +117,9 @@ async function handleRunCode(payload, id) {
         console.log(code);
         const result = await pyodide.runPythonAsync(code);
         console.log("code is done", result);
-        self.postMessage({ id, type: 'done', payload: result });
+        self.postMessage({id, type: 'done', payload: result});
     } catch (e) {
-        self.postMessage({ id, type: 'error', payload: e.message });
+        self.postMessage({id, type: 'error', payload: e.message});
     }
 }
 
@@ -88,18 +127,18 @@ async function handleLoadFile(filename, byteArray) {
     try {
         const data = new Uint8Array(byteArray);
         pyodide.FS.writeFile(filename, data);
-        self.postMessage({ type: 'fileLoaded', payload: filename });
+        self.postMessage({type: 'fileLoaded', payload: filename});
     } catch (e) {
-        self.postMessage({ type: 'error', payload: `Ошибка загрузки файла ${filename}: ${e.message}` });
+        self.postMessage({type: 'error', payload: `Ошибка загрузки файла ${filename}: ${e.message}`});
     }
 }
 
 async function handleRemoveFile(filename) {
     try {
         pyodide.FS.unlink(filename);
-        self.postMessage({ type: 'fileRemoved', payload: filename });
+        self.postMessage({type: 'fileRemoved', payload: filename});
     } catch (e) {
-        self.postMessage({ type: 'error', payload: `Не удалось удалить ${filename}: ${e.message}` });
+        self.postMessage({type: 'error', payload: `Не удалось удалить ${filename}: ${e.message}`});
     }
 }
 
@@ -114,7 +153,7 @@ async function handleSaveResultZip() {
             payload: zipData.buffer,
         }, [zipData.buffer]);
     } catch (e) {
-        self.postMessage({ type: 'error', payload: `Ошибка создания zip: ${e.message}` });
+        self.postMessage({type: 'error', payload: `Ошибка создания zip: ${e.message}`});
     }
 }
 
@@ -122,23 +161,71 @@ async function handleListOutputFiles(id) {
     try {
         const listFiles = pyodide.FS.readdir("/home/pyodide/")
             .filter(name => name !== "." && name !== ".." && !name.startsWith("__"));
-        self.postMessage({ id, type: "listOutputFiles", payload: listFiles });
+        self.postMessage({id, type: "listOutputFiles", payload: listFiles});
     } catch (e) {
-        self.postMessage({ id, type: "error", payload: e.message });
+        self.postMessage({id, type: "error", payload: e.message});
     }
 }
 
 async function handleReadOutputFile(filename, id) {
     try {
-        const content = pyodide.FS.readFile(filename, { encoding: "utf8" });
-        self.postMessage({ id, type: 'readOutputFile', payload: content });
+        const content = pyodide.FS.readFile(filename, {encoding: "utf8"});
+        self.postMessage({id, type: 'readOutputFile', payload: content});
     } catch (e) {
-        self.postMessage({ id, type: 'error', payload: e.message });
+        self.postMessage({id, type: 'error', payload: e.message});
+    }
+}
+
+async function handleDebug(payload, id) {
+    try {
+        const { code, breakpoints, inputFilenames } = payload;
+
+        const setInputFilenames = new Set(inputFilenames);
+        const allFiles = pyodide.FS.readdir("/home/pyodide/").filter(name => name !== "." && name !== ".." && !name.startsWith("__"));
+        for (const filename of allFiles) {
+            if (!setInputFilenames.has(filename)) {
+                try { pyodide.FS.unlink(`/home/pyodide/${filename}`); } catch (e) {}
+            }
+        }
+
+        const debugReadyCode = getTransformedDebugReadyCode(code, breakpoints);
+        const finalCode = `
+async def __main__():
+${debugReadyCode.split('\\n').map(line => '    ' + line).join('\\n')}
+
+await __main__()
+`;
+        await pyodide.runPythonAsync(finalCode);
+        self.postMessage({ id, type: "debugDone", payload: 'ok' });
+    }
+    catch (e) {
+        self.postMessage({ id, type: "error", payload: e.message });
+    }
+}
+
+async function handleDebugCommand(cmd) {
+    if (cmd === "debugContinue") {
+        pyodide.runPython(`
+if debugger_state['future'] is not None and not debugger_state['future'].done():
+    debugger_state['step_mode'] = False
+    debugger_state['future'].set_result(None)
+`);
+    } else if (cmd === "debugStep") {
+        pyodide.runPython(`
+if debugger_state['future'] is not None and not debugger_state['future'].done():
+    debugger_state['step_mode'] = True
+    debugger_state['future'].set_result(None)
+`);
+    } else if (cmd === "debugDone") {
+        pyodide.runPython(`
+if debugger_state['future'] is not None and not debugger_state['future'].done():
+    debugger_state['future'].set_exception(asyncio.CancelledError())
+`);
     }
 }
 
 self.addEventListener('message', async (event) => {
-    const { id, type, payload } = event.data;
+    const {id, type, payload} = event.data;
 
     switch (type) {
         case 'init':
@@ -162,8 +249,14 @@ self.addEventListener('message', async (event) => {
         case 'readOutputFile':
             await handleReadOutputFile(payload, id);
             break;
+        case "debug":
+            await handleDebug(payload, id);
+            break;
+        case "debugCommand":
+            await handleDebugCommand(payload);
+            break;
         default:
-            self.postMessage({ id, type: 'error', payload: `Неизвестная команда: ${type}` });
+            self.postMessage({id, type: 'error', payload: `Неизвестная команда: ${type}`});
     }
 });
 
