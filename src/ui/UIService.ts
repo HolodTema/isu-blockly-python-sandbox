@@ -5,19 +5,25 @@ import {PyodideService} from "../service/PyodideService";
 import {ProjectService} from "../service/ProjectService";
 import {ToastService} from "../service/ToastService";
 import {CodeOutputTabType} from "../state/CodeOutputTabType";
-import {fieldRegistry} from "blockly";
+import {CodeMirrorService} from "../service/codeMirrorService";
 
 
 export class UIService {
+
+    private buttonDebugContinue = document.getElementById("button_debug_continue") as HTMLButtonElement;
+    private buttonDebugStep = document.getElementById("button_debug_step") as HTMLButtonElement;
+    private buttonDebugStop = document.getElementById("button_debug_stop") as HTMLButtonElement;
 
     constructor(
         private state: AppState,
         private blocklyService: BlocklyService,
         private pyodideService: PyodideService,
         private projectService: ProjectService,
+        private codeMirrorService: CodeMirrorService,
         private toastService: ToastService
     ) {
         const divCodeOutput: HTMLElement = document.getElementById("code_output")!;
+
 
         this.configureButtonConvertToCode();
         this.configureButtonRunCode();
@@ -28,6 +34,8 @@ export class UIService {
         this.configureButtonAddInputFile();
         this.showSplashScreenWithHideTimer();
         this.configureCodeOutputTabButtons();
+        this.configureDebugUI();
+        this.configureButtonDebugCode();
 
         this.state.subscribe((key: string, state: AppState) => {
             if (key === AppStateKey.StrCodeOutput) {
@@ -38,6 +46,21 @@ export class UIService {
             }
             if (key === AppStateKey.CurrentCodeOutputTabType) {
                 this.switchCodeOutputTab(state.getCurrentCodeOutputTabType());
+                if (state.getCurrentCodeOutputTabType() === CodeOutputTabType.Debug) {
+                    this.updateDebugVariablesTable(state.getRecordDebugVariables());
+                }
+            }
+            if (key === AppStateKey.RecordDebugVariables) {
+                this.updateDebugVariablesTable(state.getRecordDebugVariables());
+            }
+            if (key === AppStateKey.IsDebugging) {
+                const isDebugging = state.getIsDebugging();
+                this.setDebugButtonsEnabled(isDebugging);
+                if (isDebugging) {
+                    this.showCodeExecutionStatus('debug');
+                } else {
+                    this.hideCodeExecutionStatus();
+                }
             }
         });
     }
@@ -79,8 +102,7 @@ export class UIService {
                 await new Promise(resolve => requestAnimationFrame(resolve));
                 try {
                     await this.pyodideService.runCurrentCodeFromWorkspace();
-                }
-                finally {
+                } finally {
                     if (this.state.getCurrentCodeOutputTabType() === CodeOutputTabType.OutputFiles) {
                         await this.refreshOutputFilesList();
                     }
@@ -233,7 +255,7 @@ export class UIService {
 
     private switchCodeOutputTab(tabType: CodeOutputTabType) {
         document.querySelectorAll(".tab_button").forEach((tabButton) => {
-           tabButton.classList.toggle("active", tabButton.getAttribute("data-tab") === tabType);
+            tabButton.classList.toggle("active", tabButton.getAttribute("data-tab") === tabType);
         });
         document.querySelectorAll(".tab_content").forEach((tabContent) => {
             tabContent.classList.toggle("active", tabContent.id === `tab_content_${tabType}`);
@@ -247,6 +269,88 @@ export class UIService {
         if (tabType === CodeOutputTabType.OutputFiles) {
             this.refreshOutputFilesList();
         }
+    }
+
+    private configureDebugUI() {
+        this.buttonDebugContinue.addEventListener('click', () => {
+            this.pyodideService.sendDebugCommand('debugContinue');
+        });
+        this.buttonDebugStep.addEventListener('click', () => {
+            this.pyodideService.sendDebugCommand('debugStep');
+        });
+        this.buttonDebugStop.addEventListener('click', () => {
+            this.pyodideService.sendDebugCommand('debugStop');
+        });
+        this.setDebugButtonsEnabled(false);
+    }
+
+    private setDebugButtonsEnabled(enabled: boolean) {
+        this.buttonDebugContinue.disabled = !enabled;
+        this.buttonDebugStep.disabled = !enabled;
+        this.buttonDebugStop.disabled = !enabled;
+    }
+
+    private updateDebugVariablesTable(variables: Record<string, any>) {
+        const tableBody = document.getElementById("debug_variables_table_body");
+        if (!tableBody) {
+            return;
+        }
+
+        tableBody.innerHTML = "";
+
+        if (!variables || Object.keys(variables).length === 0) {
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = 2;
+            td.textContent = 'Нет переменных (еще не дошли до точки останова)';
+            td.style.textAlign = 'center';
+            td.style.color = '#888';
+            tr.appendChild(td);
+            tableBody.appendChild(tr);
+            return;
+        }
+
+        for (const [key, value] of Object.entries(variables)) {
+            const tr = document.createElement('tr');
+            const tdKey = document.createElement('td');
+            tdKey.textContent = key;
+            const tdValue = document.createElement('td');
+            if (typeof value === 'string') {
+                tdValue.textContent = value;
+            } else {
+                try {
+                    tdValue.textContent = JSON.stringify(value, null, 2);
+                } catch {
+                    tdValue.textContent = String(value);
+                }
+            }
+            tr.appendChild(tdKey);
+            tr.appendChild(tdValue);
+            tableBody.appendChild(tr);
+        }
+    }
+
+    private configureButtonDebugCode() {
+        document.getElementById("button_debug_code")!
+            .addEventListener("click", async () => {
+                const code = this.state.getStrCodeToLaunch().trim();
+                if (code.length === 0) {
+                    this.toastService.showInfoToast("Еще нет программы для отладки");
+                    return;
+                }
+                const breakpoints = this.codeMirrorService.getBreakpointsArray();
+                if (breakpoints.length === 0) {
+                    this.toastService.showInfoToast("Поставьте хотя бы одну точку останова (клик возле номера строки)");
+                    return;
+                }
+                const inputFiles = Array.from(this.state.getInputFilenames());
+                this.showCodeExecutionStatus("debug");
+                try {
+                    await this.pyodideService.startDebug(code, breakpoints, inputFiles);
+                } catch (e) {
+                    console.error(e);
+                }
+            });
     }
 
     private async refreshOutputFilesList() {
@@ -299,8 +403,7 @@ export class UIService {
                 this.pyodideService.saveResultFilesIntoZipArchive();
             });
             divOutputFilesList.appendChild(buttonDownloadAllFiles);
-        }
-        catch (e) {
+        } catch (e) {
             console.error("Error while getting list of code-output-files:", e);
         }
     }
@@ -313,8 +416,7 @@ export class UIService {
         try {
             const outputFileText = await this.pyodideService.readOutputFile(filename);
             divOutputFilesPreview.textContent = outputFileText;
-        }
-        catch (e) {
+        } catch (e) {
             divOutputFilesPreview.textContent = `Ошибка чтения файла: ${e}`;
         }
     }

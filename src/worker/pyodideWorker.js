@@ -19,38 +19,46 @@ class WorkerStdout {
 
 function getTransformedDebugReadyCode(originalCode, breakpoints) {
     const transformScript = `
-import ast
-import asyncio
-import sys
-
-class BreakpointInserter(ast.NodeTransformer):
-    def __init__(self, breakpoints):
-        self.breakpoints = set(breakpoints)
-        self.lineno = 0
-
-    def visit(self, node):
-        # Вставляем вызов check_breakpoint перед исполняемыми узлами
-        if hasattr(node, 'lineno') and node.lineno != self.lineno:
-            self.lineno = node.lineno
-            # Пропускаем объявления функций, классов, импорты и т.п.
-            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Import, ast.ImportFrom)):
-                # Создаём узел: await check_breakpoint(lineno)
-                call = ast.Call(
-                    func=ast.Name(id='check_breakpoint', ctx=ast.Load()),
-                    args=[ast.Constant(value=node.lineno)],
-                    keywords=[]
-                )
-                await_node = ast.Await(value=call)
-                # Возвращаем список из двух узлов: await и исходный узел
-                return [await_node, node]
-        return self.generic_visit(node)
-
 def transform_code(code, breakpoints):
-    tree = ast.parse(code)
-    transformer = BreakpointInserter(breakpoints)
-    new_tree = transformer.visit(tree)
-    ast.fix_missing_locations(new_tree)
-    return ast.unparse(new_tree)
+    lines = code.split('\\n')
+    new_lines = []
+    func_stack = []  # стек отступов всех функций (def и async def)
+    block_keywords = ('if ', 'elif ', 'else:', 'for ', 'while ', 'try:', 'except', 'finally:', 'with ', 'class ', 'import ', 'from ')
+    
+    for i, line in enumerate(lines, start=1):
+        stripped = line.strip()
+        if stripped == '' or stripped.startswith('#'):
+            new_lines.append(line)
+            continue
+        
+        indent = line[:len(line) - len(line.lstrip())]
+        indent_len = len(indent)
+        
+        # Проверяем выход из функций: если текущий отступ <= отступа вершины стека, выходим
+        while func_stack and indent_len <= func_stack[-1]:
+            func_stack.pop()
+        
+        # Проверяем, не начинается ли строка с определения функции (def или async def)
+        if stripped.startswith('def ') or stripped.startswith('async def '):
+            func_stack.append(indent_len)
+            new_lines.append(line)
+            continue
+        
+        # Если мы внутри любой функции (стек не пуст), просто копируем строку
+        if func_stack:
+            new_lines.append(line)
+            continue
+        
+        # Если мы не внутри функции
+        # Пропускаем строки, начинающиеся с ключевых слов блоков
+        if any(stripped.startswith(kw) for kw in block_keywords):
+            new_lines.append(line)
+            continue
+        # Все остальные строки – исполняемые на глобальном уровне, вставляем await
+        new_lines.append(f"{indent}await check_breakpoint({i})")
+        new_lines.append(line)
+    
+    return '\\n'.join(new_lines)
 `;
     pyodide.runPython(transformScript);
     return pyodide.runPython(`transform_code(${JSON.stringify(originalCode)}, ${JSON.stringify(breakpoints)})`);
@@ -190,11 +198,44 @@ async function handleDebug(payload, id) {
 
         const debugReadyCode = getTransformedDebugReadyCode(code, breakpoints);
         const finalCode = `
+import asyncio
+import sys
+
+debugger_state = {
+    'breakpoints': ${JSON.stringify(breakpoints)},
+    'future': None,
+    'step_mode': False,
+}
+
+async def check_breakpoint(lineno):
+    if lineno in debugger_state['breakpoints'] or debugger_state['step_mode']:
+        frame = sys._getframe(1)
+        locals_ = frame.f_locals
+        globals_ = frame.f_globals
+        variables = {**locals_, **globals_}
+        import js
+        js.postMessage({
+            'type': 'breakpoint',
+            'payload': {
+                'line': lineno,
+                'variables': {k: repr(v) for k, v in variables.items()}
+            }
+        })
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+        debugger_state['future'] = future
+        await future
+        debugger_state['step_mode'] = False
+    return None
+
 async def __main__():
-${debugReadyCode.split('\\n').map(line => '    ' + line).join('\\n')}
+${debugReadyCode.split('\n').map(line => '    ' + line).join('\n')}
 
 await __main__()
 `;
+
+        console.log("Debug breakpoints:", breakpoints);
+        console.log("Debug finalCode:", finalCode);
         await pyodide.runPythonAsync(finalCode);
         self.postMessage({ id, type: "debugDone", payload: 'ok' });
     }
@@ -216,7 +257,7 @@ if debugger_state['future'] is not None and not debugger_state['future'].done():
     debugger_state['step_mode'] = True
     debugger_state['future'].set_result(None)
 `);
-    } else if (cmd === "debugDone") {
+    } else if (cmd === "debugStop") {
         pyodide.runPython(`
 if debugger_state['future'] is not None and not debugger_state['future'].done():
     debugger_state['future'].set_exception(asyncio.CancelledError())
