@@ -8,6 +8,9 @@ export class AppState {
     private strCodeOutput: string = "";
     private setInputFilenames: Set<string> = new Set();
     private currentCodeOutputTabType: CodeOutputTabType = CodeOutputTabType.Output;
+    private recordDebugVariables: Record<string, any> = {};
+    private isDebugging: boolean = false;
+    private debugCurrentLine: number | null = null;
     private listeners: Array<(key: AppStateKey, state: AppState)=>void> = [];
 
     subscribe(listener: (key: AppStateKey, state: AppState)=>void) {
@@ -37,6 +40,21 @@ export class AppState {
     setCurrentCodeOutputTabType(tabType: CodeOutputTabType) {
         this.currentCodeOutputTabType = tabType;
         this.notifyAllListeners(AppStateKey.CurrentCodeOutputTabType);
+    }
+
+    setRecordDebugVariables(vars: Record<string, any>) {
+        this.recordDebugVariables = vars;
+        this.notifyAllListeners(AppStateKey.RecordDebugVariables);
+    }
+
+    setIsDebugging(isDebugging: boolean) {
+        this.isDebugging = isDebugging;
+        this.notifyAllListeners(AppStateKey.IsDebugging);
+    }
+
+    setDebugCurrentLine(debugCurrentLine: number | null) {
+        this.debugCurrentLine = debugCurrentLine;
+        this.notifyAllListeners(AppStateKey.DebugCurrentLine);
     }
 
     isInputFilenameInSet(inputFilename: string): boolean {
@@ -75,6 +93,18 @@ export class AppState {
 
     getInputFilenames(): Set<string> {
         return this.setInputFilenames;
+    }
+
+    getRecordDebugVariables(): Record<string, any> {
+        return this.recordDebugVariables;
+    }
+
+    getIsDebugging(): boolean {
+        return this.isDebugging;
+    }
+
+    getDebugCurrentLine(): number | null {
+        return this.debugCurrentLine;
     }
 
     private notifyAllListeners(updatedKey: AppStateKey) {
