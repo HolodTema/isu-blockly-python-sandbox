@@ -17,6 +17,70 @@ class WorkerStdout {
     }
 }
 
+function getPatchCode() {
+    return `
+import pandas as pd
+import requests
+from io import StringIO
+
+PROXY_PREFIX = "http://130.49.175.150:8080/"
+
+# Проверяем, не применялись ли патчи ранее
+if not hasattr(pd, '_PATCH_APPLIED'):
+    # Сохраняем оригиналы
+    _original_read_html = pd.read_html
+    _original_read_json = pd.read_json
+    _original_read_csv = pd.read_csv
+    _original_request = requests.request
+
+    def _ensure_proxy(url):
+        if isinstance(url, str) and not url.startswith(PROXY_PREFIX):
+            if url.startswith(('http://', 'https://')):
+                return PROXY_PREFIX + url.lstrip('/')
+        return url
+
+    def _fetch_url_content(url, *args, **kwargs):
+        proxied_url = _ensure_proxy(url)
+        response = _original_request('GET', proxied_url, *args, **kwargs)
+        response.raise_for_status()
+        return response.text
+
+    def patched_read_html(io, *args, **kwargs):
+        if isinstance(io, str) and io.startswith(('http://', 'https://')):
+            html = _fetch_url_content(io)
+            return _original_read_html(html, *args, **kwargs)
+        else:
+            return _original_read_html(io, *args, **kwargs)
+
+    def patched_read_json(io, *args, **kwargs):
+        if isinstance(io, str) and io.startswith(('http://', 'https://')):
+            json_str = _fetch_url_content(io)
+            return _original_read_json(json_str, *args, **kwargs)
+        else:
+            return _original_read_json(io, *args, **kwargs)
+
+    def patched_read_csv(io, *args, **kwargs):
+        if isinstance(io, str) and io.startswith(('http://', 'https://')):
+            csv_str = _fetch_url_content(io)
+            return _original_read_csv(StringIO(csv_str), *args, **kwargs)
+        else:
+            return _original_read_csv(io, *args, **kwargs)
+
+    def patched_request(method, url, *args, **kwargs):
+        url = _ensure_proxy(url)
+        return _original_request(method, url, *args, **kwargs)
+
+    # Применяем патчи
+    pd.read_html = patched_read_html
+    pd.read_json = patched_read_json
+    pd.read_csv = patched_read_csv
+    requests.request = patched_request
+
+    # Помечаем, что патчи применены
+    pd._PATCH_APPLIED = True
+`;
+}
+
 function getTransformedDebugReadyCode(originalCode, breakpoints) {
     const transformScript = `
 def transform_code(code, breakpoints):
@@ -122,8 +186,8 @@ async function handleRunCode(payload, id) {
             }
         }
 
-        console.log(code);
-        const result = await pyodide.runPythonAsync(code);
+        const codeWithPatch = getPatchCode() + "\n" + code;
+        const result = await pyodide.runPythonAsync(codeWithPatch);
         console.log("code is done", result);
         self.postMessage({id, type: 'done', payload: result});
     } catch (e) {
@@ -198,6 +262,8 @@ async function handleDebug(payload, id) {
 
         const debugReadyCode = getTransformedDebugReadyCode(code, breakpoints);
         const finalCode = `
+${getPatchCode()}
+
 import asyncio
 import sys
 
@@ -208,24 +274,52 @@ debugger_state = {
 }
 
 async def check_breakpoint(lineno):
+    # Логируем в консоль браузера (через js.console.log)
+    import js
+    js.console.log(f'check_breakpoint called with lineno={lineno}')
+    
     if lineno in debugger_state['breakpoints'] or debugger_state['step_mode']:
+        js.console.log(f'Breakpoint matched! lineno={lineno}, breakpoints={debugger_state["breakpoints"]}')
         frame = sys._getframe(1)
+        debugger_state['frame'] = frame
+        debugger_state['current_line'] = lineno
+        
+        # Собираем переменные
         locals_ = frame.f_locals
-        globals_ = frame.f_globals
-        variables = {**locals_, **globals_}
-        import js
-        js.postMessage({
-            'type': 'breakpoint',
-            'payload': {
-                'line': lineno,
-                'variables': {k: repr(v) for k, v in variables.items()}
-            }
-        })
+        import builtins
+        builtin_names = dir(builtins)
+        safe_vars = {}
+        for k, v in locals_.items():
+            if k.startswith('_') or k in builtin_names:
+                continue
+            try:
+                s = repr(v)
+                if len(s) > 1000:
+                    s = s[:1000] + '... (обрезано)'
+                safe_vars[str(k)] = s
+            except Exception:
+                safe_vars[str(k)] = '<непредставимо>'
+        
+        # Записываем в файл
+        import json
+        data = {'line': lineno, 'variables': safe_vars}
+        with open('/home/pyodide/__debug_data.json', 'w') as f:
+            json.dump(data, f)
+        
+        # Отправляем сигнал
+        try:
+            js.postMessage('break')
+            js.console.log('Signal "break" sent')
+        except Exception as e:
+            js.console.error(f'postMessage error: {e}')
+        
         loop = asyncio.get_running_loop()
         future = loop.create_future()
         debugger_state['future'] = future
         await future
         debugger_state['step_mode'] = False
+    else:
+        js.console.log(f'lineno {lineno} not in breakpoints {debugger_state["breakpoints"]}')
     return None
 
 async def __main__():
@@ -265,6 +359,56 @@ if debugger_state['future'] is not None and not debugger_state['future'].done():
     }
 }
 
+async function handleReadDebugFile(payload, id) {
+    try {
+        // Читаем файл с данными отладки
+        const content = pyodide.FS.readFile('/home/pyodide/__debug_data.json', { encoding: 'utf8' });
+        const data = JSON.parse(content);
+        self.postMessage({ id, type: 'debugData', payload: data });
+    } catch (e) {
+        self.postMessage({ id, type: 'error', payload: e.message });
+    }
+}
+
+async function handleGetDebugVariables(payload, id) {
+    try {
+        // Выполняем Python-код для получения переменных и отправляем результат через js.postMessage с id
+        pyodide.runPython(`
+import sys
+import json
+import js
+
+frame = debugger_state.get('frame')
+if frame is None:
+    raise Exception("No frame available")
+
+locals_ = frame.f_locals
+import builtins
+builtin_names = dir(builtins)
+safe_vars = {}
+for k, v in locals_.items():
+    if k.startswith('_') or k in builtin_names:
+        continue
+    try:
+        s = repr(v)
+        if len(s) > 1000:
+            s = s[:1000] + '... (обрезано)'
+        safe_vars[str(k)] = s
+    except Exception:
+        safe_vars[str(k)] = '<непредставимо>'
+
+# Отправляем результат обратно с id
+js.postMessage({
+    'id': ${id},
+    'type': 'debugVariables',
+    'payload': safe_vars
+})
+`);
+    } catch (e) {
+        self.postMessage({ id, type: 'error', payload: e.message });
+    }
+}
+
 self.addEventListener('message', async (event) => {
     const {id, type, payload} = event.data;
 
@@ -295,6 +439,12 @@ self.addEventListener('message', async (event) => {
             break;
         case "debugCommand":
             await handleDebugCommand(payload);
+            break;
+        case "getDebugVariables":
+            await handleGetDebugVariables(payload, id);
+            break;
+        case "readDebugFile":
+            await handleReadDebugFile(payload, id);
             break;
         default:
             self.postMessage({id, type: 'error', payload: `Неизвестная команда: ${type}`});

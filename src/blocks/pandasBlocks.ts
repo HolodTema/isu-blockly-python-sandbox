@@ -10,48 +10,21 @@ export function initPandasBlocks(generator: PythonGenerator, mode: "display"|"ex
     generator.forBlock["pandas_read_html_block"] = function(block: Blockly.Block): string {
         const blockArg = generator.valueToCode(block, "TEXT_WITH_TABLE", Order.ATOMIC) || '""';
         const resultVar = block.getFieldValue("RESULT_VAR").value || "df";
-        if (mode === "display") {
-            return `${resultVar} = pd.read_html(${blockArg})[0]\n`;
-        } else {
-            return `
-if isinstance(${blockArg}, str) and (${blockArg}.startswith('http://') or ${blockArg}.startswith('https://')):
-    ${resultVar} = pd.read_html("http://130.49.175.150:8080/" + ${blockArg})[0]
-else:
-    ${resultVar} = pd.read_html(${blockArg})[0]
-`;
-        }
+        return `${resultVar} = pd.read_html(${blockArg})[0]\n`;
     };
 
     generator.forBlock["pandas_read_json_block"] = function(block: Blockly.Block): string {
         const blockArg = generator.valueToCode(block, "TEXT_WITH_TABLE", Order.ATOMIC) || '""';
         const orient = block.getFieldValue("ORIENT") || "records";
         const resultVar = block.getFieldValue("RESULT_VAR")?.value || "df";
-        if (mode === "display") {
-            return `${resultVar} = pd.read_json(${blockArg}, orient="${orient}")\n`;
-        } else {
-            return `
-if isinstance(${blockArg}, str) and (${blockArg}.startswith('http://') or ${blockArg}.startswith('https://')):
-    ${resultVar} = pd.read_json(requests.get("http://130.49.175.150:8080/" + ${blockArg}).text, orient="${orient}")
-else:
-    ${resultVar} = pd.read_json(${blockArg}, orient="${orient}")
-`;
-        }
-    }
+        return `${resultVar} = pd.read_json(${blockArg}, orient="${orient}")\n`;
+    };
 
     generator.forBlock["pandas_read_csv_block"] = function(block: Blockly.Block): string {
         const blockArg = generator.valueToCode(block, "TEXT_WITH_TABLE", Order.ATOMIC) || '""';
         const sep = block.getFieldValue("SEP") || ",";
         const resultVar = block.getFieldValue("RESULT_VAR")?.value || "df";
-        if (mode === "display") {
-            return `${resultVar} = pd.read_csv(${blockArg}, sep="${sep}")\n`;
-        } else {
-            return `
-if isinstance(${blockArg}, str) and (${blockArg}.startswith('http://') or ${blockArg}.startswith('https://')):
-    ${resultVar} = pd.read_csv(StringIO(requests.get("http://130.49.175.150:8080/" + ${blockArg}).text), sep="${sep}")
-else:
-    ${resultVar} = pd.read_csv(${blockArg}, sep="${sep}")
-`;
-        }
+        return `${resultVar} = pd.read_csv(${blockArg}, sep="${sep}")\n`;
     }
 
     generator.forBlock["pandas_concat_block"] = function(block: Blockly.Block): [string, Order] {

@@ -62,6 +62,9 @@ export class UIService {
                     this.hideCodeExecutionStatus();
                 }
             }
+            if (key == AppStateKey.DebugCurrentLine) {
+                codeMirrorService.setDebugCurrentLine(state.getDebugCurrentLine())
+            }
         });
     }
 
@@ -339,6 +342,7 @@ export class UIService {
                     return;
                 }
                 const breakpoints = this.codeMirrorService.getBreakpointsArray();
+                console.log('Breakpoints from editor:', breakpoints);
                 if (breakpoints.length === 0) {
                     this.toastService.showInfoToast("Поставьте хотя бы одну точку останова (клик возле номера строки)");
                     return;

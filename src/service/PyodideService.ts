@@ -12,6 +12,16 @@ export class PyodideService {
     constructor(private state: AppState) {
         this.worker.addEventListener("message", (event: MessageEvent<any>) => {
             const msg = event.data;
+            if (typeof msg === 'string' && msg === 'break') {
+                this.sendCommand("readDebugFile", null)
+                    .then(data => {
+                        this.state.setRecordDebugVariables(data.variables);
+                        this.state.setDebugCurrentLine(data.line);
+                        this.state.setCurrentCodeOutputTabType(CodeOutputTabType.Debug);
+                    })
+                    .catch(err => console.error("Failed to read debug file:", err));
+                return;
+            }
             if (msg.type === "init") {
                 this.isReady = true;
                 console.log("Pyodide worker: init complete");
@@ -27,15 +37,40 @@ export class PyodideService {
                 return;
             }
             if (msg.type === "debugBreakpoint") {
-                const { line, variables } = msg.payload;
-                this.state.setRecordDebugVariables(variables);
-                this.state.setDebugCurrentLine(line);
-                this.state.setCurrentCodeOutputTabType(CodeOutputTabType.Debug);
+                const { line, variables_json } = msg.payload;
+                // Если переменные ещё не получены, запрашиваем их
+                if (variables_json === '{}') {
+                    // Отправляем запрос на получение переменных
+                    this.sendCommand("getDebugVariables", { line })
+                        .then(vars => {
+                            this.state.setRecordDebugVariables(vars);
+                            this.state.setDebugCurrentLine(line);
+                            this.state.setCurrentCodeOutputTabType(CodeOutputTabType.Debug);
+                        })
+                        .catch(err => console.error("Failed to get variables:", err));
+                } else {
+                    const variables = JSON.parse(variables_json);
+                    this.state.setRecordDebugVariables(variables);
+                    this.state.setDebugCurrentLine(line);
+                    this.state.setCurrentCodeOutputTabType(CodeOutputTabType.Debug);
+                }
+                return;
+            }
+            if (msg.type === "debugVariables") {
+                this.state.setRecordDebugVariables(msg.payload);
                 return;
             }
             if (msg.type === "debugDone") {
                 this.state.setIsDebugging(false);
                 this.state.setDebugCurrentLine(null);
+                return;
+            }
+            if (msg.type === "debugData") {
+                // Данные уже пришли в msg.payload (содержит line и variables)
+                // Обновляем состояние
+                this.state.setRecordDebugVariables(msg.payload.variables);
+                this.state.setDebugCurrentLine(msg.payload.line);
+                this.state.setCurrentCodeOutputTabType(CodeOutputTabType.Debug);
                 return;
             }
             if (msg.type === "error") {
@@ -141,6 +176,7 @@ export class PyodideService {
     }
 
     async startDebug(code: string, breakpoints: number[], inputFilenames: string[] = []): Promise<void> {
+        console.log('Breakpoints from editor:', breakpoints);
         if (!this.isReady) {
             await new Promise((resolve) => {
                 const check = () => {
