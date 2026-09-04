@@ -8,7 +8,7 @@ class WorkerStdout {
         this.buffer = '';
     }
 
-    write(text) {
+        write(text) {
         this.buffer += text;
         self.postMessage({
             type: 'stdout',
@@ -274,11 +274,13 @@ debugger_state = {
 }
 
 async def check_breakpoint(lineno):
-    # Логируем в консоль браузера (через js.console.log)
     import js
     js.console.log(f'check_breakpoint called with lineno={lineno}')
     
     if lineno in debugger_state['breakpoints'] or debugger_state['step_mode']:
+        if debugger_state['step_mode']:
+            debugger_state['step_mode'] = False
+        
         js.console.log(f'Breakpoint matched! lineno={lineno}, breakpoints={debugger_state["breakpoints"]}')
         frame = sys._getframe(1)
         debugger_state['frame'] = frame
@@ -317,7 +319,6 @@ async def check_breakpoint(lineno):
         future = loop.create_future()
         debugger_state['future'] = future
         await future
-        debugger_state['step_mode'] = False
     else:
         js.console.log(f'lineno {lineno} not in breakpoints {debugger_state["breakpoints"]}')
     return None
