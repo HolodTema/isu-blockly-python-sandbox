@@ -16,6 +16,16 @@ export class PyodideService {
         );
         this.worker.addEventListener("message", (event: MessageEvent<any>) => {
             const msg = event.data;
+            if (typeof msg === "string" && msg === "WorkerEvent.OnDebugFileCreated") {
+                this.sendWorkerCommandAsync(WorkerCommand.ReadDebugFile, null)
+                    .then(data => {
+                        this.state.setRecordDebugVariables(data.variables);
+                        this.state.setDebugCurrentLine(data.line);
+                        this.state.setCurrentCodeOutputTabType(CodeOutputTabType.Debug);
+                    })
+                    .catch(err => console.error("Failed to read debug file:", err));
+                return;
+            }
             if (msg.type === WorkerEvent.InitComplete) {
                 this.isInitComplete = true;
                 console.log("Pyodide worker: init complete");
@@ -30,47 +40,15 @@ export class PyodideService {
                 console.log("Pyodide worker:", msg.payload);
                 return;
             }
-            if (msg.type === WorkerEvent.DebugBreakpoint) {
-                const { line, strJsonVariablesSnapshot } = msg.payload;
-                if (strJsonVariablesSnapshot === "{}") {
-                    this.sendWorkerCommandAsync(WorkerCommand.GetDebugVariablesSnapshot, { line })
-                        .then(vars => {
-                            this.state.setRecordDebugVariables(vars);
-                            this.state.setDebugCurrentLine(line);
-                            this.state.setCurrentCodeOutputTabType(CodeOutputTabType.Debug);
-                        })
-                        .catch(err => console.error("Failed to get variables:", err));
-                } else {
-                    const variables = JSON.parse(strJsonVariablesSnapshot);
-                    this.state.setRecordDebugVariables(variables);
-                    this.state.setDebugCurrentLine(line);
-                    this.state.setCurrentCodeOutputTabType(CodeOutputTabType.Debug);
-                }
-                return;
-            }
-            if (msg.type === WorkerEvent.DebugVariablesSnapshot) {
-                this.state.setRecordDebugVariables(msg.payload);
-                return;
-            }
             if (msg.type === WorkerEvent.DebugCodeDone) {
                 this.state.setIsDebugging(false);
                 this.state.setDebugCurrentLine(null);
                 return;
             }
-            if (msg.type === WorkerEvent.DebugData) {
+            if (msg.type === WorkerEvent.OnDebugFileRead) {
                 this.state.setRecordDebugVariables(msg.payload.variables);
                 this.state.setDebugCurrentLine(msg.payload.line);
                 this.state.setCurrentCodeOutputTabType(CodeOutputTabType.Debug);
-                return;
-            }
-            if (msg.type === WorkerEvent.OnDebugFileCreated) {
-                this.sendWorkerCommandAsync(WorkerCommand.ReadDebugFile, null)
-                    .then(data => {
-                        this.state.setRecordDebugVariables(data.variables);
-                        this.state.setDebugCurrentLine(data.line);
-                        this.state.setCurrentCodeOutputTabType(CodeOutputTabType.Debug);
-                    })
-                    .catch(err => console.error("Failed to read debug file:", err));
                 return;
             }
             if (msg.type === WorkerEvent.Error) {

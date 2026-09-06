@@ -1,13 +1,12 @@
 export enum WorkerCommand {
     Init = "init",
     StartRunCode = "startRunCode",
-    StartDebugCode = "startDebugCode",
 
+    StartDebugCode = "startDebugCode",
     DebugUserCommandContinue = "debugUserCommandContinue",
     DebugUserCommandStep = "debugUserCommandStep",
     DebugUserCommandStop = "debugUserCommandStop",
     ReadDebugFile = "readDebugFile",
-    GetDebugVariablesSnapshot = "getDebugVariablesSnapshot",
 
     LoadInputFile = "loadInputFile",
     RemoveInputFile = "removeInputFile",

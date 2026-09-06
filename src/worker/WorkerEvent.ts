@@ -3,14 +3,10 @@ export enum WorkerEvent {
     Log = "log",
     Stdout = "stdout",
     Error = "error",
-
     RunCodeDone = "runCodeDone",
-    DebugCodeDone = "debugCodeDone",
 
-    DebugBreakpoint = "debugBreakpoint",
-    DebugVariablesSnapshot = "debugVariables",
-    DebugData = "debugData",
-    OnDebugFileCreated = "onDebugFileCreated",
+    DebugCodeDone = "debugCodeDone",
+    OnDebugFileRead = "onDebugFileRead",
 
     OnInputFileLoaded = "onInputFileLoaded",
     OnInputFileRemoved = "onInputFileRemoved",

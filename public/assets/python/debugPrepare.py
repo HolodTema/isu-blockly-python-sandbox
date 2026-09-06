@@ -36,10 +36,7 @@ async def _check_breakpoint(lineno):
             json.dump(data, f)
 
         try:
-            js.postMessage({
-                "type": "onDebugFileCreated",
-                "payload": None
-            })
+            js.postMessage("WorkerEvent.OnDebugFileCreated")
             js.console.log('Signal "break" sent')
         except Exception as e:
             js.console.error(f'postMessage error: {e}')

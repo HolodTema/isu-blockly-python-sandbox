@@ -209,48 +209,11 @@ if _debugger_state['future'] is not None and not _debugger_state['future'].done(
     );
 }
 
-async function handleReadDebugFile(payload: null, id: number) {
+async function handleReadDebugFile(id: number) {
     try {
         const content = pyodide.FS.readFile('/home/pyodide/__debug_data.json', { encoding: 'utf8' });
         const data = JSON.parse(content);
-        self.postMessage({ id, type: WorkerEvent.DebugData, payload: data });
-    } catch (e: any) {
-        self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
-    }
-}
-
-async function handleGetDebugVariables(payload: null, id: number) {
-    try {
-        pyodide.runPython(`
-import sys
-import json
-import js
-
-frame = _debugger_state.get('frame')
-if frame is None:
-    raise Exception("No frame available")
-
-locals_ = frame.f_locals
-import builtins
-builtin_names = dir(builtins)
-safe_vars = {}
-for k, v in locals_.items():
-    if k.startswith('_') or k in builtin_names:
-        continue
-    try:
-        s = repr(v)
-        if len(s) > 1000:
-            s = s[:1000] + '... (обрезано)'
-        safe_vars[str(k)] = s
-    except Exception:
-        safe_vars[str(k)] = '<непредставимо>'
-
-js.postMessage({
-    'id': ${id},
-    'type': '${WorkerEvent.DebugVariablesSnapshot}',
-    'payload': safe_vars
-})
-`);
+        self.postMessage({ id, type: WorkerEvent.OnDebugFileRead, payload: data });
     } catch (e: any) {
         self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
     }
@@ -266,21 +229,7 @@ self.addEventListener('message', async (event: MessageEvent) => {
         case WorkerCommand.StartRunCode:
             await handleRunCode(payload, id);
             break;
-        case WorkerCommand.LoadInputFile:
-            await handleLoadFile(payload.filename, payload.data);
-            break;
-        case WorkerCommand.RemoveInputFile:
-            await handleRemoveFile(payload);
-            break;
-        case WorkerCommand.SaveOutputFilesZip:
-            await handleSaveResultZip();
-            break;
-        case WorkerCommand.GetListOutputFiles:
-            await handleListOutputFiles(id);
-            break;
-        case WorkerCommand.ReadOutputFile:
-            await handleReadOutputFile(payload, id);
-            break;
+
         case WorkerCommand.StartDebugCode:
             await handleDebug(payload, id);
             break;
@@ -293,12 +242,27 @@ self.addEventListener('message', async (event: MessageEvent) => {
         case WorkerCommand.DebugUserCommandStop:
             await handleDebugUserCommandStop();
             break;
-        case WorkerCommand.GetDebugVariablesSnapshot:
-            await handleGetDebugVariables(payload, id);
-            break;
         case WorkerCommand.ReadDebugFile:
-            await handleReadDebugFile(payload, id);
+            await handleReadDebugFile(id);
             break;
+
+        case WorkerCommand.LoadInputFile:
+            await handleLoadFile(payload.filename, payload.data);
+            break;
+        case WorkerCommand.RemoveInputFile:
+            await handleRemoveFile(payload);
+            break;
+
+        case WorkerCommand.SaveOutputFilesZip:
+            await handleSaveResultZip();
+            break;
+        case WorkerCommand.GetListOutputFiles:
+            await handleListOutputFiles(id);
+            break;
+        case WorkerCommand.ReadOutputFile:
+            await handleReadOutputFile(payload, id);
+            break;
+
         default:
             self.postMessage({ id, type: WorkerEvent.Error, payload: `Неизвестная команда: ${type}` });
     }
