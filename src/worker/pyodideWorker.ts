@@ -1,6 +1,6 @@
+import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.mjs";
 import { WorkerMessageType } from "./WorkerMessageType";
 
-declare const self: DedicatedWorkerGlobalScope;
 
 let pyodide: any = null;
 let isInitialized: boolean = false;
@@ -43,16 +43,7 @@ async function initPyodide() {
     if (isInitialized) return;
     try {
         self.postMessage({ type: WorkerMessageType.Log, payload: 'Pyodide: загрузка...' });
-        const pyodideModule = await import("https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.js");
-        let loadPyodide = pyodideModule.default;
-        if (typeof loadPyodide !== 'function') {
-            if (typeof pyodideModule.loadPyodide === 'function') {
-                loadPyodide = pyodideModule.loadPyodide;
-            } else {
-                throw new Error('Не удалось загрузить Pyodide: loadPyodide не является функцией');
-            }
-        }
-        pyodide = await loadPyodide({});
+        pyodide = await loadPyodide();
         await pyodide.loadPackage('requests');
         await pyodide.loadPackage('pandas');
         await pyodide.loadPackage('lxml');

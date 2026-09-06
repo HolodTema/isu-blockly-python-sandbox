@@ -1,15 +1,18 @@
 import {AppState} from "../state/AppState";
 import {WorkerMessageType} from "../worker/WorkerMessageType";
 import {CodeOutputTabType} from "../state/CodeOutputTabType";
-import PyodideWorker from '../worker/pyodideWorker?worker';
 
 export class PyodideService {
-    private worker: Worker = new PyodideWorker();
+    private worker: Worker;
     private isReady: boolean = false;
     private mapPendingPromises: Map<number, {resolve: Function; reject: Function}> = new Map();
     private messageId: number = 0;
 
     constructor(private state: AppState) {
+        this.worker = new Worker(
+            new URL("../worker/pyodideWorker.ts", import.meta.url),
+            { type: "module" }
+        );
         this.worker.addEventListener("message", (event: MessageEvent<any>) => {
             const msg = event.data;
             if (typeof msg === 'string' && msg === 'break') {
