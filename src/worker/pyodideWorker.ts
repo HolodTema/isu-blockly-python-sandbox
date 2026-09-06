@@ -3,13 +3,40 @@ import {WorkerCommand} from "./WorkerCommand";
 import {WorkerEvent} from "./WorkerEvent";
 
 let pyodide: any = null;
-let isInitialized: boolean = false;
+let isInitComplete: boolean = false;
 
 class WorkerStdout {
     private buffer: string = "";
     write(text: string) {
         this.buffer += text;
         self.postMessage({ type: WorkerEvent.Stdout, payload: text });
+    }
+}
+
+async function initPyodide(): Promise<void> {
+    if (isInitComplete) return;
+    try {
+        self.postMessage({ type: WorkerEvent.Log, payload: "Pyodide init is in progress" });
+        pyodide = await loadPyodide();
+        await pyodide.loadPackage("requests");
+        await pyodide.loadPackage("pandas");
+        await pyodide.loadPackage("lxml");
+        await pyodide.loadPackage("micropip");
+
+        const stdout = new WorkerStdout();
+        const jsStdout = {
+            write: (text: string): void => stdout.write(text),
+            flush: (): void => {},
+        };
+        pyodide.globals.set("_worker_stdout", jsStdout);
+
+        const initScript = await fetch("/assets/python/pyodideInit.py");
+        const strInitCode = await initScript.text();
+        await pyodide.runPythonAsync(strInitCode);
+        isInitComplete = true;
+        self.postMessage({ type: WorkerEvent.InitComplete, payload: "ok" });
+    } catch (e: any) {
+        self.postMessage({ type: WorkerEvent.Error, payload: e.message });
     }
 }
 
@@ -39,59 +66,10 @@ _debugger_state = {
     await pyodide.runPythonAsync(script);
 }
 
-async function initPyodide() {
-    if (isInitialized) return;
-    try {
-        self.postMessage({ type: WorkerEvent.Log, payload: 'Pyodide: загрузка...' });
-        pyodide = await loadPyodide();
-        await pyodide.loadPackage('requests');
-        await pyodide.loadPackage('pandas');
-        await pyodide.loadPackage('lxml');
-        await pyodide.loadPackage('micropip');
-        const stdout = new WorkerStdout();
-        pyodide.runPython(
-`
-import sys
-from io import StringIO
-sys.stdout = StringIO()
-`
-        );
-        const jsStdout = {
-            write: (text: string): void => stdout.write(text),
-            flush: (): void => {},
-        };
-        pyodide.globals.set('worker_stdout', jsStdout);
-        pyodide.runPython(`import sys; sys.stdout = worker_stdout`);
-        await pyodide.runPythonAsync(
-`
-import micropip
-await micropip.install('pyodide-http')
-import pyodide_http
-pyodide_http.patch_all()
-`
-        );
-        isInitialized = true;
-        self.postMessage({ type: WorkerEvent.InitComplete, payload: "ok" });
-    } catch (e: any) {
-        self.postMessage({ type: WorkerEvent.Error, payload: e.message });
-    }
-}
-
 async function handleRunCode(payload: { code: string; inputFilenames: string[] }, id: number) {
     try {
         const { code, inputFilenames } = payload;
-        const setInputFilenames = new Set(inputFilenames);
-        const allFiles = pyodide.FS.readdir("/home/pyodide/")
-            .filter((name: string) => name !== "." && name !== ".." && !name.startsWith("__"));
-        for (const filename of allFiles) {
-            if (!setInputFilenames.has(filename)) {
-                try {
-                    pyodide.FS.unlink(`/home/pyodide/${filename}`);
-                } catch (_) {
-                    // do nothing
-                }
-            }
-        }
+        await cleanFilesystemBesidesInputFiles(inputFilenames);
         await runPatchCode();
         const result = await pyodide.runPythonAsync(code);
         self.postMessage({ id, type: WorkerEvent.RunCodeDone, payload: result });
@@ -100,7 +78,7 @@ async function handleRunCode(payload: { code: string; inputFilenames: string[] }
     }
 }
 
-async function handleLoadFile(filename: string, byteArray: ArrayBuffer) {
+async function handleLoadInputFile(filename: string, byteArray: ArrayBuffer) {
     try {
         const data = new Uint8Array(byteArray);
         pyodide.FS.writeFile(filename, data);
@@ -110,7 +88,7 @@ async function handleLoadFile(filename: string, byteArray: ArrayBuffer) {
     }
 }
 
-async function handleRemoveFile(filename: string) {
+async function handleRemoveInputFile(filename: string) {
     try {
         pyodide.FS.unlink(filename);
         self.postMessage({ type: WorkerEvent.OnInputFileRemoved, payload: filename });
@@ -119,7 +97,7 @@ async function handleRemoveFile(filename: string) {
     }
 }
 
-async function handleSaveResultZip() {
+async function handleSaveOutputFilesZip() {
     try {
         const scriptResponse = await fetch("/assets/python/createZipArchiveOfResultFiles.py");
         const script = await scriptResponse.text();
@@ -134,7 +112,7 @@ async function handleSaveResultZip() {
     }
 }
 
-async function handleListOutputFiles(id: number) {
+async function handleGetListOutputFiles(id: number) {
     try {
         const listFiles = pyodide.FS.readdir("/home/pyodide/")
             .filter((name: string) => name !== "." && name !== ".." && !name.startsWith("__"));
@@ -153,17 +131,10 @@ async function handleReadOutputFile(filename: string, id: number) {
     }
 }
 
-async function handleDebug(payload: { code: string; breakpoints: number[]; inputFilenames: string[] }, id: number) {
+async function handleDebugCode(payload: { code: string; breakpoints: number[]; inputFilenames: string[] }, id: number) {
     try {
         const { code, breakpoints, inputFilenames } = payload;
-        const setInputFilenames = new Set(inputFilenames);
-        const allFiles = pyodide.FS.readdir("/home/pyodide/")
-            .filter((name: string) => name !== "." && name !== ".." && !name.startsWith("__"));
-        for (const filename of allFiles) {
-            if (!setInputFilenames.has(filename)) {
-                try { pyodide.FS.unlink(`/home/pyodide/${filename}`); } catch (_) {}
-            }
-        }
+        await cleanFilesystemBesidesInputFiles(inputFilenames);
         await runPatchCode();
         const debugReadyCode = await getTransformedDebugReadyCode(code);
         await runDebugPrepareCode(breakpoints);
@@ -219,6 +190,21 @@ async function handleReadDebugFile(id: number) {
     }
 }
 
+async function cleanFilesystemBesidesInputFiles(inputFilenames: string[]): Promise<void> {
+    const setInputFilenames = new Set(inputFilenames);
+    const allFiles = pyodide.FS.readdir("/home/pyodide/")
+        .filter((name: string) => name !== "." && name !== ".." && !name.startsWith("__"));
+    for (const filename of allFiles) {
+        if (!setInputFilenames.has(filename)) {
+            try {
+                pyodide.FS.unlink(`/home/pyodide/${filename}`);
+            } catch (_) {
+                // do nothing
+            }
+        }
+    }
+}
+
 self.addEventListener('message', async (event: MessageEvent) => {
     const { id, type, payload } = event.data;
 
@@ -231,7 +217,7 @@ self.addEventListener('message', async (event: MessageEvent) => {
             break;
 
         case WorkerCommand.StartDebugCode:
-            await handleDebug(payload, id);
+            await handleDebugCode(payload, id);
             break;
         case WorkerCommand.DebugUserCommandContinue:
             await handleDebugUserCommandContinue();
@@ -247,17 +233,17 @@ self.addEventListener('message', async (event: MessageEvent) => {
             break;
 
         case WorkerCommand.LoadInputFile:
-            await handleLoadFile(payload.filename, payload.data);
+            await handleLoadInputFile(payload.filename, payload.data);
             break;
         case WorkerCommand.RemoveInputFile:
-            await handleRemoveFile(payload);
+            await handleRemoveInputFile(payload);
             break;
 
         case WorkerCommand.SaveOutputFilesZip:
-            await handleSaveResultZip();
+            await handleSaveOutputFilesZip();
             break;
         case WorkerCommand.GetListOutputFiles:
-            await handleListOutputFiles(id);
+            await handleGetListOutputFiles(id);
             break;
         case WorkerCommand.ReadOutputFile:
             await handleReadOutputFile(payload, id);
