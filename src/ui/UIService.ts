@@ -276,13 +276,13 @@ export class UIService {
 
     private configureDebugUI() {
         this.buttonDebugContinue.addEventListener('click', () => {
-            this.pyodideService.sendDebugCommand('debugContinue');
+            this.pyodideService.sendDebugUserCommandContinue()
         });
         this.buttonDebugStep.addEventListener('click', () => {
-            this.pyodideService.sendDebugCommand('debugStep');
+            this.pyodideService.sendDebugUserCommandStep();
         });
         this.buttonDebugStop.addEventListener('click', () => {
-            this.pyodideService.sendDebugCommand('debugStop');
+            this.pyodideService.sendDebugUserCommandStop();
         });
         this.setDebugButtonsEnabled(false);
     }

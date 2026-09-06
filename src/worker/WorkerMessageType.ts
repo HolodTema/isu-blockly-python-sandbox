@@ -8,7 +8,9 @@ export enum WorkerMessageType {
     Run = "run",
 
     Debug = "debug",
-    DebugCommand = "debugCommand",
+    DebugUserCommandContinue = "debugUserCommandContinue",
+    DebugUserCommandStep = "debugUserCommandStep",
+    DebugUserCommandStop = "debugUserCommandStop",
     DebugDone = "debugDone",
     DebugBreakpoint = "debugBreakpoint",
     DebugVariables = "debugVariables",

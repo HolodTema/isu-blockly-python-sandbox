@@ -7,8 +7,7 @@ async def _check_breakpoint(lineno):
     js.console.log(f'check_breakpoint called with lineno={lineno}')
 
     if lineno in _debugger_state['breakpoints'] or _debugger_state['step_mode']:
-        if _debugger_state['step_mode']:
-            _debugger_state['step_mode'] = False
+        _debugger_state['step_mode'] = False
 
         js.console.log(f'Breakpoint matched! lineno={lineno}, breakpoints={_debugger_state["breakpoints"]}')
         frame = sys._getframe(1)

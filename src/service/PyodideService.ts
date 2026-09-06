@@ -149,8 +149,16 @@ export class PyodideService {
             .catch(e => console.warn(e));
     }
 
-    sendDebugCommand(cmd: "debugContinue" | "debugStep" | "debugStop") {
-        this.worker.postMessage({ type: WorkerMessageType.DebugCommand, payload: cmd });
+    sendDebugUserCommandContinue() {
+        this.worker.postMessage({ type: WorkerMessageType.DebugUserCommandContinue });
+    }
+
+    sendDebugUserCommandStep() {
+        this.worker.postMessage({ type: WorkerMessageType.DebugUserCommandStep });
+    }
+
+    sendDebugUserCommandStop() {
+        this.worker.postMessage({ type: WorkerMessageType.DebugUserCommandStop });
     }
 
     async saveResultFilesIntoZipArchive(): Promise<boolean> {

@@ -1,5 +1,5 @@
-import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.mjs";
-import { WorkerMessageType } from "./WorkerMessageType";
+import {loadPyodide} from "https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.mjs";
+import {WorkerMessageType} from "./WorkerMessageType";
 
 
 let pyodide: any = null;
@@ -180,27 +180,33 @@ await __main__()
     }
 }
 
-async function handleDebugCommand(cmd: 'debugContinue' | 'debugStep' | 'debugStop') {
-    const commandMap = {
-        debugContinue: `
+async function handleDebugUserCommandContinue() {
+    await pyodide.runPythonAsync(
+`
 if _debugger_state['future'] is not None and not _debugger_state['future'].done():
     _debugger_state['step_mode'] = False
     _debugger_state['future'].set_result(None)
-`,
-        debugStep: `
+`
+    );
+}
+
+async function handleDebugUserCommandStep() {
+    await pyodide.runPythonAsync(
+`
 if _debugger_state['future'] is not None and not _debugger_state['future'].done():
     _debugger_state['step_mode'] = True
     _debugger_state['future'].set_result(None)
-`,
-        debugStop: `
+`
+    );
+}
+
+async function handleDebugUserCommandStop() {
+    await pyodide.runPythonAsync(
+        `
 if _debugger_state['future'] is not None and not _debugger_state['future'].done():
     _debugger_state['future'].set_exception(asyncio.CancelledError())
-`,
-    };
-    const pyCommand = commandMap[cmd];
-    if (pyCommand) {
-        pyodide.runPython(pyCommand);
-    }
+`
+    );
 }
 
 async function handleReadDebugFile(payload: null, id: number) {
@@ -278,8 +284,14 @@ self.addEventListener('message', async (event: MessageEvent) => {
         case WorkerMessageType.Debug:
             await handleDebug(payload, id);
             break;
-        case WorkerMessageType.DebugCommand:
-            await handleDebugCommand(payload);
+        case WorkerMessageType.DebugUserCommandContinue:
+            await handleDebugUserCommandContinue();
+            break;
+        case WorkerMessageType.DebugUserCommandStep:
+            await handleDebugUserCommandStep();
+            break;
+        case WorkerMessageType.DebugUserCommandStop:
+            await handleDebugUserCommandStop();
             break;
         case WorkerMessageType.GetDebugVariables:
             await handleGetDebugVariables(payload, id);
