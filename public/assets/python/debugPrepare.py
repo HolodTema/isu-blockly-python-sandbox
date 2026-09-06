@@ -35,9 +35,11 @@ async def _check_breakpoint(lineno):
         with open('/home/pyodide/__debug_data.json', 'w') as f:
             json.dump(data, f)
 
-        # Отправляем сигнал
         try:
-            js.postMessage('break')
+            js.postMessage({
+                "type": "onDebugFileCreated",
+                "payload": None
+            })
             js.console.log('Signal "break" sent')
         except Exception as e:
             js.console.error(f'postMessage error: {e}')

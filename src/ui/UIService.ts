@@ -104,7 +104,7 @@ export class UIService {
                 this.showCodeExecutionStatus("run");
                 await new Promise(resolve => requestAnimationFrame(resolve));
                 try {
-                    await this.pyodideService.runCurrentCodeFromWorkspace();
+                    await this.pyodideService.runCode();
                 } finally {
                     if (this.state.getCurrentCodeOutputTabType() === CodeOutputTabType.OutputFiles) {
                         await this.refreshOutputFilesList();
@@ -182,7 +182,7 @@ export class UIService {
                         console.error("Error: unable to upload input file into pyodide. File with this name has already been uploaded");
                         return;
                     }
-                    this.pyodideService.saveInputFileToPyodideMemory(file.name, byteArray);
+                    this.pyodideService.loadInputFile(file.name, byteArray);
                     this.state.addInputFilename(file.name);
 
                     const divInputFilesList = document.getElementById("input_files_list")!;
@@ -196,7 +196,7 @@ export class UIService {
                     buttonRemoveInputFile.src = "assets/images/ic_close_black.svg";
                     buttonRemoveInputFile.alt = "remove";
                     buttonRemoveInputFile.addEventListener("click", (e) => {
-                        this.pyodideService.removeInputFileFromPyodideMemory(file.name);
+                        this.pyodideService.removeInputFile(file.name);
                         divInputFilesList.removeChild(divInputFile);
                         this.state.removeInputFilename(file.name);
                     })
@@ -350,7 +350,7 @@ export class UIService {
                 const inputFiles = Array.from(this.state.getInputFilenames());
                 this.showCodeExecutionStatus("debug");
                 try {
-                    await this.pyodideService.startDebug(code, breakpoints, inputFiles);
+                    await this.pyodideService.debugCode(code, breakpoints, inputFiles);
                 } catch (e) {
                     console.error(e);
                 }
@@ -359,7 +359,7 @@ export class UIService {
 
     private async refreshOutputFilesList() {
         try {
-            const listOutputFiles: string[] = await this.pyodideService.listOutputFiles();
+            const listOutputFiles: string[] = await this.pyodideService.getListOutputFiles();
             const listOutputFilesWithoutInputFiles = listOutputFiles.filter(filename => !this.state.isInputFilenameInSet(filename));
 
             const divOutputFilesList = document.getElementById("output_files_list");
@@ -404,7 +404,7 @@ export class UIService {
                 font-size: 14px;
             `;
             buttonDownloadAllFiles.addEventListener('click', () => {
-                this.pyodideService.saveResultFilesIntoZipArchive();
+                this.pyodideService.saveOutputFilesZip();
             });
             divOutputFilesList.appendChild(buttonDownloadAllFiles);
         } catch (e) {

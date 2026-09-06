@@ -1,6 +1,6 @@
 import {loadPyodide} from "https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.mjs";
-import {WorkerMessageType} from "./WorkerMessageType";
-
+import {WorkerCommand} from "./WorkerCommand";
+import {WorkerEvent} from "./WorkerEvent";
 
 let pyodide: any = null;
 let isInitialized: boolean = false;
@@ -9,7 +9,7 @@ class WorkerStdout {
     private buffer: string = "";
     write(text: string) {
         this.buffer += text;
-        self.postMessage({ type: WorkerMessageType.Stdout, payload: text });
+        self.postMessage({ type: WorkerEvent.Stdout, payload: text });
     }
 }
 
@@ -42,7 +42,7 @@ _debugger_state = {
 async function initPyodide() {
     if (isInitialized) return;
     try {
-        self.postMessage({ type: WorkerMessageType.Log, payload: 'Pyodide: загрузка...' });
+        self.postMessage({ type: WorkerEvent.Log, payload: 'Pyodide: загрузка...' });
         pyodide = await loadPyodide();
         await pyodide.loadPackage('requests');
         await pyodide.loadPackage('pandas');
@@ -71,9 +71,9 @@ pyodide_http.patch_all()
 `
         );
         isInitialized = true;
-        self.postMessage({ type: WorkerMessageType.Init, payload: "ok" });
+        self.postMessage({ type: WorkerEvent.InitComplete, payload: "ok" });
     } catch (e: any) {
-        self.postMessage({ type: WorkerMessageType.Error, payload: e.message });
+        self.postMessage({ type: WorkerEvent.Error, payload: e.message });
     }
 }
 
@@ -94,9 +94,9 @@ async function handleRunCode(payload: { code: string; inputFilenames: string[] }
         }
         await runPatchCode();
         const result = await pyodide.runPythonAsync(code);
-        self.postMessage({ id, type: WorkerMessageType.Done, payload: result });
+        self.postMessage({ id, type: WorkerEvent.RunCodeDone, payload: result });
     } catch (e: any) {
-        self.postMessage({ id, type: WorkerMessageType.Error, payload: e.message });
+        self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
     }
 }
 
@@ -104,18 +104,18 @@ async function handleLoadFile(filename: string, byteArray: ArrayBuffer) {
     try {
         const data = new Uint8Array(byteArray);
         pyodide.FS.writeFile(filename, data);
-        self.postMessage({ type: WorkerMessageType.FileLoaded, payload: filename });
+        self.postMessage({ type: WorkerEvent.OnInputFileLoaded, payload: filename });
     } catch (e: any) {
-        self.postMessage({ type: WorkerMessageType.Error, payload: `Ошибка загрузки файла ${filename}: ${e.message}` });
+        self.postMessage({ type: WorkerEvent.Error, payload: `Ошибка загрузки файла ${filename}: ${e.message}` });
     }
 }
 
 async function handleRemoveFile(filename: string) {
     try {
         pyodide.FS.unlink(filename);
-        self.postMessage({ type: WorkerMessageType.FileRemoved, payload: filename });
+        self.postMessage({ type: WorkerEvent.OnInputFileRemoved, payload: filename });
     } catch (e: any) {
-        self.postMessage({ type: WorkerMessageType.Error, payload: `Не удалось удалить ${filename}: ${e.message}` });
+        self.postMessage({ type: WorkerEvent.Error, payload: `Не удалось удалить ${filename}: ${e.message}` });
     }
 }
 
@@ -126,11 +126,11 @@ async function handleSaveResultZip() {
         pyodide.runPython(script);
         const zipData = pyodide.FS.readFile("/home/pyodide/__exported_files.zip");
         self.postMessage({
-            type: WorkerMessageType.ZipReady,
+            type: WorkerEvent.OutputFilesZipReady,
             payload: zipData.buffer,
         }, [zipData.buffer]);
     } catch (e: any) {
-        self.postMessage({ type: WorkerMessageType.Error, payload: `Ошибка создания zip: ${e.message}` });
+        self.postMessage({ type: WorkerEvent.Error, payload: `Ошибка создания zip: ${e.message}` });
     }
 }
 
@@ -138,18 +138,18 @@ async function handleListOutputFiles(id: number) {
     try {
         const listFiles = pyodide.FS.readdir("/home/pyodide/")
             .filter((name: string) => name !== "." && name !== ".." && !name.startsWith("__"));
-        self.postMessage({ id, type: WorkerMessageType.ListOutputFiles, payload: listFiles });
+        self.postMessage({ id, type: WorkerEvent.ListOutputFilesResult, payload: listFiles });
     } catch (e: any) {
-        self.postMessage({ id, type: WorkerMessageType.Error, payload: e.message });
+        self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
     }
 }
 
 async function handleReadOutputFile(filename: string, id: number) {
     try {
         const content = pyodide.FS.readFile(filename, { encoding: "utf8" });
-        self.postMessage({ id, type: WorkerMessageType.ReadOutputFile, payload: content });
+        self.postMessage({ id, type: WorkerEvent.ReadOutputFileResult, payload: content });
     } catch (e: any) {
-        self.postMessage({ id, type: WorkerMessageType.Error, payload: e.message });
+        self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
     }
 }
 
@@ -174,9 +174,9 @@ ${debugReadyCode.split('\n').map((line: string) => "    " + line).join("\n")}
 await __main__()
 `;
         await pyodide.runPythonAsync(finalCode);
-        self.postMessage({ id, type: WorkerMessageType.DebugDone, payload: "ok" });
+        self.postMessage({ id, type: WorkerEvent.DebugCodeDone, payload: "ok" });
     } catch (e: any) {
-        self.postMessage({ id, type: WorkerMessageType.Error, payload: e.message });
+        self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
     }
 }
 
@@ -213,9 +213,9 @@ async function handleReadDebugFile(payload: null, id: number) {
     try {
         const content = pyodide.FS.readFile('/home/pyodide/__debug_data.json', { encoding: 'utf8' });
         const data = JSON.parse(content);
-        self.postMessage({ id, type: WorkerMessageType.DebugData, payload: data });
+        self.postMessage({ id, type: WorkerEvent.DebugData, payload: data });
     } catch (e: any) {
-        self.postMessage({ id, type: WorkerMessageType.Error, payload: e.message });
+        self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
     }
 }
 
@@ -247,12 +247,12 @@ for k, v in locals_.items():
 
 js.postMessage({
     'id': ${id},
-    'type': '${WorkerMessageType.DebugVariables}',
+    'type': '${WorkerEvent.DebugVariablesSnapshot}',
     'payload': safe_vars
 })
 `);
     } catch (e: any) {
-        self.postMessage({ id, type: WorkerMessageType.Error, payload: e.message });
+        self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
     }
 }
 
@@ -260,47 +260,47 @@ self.addEventListener('message', async (event: MessageEvent) => {
     const { id, type, payload } = event.data;
 
     switch (type) {
-        case WorkerMessageType.Init:
+        case WorkerCommand.Init:
             await initPyodide();
             break;
-        case WorkerMessageType.Run:
+        case WorkerCommand.StartRunCode:
             await handleRunCode(payload, id);
             break;
-        case WorkerMessageType.LoadFile:
+        case WorkerCommand.LoadInputFile:
             await handleLoadFile(payload.filename, payload.data);
             break;
-        case WorkerMessageType.RemoveFile:
+        case WorkerCommand.RemoveInputFile:
             await handleRemoveFile(payload);
             break;
-        case WorkerMessageType.SaveZip:
+        case WorkerCommand.SaveOutputFilesZip:
             await handleSaveResultZip();
             break;
-        case WorkerMessageType.ListOutputFiles:
+        case WorkerCommand.GetListOutputFiles:
             await handleListOutputFiles(id);
             break;
-        case WorkerMessageType.ReadOutputFile:
+        case WorkerCommand.ReadOutputFile:
             await handleReadOutputFile(payload, id);
             break;
-        case WorkerMessageType.Debug:
+        case WorkerCommand.StartDebugCode:
             await handleDebug(payload, id);
             break;
-        case WorkerMessageType.DebugUserCommandContinue:
+        case WorkerCommand.DebugUserCommandContinue:
             await handleDebugUserCommandContinue();
             break;
-        case WorkerMessageType.DebugUserCommandStep:
+        case WorkerCommand.DebugUserCommandStep:
             await handleDebugUserCommandStep();
             break;
-        case WorkerMessageType.DebugUserCommandStop:
+        case WorkerCommand.DebugUserCommandStop:
             await handleDebugUserCommandStop();
             break;
-        case WorkerMessageType.GetDebugVariables:
+        case WorkerCommand.GetDebugVariablesSnapshot:
             await handleGetDebugVariables(payload, id);
             break;
-        case WorkerMessageType.ReadDebugFile:
+        case WorkerCommand.ReadDebugFile:
             await handleReadDebugFile(payload, id);
             break;
         default:
-            self.postMessage({ id, type: WorkerMessageType.Error, payload: `Неизвестная команда: ${type}` });
+            self.postMessage({ id, type: WorkerEvent.Error, payload: `Неизвестная команда: ${type}` });
     }
 });
 
