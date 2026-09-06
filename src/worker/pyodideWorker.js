@@ -17,68 +17,10 @@ class WorkerStdout {
     }
 }
 
-function getPatchCode() {
-    return `
-import pandas as pd
-import requests
-from io import StringIO
-
-PROXY_PREFIX = "http://130.49.175.150:8080/"
-
-# Проверяем, не применялись ли патчи ранее
-if not hasattr(pd, '_PATCH_APPLIED'):
-    # Сохраняем оригиналы
-    _original_read_html = pd.read_html
-    _original_read_json = pd.read_json
-    _original_read_csv = pd.read_csv
-    _original_request = requests.request
-
-    def _ensure_proxy(url):
-        if isinstance(url, str) and not url.startswith(PROXY_PREFIX):
-            if url.startswith(('http://', 'https://')):
-                return PROXY_PREFIX + url.lstrip('/')
-        return url
-
-    def _fetch_url_content(url, *args, **kwargs):
-        proxied_url = _ensure_proxy(url)
-        response = _original_request('GET', proxied_url, *args, **kwargs)
-        response.raise_for_status()
-        return response.text
-
-    def patched_read_html(io, *args, **kwargs):
-        if isinstance(io, str) and io.startswith(('http://', 'https://')):
-            html = _fetch_url_content(io)
-            return _original_read_html(html, *args, **kwargs)
-        else:
-            return _original_read_html(io, *args, **kwargs)
-
-    def patched_read_json(io, *args, **kwargs):
-        if isinstance(io, str) and io.startswith(('http://', 'https://')):
-            json_str = _fetch_url_content(io)
-            return _original_read_json(json_str, *args, **kwargs)
-        else:
-            return _original_read_json(io, *args, **kwargs)
-
-    def patched_read_csv(io, *args, **kwargs):
-        if isinstance(io, str) and io.startswith(('http://', 'https://')):
-            csv_str = _fetch_url_content(io)
-            return _original_read_csv(StringIO(csv_str), *args, **kwargs)
-        else:
-            return _original_read_csv(io, *args, **kwargs)
-
-    def patched_request(method, url, *args, **kwargs):
-        url = _ensure_proxy(url)
-        return _original_request(method, url, *args, **kwargs)
-
-    # Применяем патчи
-    pd.read_html = patched_read_html
-    pd.read_json = patched_read_json
-    pd.read_csv = patched_read_csv
-    requests.request = patched_request
-
-    # Помечаем, что патчи применены
-    pd._PATCH_APPLIED = True
-`;
+async function runPatchCode() {
+    const file = await fetch("/assets/python/patchCode.py");
+    const patchCode = await file.text();
+    await pyodide.runPythonAsync(patchCode);
 }
 
 function getTransformedDebugReadyCode(originalCode, breakpoints) {
@@ -186,8 +128,8 @@ async function handleRunCode(payload, id) {
             }
         }
 
-        const codeWithPatch = getPatchCode() + "\n" + code;
-        const result = await pyodide.runPythonAsync(codeWithPatch);
+        await runPatchCode();
+        const result = await pyodide.runPythonAsync(code);
         console.log("code is done", result);
         self.postMessage({id, type: 'done', payload: result});
     } catch (e) {
@@ -260,10 +202,9 @@ async function handleDebug(payload, id) {
             }
         }
 
+        await runPatchCode();
         const debugReadyCode = getTransformedDebugReadyCode(code, breakpoints);
         const finalCode = `
-${getPatchCode()}
-
 import asyncio
 import sys
 
