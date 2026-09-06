@@ -1,10 +1,10 @@
 import {AppState} from "../state/AppState";
+import {WorkerMessageType} from "../worker/WorkerMessageType";
 import {CodeOutputTabType} from "../state/CodeOutputTabType";
+import PyodideWorker from '../worker/pyodideWorker?worker';
 
 export class PyodideService {
-    private worker: Worker = new Worker(
-        new URL("../worker/pyodideWorker.js", import.meta.url)
-    );
+    private worker: Worker = new PyodideWorker();
     private isReady: boolean = false;
     private mapPendingPromises: Map<number, {resolve: Function; reject: Function}> = new Map();
     private messageId: number = 0;
@@ -13,7 +13,7 @@ export class PyodideService {
         this.worker.addEventListener("message", (event: MessageEvent<any>) => {
             const msg = event.data;
             if (typeof msg === 'string' && msg === 'break') {
-                this.sendCommand("readDebugFile", null)
+                this.sendCommand(WorkerMessageType.ReadDebugFile, null)
                     .then(data => {
                         this.state.setRecordDebugVariables(data.variables);
                         this.state.setDebugCurrentLine(data.line);
@@ -22,26 +22,26 @@ export class PyodideService {
                     .catch(err => console.error("Failed to read debug file:", err));
                 return;
             }
-            if (msg.type === "init") {
+            if (msg.type === WorkerMessageType.Init) {
                 this.isReady = true;
                 console.log("Pyodide worker: init complete");
                 return;
             }
-            if (msg.type === "stdout") {
+            if (msg.type === WorkerMessageType.Stdout) {
                 const currentCodeOutput = this.state.getStrCodeOutput();
                 this.state.setStrCodeOutput(currentCodeOutput + msg.payload);
                 return;
             }
-            if (msg.type === "log") {
+            if (msg.type === WorkerMessageType.Log) {
                 console.log("Pyodide worker:", msg.payload);
                 return;
             }
-            if (msg.type === "debugBreakpoint") {
+            if (msg.type === WorkerMessageType.DebugBreakpoint) {
                 const { line, variables_json } = msg.payload;
                 // Если переменные ещё не получены, запрашиваем их
                 if (variables_json === '{}') {
                     // Отправляем запрос на получение переменных
-                    this.sendCommand("getDebugVariables", { line })
+                    this.sendCommand(WorkerMessageType.GetDebugVariables, { line })
                         .then(vars => {
                             this.state.setRecordDebugVariables(vars);
                             this.state.setDebugCurrentLine(line);
@@ -56,16 +56,16 @@ export class PyodideService {
                 }
                 return;
             }
-            if (msg.type === "debugVariables") {
+            if (msg.type === WorkerMessageType.DebugVariables) {
                 this.state.setRecordDebugVariables(msg.payload);
                 return;
             }
-            if (msg.type === "debugDone") {
+            if (msg.type === WorkerMessageType.DebugDone) {
                 this.state.setIsDebugging(false);
                 this.state.setDebugCurrentLine(null);
                 return;
             }
-            if (msg.type === "debugData") {
+            if (msg.type === WorkerMessageType.DebugData) {
                 // Данные уже пришли в msg.payload (содержит line и variables)
                 // Обновляем состояние
                 this.state.setRecordDebugVariables(msg.payload.variables);
@@ -73,10 +73,10 @@ export class PyodideService {
                 this.state.setCurrentCodeOutputTabType(CodeOutputTabType.Debug);
                 return;
             }
-            if (msg.type === "error") {
+            if (msg.type === WorkerMessageType.Error) {
                 this.state.setStrCodeOutput(`Error: ${msg.payload}`);
             }
-            if (msg.type === "zipReady") {
+            if (msg.type === WorkerMessageType.ZipReady) {
                 const blob: Blob = new Blob([msg.payload], {type: "application/zip"});
                 const url: string = URL.createObjectURL(blob);
                 const a: HTMLAnchorElement = document.createElement("a");
@@ -101,7 +101,7 @@ export class PyodideService {
         });
     }
 
-    sendCommand(type: string, payload: any): Promise<any> {
+    sendCommand(type: WorkerMessageType, payload: any): Promise<any> {
         return new Promise((resolve: Function, reject: Function) => {
             const id: number = this.messageId++;
             this.mapPendingPromises.set(id, {resolve, reject});
@@ -125,7 +125,7 @@ export class PyodideService {
         }
         this.state.setStrCodeOutput("");
         try {
-            await this.sendCommand("run", { code, inputFilenames });
+            await this.sendCommand(WorkerMessageType.Run, { code, inputFilenames });
         }
         catch (error: any) {
             this.state.setStrCodeOutput(`Runtime error: ${error.message}`);
@@ -136,22 +136,22 @@ export class PyodideService {
     saveInputFileToPyodideMemory(filename: string, byteArray: Uint8Array) {
         this.worker.postMessage({
             id: this.messageId++,
-            type: "loadFile",
+            type: WorkerMessageType.LoadFile,
             payload: {filename, data: byteArray.buffer}
         }, [byteArray.buffer]);
     }
 
     removeInputFileFromPyodideMemory(filename: string) {
-        this.sendCommand("removeFile", filename)
+        this.sendCommand(WorkerMessageType.RemoveFile, filename)
             .catch(e => console.warn(e));
     }
 
     sendDebugCommand(cmd: "debugContinue" | "debugStep" | "debugStop") {
-        this.worker.postMessage({ type: "debugCommand", payload: cmd });
+        this.worker.postMessage({ type: WorkerMessageType.DebugCommand, payload: cmd });
     }
 
     async saveResultFilesIntoZipArchive(): Promise<boolean> {
-        await this.sendCommand("saveZip", null);
+        await this.sendCommand(WorkerMessageType.SaveZip, null);
         return true;
     }
 
@@ -166,12 +166,12 @@ export class PyodideService {
     }
 
     async listOutputFiles(): Promise<string[]> {
-        const result = await this.sendCommand("listOutputFiles", null);
+        const result = await this.sendCommand(WorkerMessageType.ListOutputFiles, null);
         return result as string[];
     }
 
     async readOutputFile(filename: string): Promise<string> {
-        const result = await this.sendCommand("readOutputFile", filename);
+        const result = await this.sendCommand(WorkerMessageType.ReadOutputFile, filename);
         return result as string;
     }
 
@@ -197,7 +197,7 @@ export class PyodideService {
         this.state.setIsDebugging(true);
 
         try {
-            await this.sendCommand("debug", { code, breakpoints, inputFilenames });
+            await this.sendCommand(WorkerMessageType.Debug, { code, breakpoints, inputFilenames });
             this.state.setIsDebugging(false);
         }
         catch (e) {
