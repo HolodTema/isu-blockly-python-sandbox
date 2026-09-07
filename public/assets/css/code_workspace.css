@@ -32,6 +32,7 @@
 
 #button_add_input_file {
     display: block;
+    user-select: none;
     text-align: center;
     white-space: nowrap;
     font-size: 16px;

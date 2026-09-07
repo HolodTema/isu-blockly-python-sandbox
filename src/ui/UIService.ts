@@ -24,7 +24,7 @@ export class UIService {
     ) {
         const divCodeOutput: HTMLElement = document.getElementById("code_output")!;
 
-        this.configureButtonConvertToCode();
+        // this.configureButtonConvertToCode();
         this.configureButtonRunCode();
         this.configureButtonSaveProject();
         this.configureButtonExpandOutput(divCodeOutput);
@@ -103,12 +103,12 @@ export class UIService {
         }
     }
 
-    private configureButtonConvertToCode() {
-        document.getElementById("button_convert_to_code")!
-            .addEventListener("click", (e: PointerEvent) => {
-                this.blocklyService.generateAndUpdateCode();
-            });
-    }
+    // private configureButtonConvertToCode() {
+    //     document.getElementById("button_convert_to_code")!
+    //         .addEventListener("click", (e: PointerEvent) => {
+    //             this.blocklyService.generateAndUpdateCode();
+    //         });
+    // }
 
     private configureButtonRunCode() {
         document.getElementById("button_run_code")!

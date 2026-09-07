@@ -2,13 +2,16 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    overflow: hidden;
 }
 #debug_variables_container {
     flex: 1;
     overflow: auto;
+    min-height: 0;
 }
 #debug_variables_table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     color: white;
 }
@@ -16,6 +19,20 @@
     border: 1px solid #444;
     padding: 4px 8px;
     text-align: left;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+#debug_variables_table th:first-child, #debug_variables_table td:first-child {
+    width: 30%;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#debug_variables_table th:last-child, #debug_variables_table td:last-child {
+    width: 70%;
 }
 #debug_controls {
     padding: 8px;

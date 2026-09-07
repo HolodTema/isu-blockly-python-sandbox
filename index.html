@@ -31,21 +31,29 @@
         <img id="full_logo" src="assets/images/full_logo.png" alt="">
 
         <img src="assets/images/ic_save_project.svg" alt="">
-        <a class="font_powered_mclaren" id="button_save_project">Сохранить проект</a>
+        <a class="font_powered_mclaren" id="button_save_project">Сохранить</a>
 
         <img src="assets/images/ic_open_project.svg" alt="">
-        <a class="font_powered_mclaren" id="button_open_project">Открыть проект</a>
-    </div>
-    <div id="header_right">
-        <img src="assets/images/ic_convert_to_code.svg" alt="">
-        <a class="font_powered_mclaren" id="button_convert_to_code">Конвертировать в код</a>
+        <a class="font_powered_mclaren" id="button_open_project">Открыть</a>
 
         <img src="assets/images/ic_run_code.svg" alt="">
         <a class="font_powered_mclaren" id="button_run_code">Запуск</a>
 
         <img src="assets/images/ic_debug_code.svg" alt="">
         <a class="font_powered_mclaren" id="button_debug_code">Отладка</a>
-        
+    </div>
+    <div id="header_right">
+<!--        <img src="assets/images/ic_convert_to_code.svg" alt="">-->
+<!--        <a class="font_powered_mclaren" id="button_convert_to_code">Конвертировать в код</a>-->
+
+        <div id="code_execution_status">
+            <div id="code_execution_status_text" class="font_powered_mclaren"></div>
+            <div id="code_execution_status_progress_bar_container">
+                <div id="code_execution_status_progress_bar"></div>
+            </div>
+            <img id="code_execution_status_stop_button" style="display: none;" src="assets/images/ic_close_black.svg" alt="stop" />
+        </div>
+
         <img id="button_expand_code" src="assets/images/ic_expand_right.svg" alt="">
     </div>
 </div>
@@ -77,13 +85,6 @@
                 </div>
             </div>
             <div id="code_output_header_right">
-                <div id="code_execution_status">
-                    <div id="code_execution_status_text" class="font_powered_mclaren"></div>
-                    <div id="code_execution_status_progress_bar_container">
-                        <div id="code_execution_status_progress_bar"></div>
-                    </div>
-                    <img id="code_execution_status_stop_button" style="display: none;" src="assets/images/ic_close_black.svg" alt="stop" />
-                </div>
             </div>
         </div>
         <div id="code_output" class="font_powered_cascadia_code code_output_expanded">
