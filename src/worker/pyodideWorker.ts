@@ -5,7 +5,6 @@ import {WorkerEvent} from "./WorkerEvent";
 let pyodide: any = null;
 let isInitComplete: boolean = false;
 let currentRunTask: any | null = null;
-let currentRunId: number | null = null;
 
 class WorkerStdout {
     private buffer: string = "";
@@ -55,6 +54,17 @@ async function getTransformedDebugReadyCode(originalCode: string): Promise<strin
     return pyodide.runPython(`_transformCodeToDebugReady(${JSON.stringify(originalCode)})`);
 }
 
+async function getTransformedRunReadyCode(originalCode: string): Promise<string> {
+    const script = await fetch("/assets/python/transformCodeToRunReady.py");
+    const scriptText = await script.text();
+    pyodide.runPython(scriptText);
+    return pyodide.runPython(
+`
+_transform_code_to_run_ready(${JSON.stringify(originalCode)})
+`
+    );
+}
+
 async function runDebugPrepareCode(breakpoints: number[]) {
     const response = await fetch("/assets/python/debugPrepare.py");
     const script = await response.text();
@@ -73,23 +83,26 @@ async function handleRunCode(payload: { code: string; inputFilenames: string[] }
         const { code, inputFilenames } = payload;
         await cleanFilesystemBesidesInputFiles(inputFilenames);
         await runPatchCode();
+
+        const scriptStopRunCodeCheck = await fetch("/assets/python/stopRunCodeCheck.py");
+        await pyodide.runPythonAsync(await scriptStopRunCodeCheck.text());
+
+        const runReadyCode = await getTransformedRunReadyCode(code);
+
         currentRunTask = pyodide.runPythonAsync(
 `
-import asyncio
-_current_run_task = None
+async def _main():
+${runReadyCode.split("\n").map(line => "    " + line).join("\n")}
 
-async def _run():
-${code.split("\n").map(line => "    " + line).join("\n")}
-
-_current_run_task = asyncio.create_task(_run())
-await _current_run_task
+await _main()
 `
         );
-        currentRunId = id;
         const result = await currentRunTask;
         self.postMessage({ id, type: WorkerEvent.RunCodeDone, payload: result });
     } catch (e: any) {
-        if (e.message && e.message.includes('CancelledError')) {
+        if (e.message && e.message.includes("StopExecution")) {
+            self.postMessage({ id, type: WorkerEvent.RunCodeCancelled, payload: "Code running was cancelled by user" });
+        } else if (e.message && e.message.includes("CancelledError")) {
             self.postMessage({ id, type: WorkerEvent.RunCodeCancelled, payload: "Code running was cancelled by user" });
         } else {
             self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
@@ -97,7 +110,6 @@ await _current_run_task
     }
     finally {
         currentRunTask = null;
-        currentRunId = null;
     }
 }
 
@@ -239,9 +251,9 @@ self.addEventListener('message', async (event: MessageEvent) => {
             await handleRunCode(payload, id);
             break;
         case WorkerCommand.StopRunCode:
-            console.log("switch-case");
+            pyodide.runPython("_is_stop_run_code = True");
             if (currentRunTask) {
-                pyodide.runPython("if _current_run_task: _current_run_task.cancel()");
+                pyodide.runPython("if '_current_run_task' in globals() and _current_run_task: _current_run_task.cancel()");
             }
             break;
 
