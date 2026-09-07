@@ -182,7 +182,12 @@ await __main__()
         await pyodide.runPythonAsync(finalCode);
         self.postMessage({ id, type: WorkerEvent.DebugCodeDone, payload: "ok" });
     } catch (e: any) {
-        self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
+        if (e.message && e.message.includes("CancelledError")) {
+            self.postMessage({ id, type: WorkerEvent.DebugCodeCancelled, payload: "debug was cancelled by the user" });
+        }
+        else {
+            self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
+        }
     }
 }
 

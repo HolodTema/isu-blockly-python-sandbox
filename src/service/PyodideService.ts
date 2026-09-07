@@ -42,6 +42,7 @@ export class PyodideService {
             }
             if (msg.type === WorkerEvent.DebugCodeDone) {
                 this.state.setIsDebugging(false);
+                this.state.setRecordDebugVariables({});
                 this.state.setDebugCurrentLine(null);
                 return;
             }
@@ -57,12 +58,22 @@ export class PyodideService {
                 if (this.state.getIsRunning()) {
                     this.state.setIsRunning(false);
                 }
+                if (this.state.getIsDebugging()) {
+                    this.state.setIsDebugging(false);
+                    this.state.setRecordDebugVariables({});
+                    this.state.setDebugCurrentLine(null);
+                }
             }
             if (msg.type === WorkerEvent.RunCodeDone) {
                 this.state.setIsRunning(false);
             }
             if (msg.type === WorkerEvent.RunCodeCancelled) {
                 this.state.setIsRunning(false);
+            }
+            if (msg.type === WorkerEvent.DebugCodeCancelled) {
+                this.state.setIsDebugging(false);
+                this.state.setRecordDebugVariables({});
+                this.state.setDebugCurrentLine(null);
             }
             if (msg.type === WorkerEvent.OutputFilesZipReady) {
                 const blob: Blob = new Blob([msg.payload], {type: "application/zip"});

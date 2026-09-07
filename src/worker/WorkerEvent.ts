@@ -7,6 +7,7 @@ export enum WorkerEvent {
     RunCodeCancelled = "runCodeCancelled",
 
     DebugCodeDone = "debugCodeDone",
+    DebugCodeCancelled = "debugCodeCancelled",
     OnDebugFileRead = "onDebugFileRead",
 
     OnInputFileLoaded = "onInputFileLoaded",
