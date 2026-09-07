@@ -74,7 +74,7 @@ export class UIService {
         const buttonStopExecution = document.getElementById("code_execution_status_stop_button") as HTMLButtonElement;
         if (divCodeExecutionStatusText && divCodeExecutionStatus && buttonStopExecution) {
             divCodeExecutionStatus.classList.add("active");
-            buttonStopExecution.style.display = "inline-block";
+            buttonStopExecution.style.display = "block";
             if (mode === "run") {
                 divCodeExecutionStatusText.textContent = "Запуск"
             }

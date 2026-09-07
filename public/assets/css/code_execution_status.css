@@ -33,22 +33,14 @@
 }
 
 #code_execution_status_stop_button {
-    background: #ff4444;
-    border: none;
-    color: white;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    font-size: 16px;
-    font-weight: bold;
+    width: 20px;
+    height: 20px;
     cursor: pointer;
-    line-height: 1;
-    padding: 0;
-    margin-left: 8px;
+    filter: brightness(0) invert(1);
 }
 
 #code_execution_status_stop_button:hover {
-    background: #cc0000;
+    transform: scale(1.1);
 }
 
 @keyframes codeExecutionStatusProgressAnimation {
