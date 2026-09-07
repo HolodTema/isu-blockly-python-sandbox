@@ -114,6 +114,15 @@ export class PyodideService {
         }
     }
 
+    stopCodeExecution() {
+        if (this.state.getIsDebugging()) {
+            this.sendDebugUserCommandStop();
+        }
+        else {
+            this.sendWorkerCommand(WorkerCommand.StopRunCode)
+        }
+    }
+
     loadInputFile(filename: string, byteArray: Uint8Array) {
         this.sendWorkerCommand(WorkerCommand.LoadInputFile, {filename, data: byteArray.buffer});
     }

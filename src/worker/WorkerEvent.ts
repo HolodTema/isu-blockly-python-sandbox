@@ -4,6 +4,7 @@ export enum WorkerEvent {
     Stdout = "stdout",
     Error = "error",
     RunCodeDone = "runCodeDone",
+    RunCodeCancelled = "runCodeCancelled",
 
     DebugCodeDone = "debugCodeDone",
     OnDebugFileRead = "onDebugFileRead",

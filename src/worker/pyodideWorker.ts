@@ -4,6 +4,8 @@ import {WorkerEvent} from "./WorkerEvent";
 
 let pyodide: any = null;
 let isInitComplete: boolean = false;
+let currentRunTask: any | null = null;
+let currentRunId: number | null = null;
 
 class WorkerStdout {
     private buffer: string = "";
@@ -71,10 +73,31 @@ async function handleRunCode(payload: { code: string; inputFilenames: string[] }
         const { code, inputFilenames } = payload;
         await cleanFilesystemBesidesInputFiles(inputFilenames);
         await runPatchCode();
-        const result = await pyodide.runPythonAsync(code);
+        currentRunTask = pyodide.runPythonAsync(
+`
+import asyncio
+_current_run_task = None
+
+async def _run():
+${code.split("\n").map(line => "    " + line).join("\n")}
+
+_current_run_task = asyncio.create_task(_run())
+await _current_run_task
+`
+        );
+        currentRunId = id;
+        const result = await currentRunTask;
         self.postMessage({ id, type: WorkerEvent.RunCodeDone, payload: result });
     } catch (e: any) {
-        self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
+        if (e.message && e.message.includes('CancelledError')) {
+            self.postMessage({ id, type: WorkerEvent.RunCodeCancelled, payload: "Code running was cancelled by user" });
+        } else {
+            self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
+        }
+    }
+    finally {
+        currentRunTask = null;
+        currentRunId = null;
     }
 }
 
@@ -214,6 +237,12 @@ self.addEventListener('message', async (event: MessageEvent) => {
             break;
         case WorkerCommand.StartRunCode:
             await handleRunCode(payload, id);
+            break;
+        case WorkerCommand.StopRunCode:
+            console.log("switch-case");
+            if (currentRunTask) {
+                pyodide.runPython("if _current_run_task: _current_run_task.cancel()");
+            }
             break;
 
         case WorkerCommand.StartDebugCode:

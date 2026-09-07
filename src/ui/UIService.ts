@@ -24,7 +24,6 @@ export class UIService {
     ) {
         const divCodeOutput: HTMLElement = document.getElementById("code_output")!;
 
-
         this.configureButtonConvertToCode();
         this.configureButtonRunCode();
         this.configureButtonSaveProject();
@@ -36,6 +35,7 @@ export class UIService {
         this.configureCodeOutputTabButtons();
         this.configureDebugUI();
         this.configureButtonDebugCode();
+        this.configureCodeExecutionStopButton()
 
         this.state.subscribe((key: string, state: AppState) => {
             if (key === AppStateKey.StrCodeOutput) {
@@ -71,8 +71,10 @@ export class UIService {
     showCodeExecutionStatus(mode: "run" | "debug") {
         const divCodeExecutionStatus = document.getElementById("code_execution_status");
         const divCodeExecutionStatusText = document.getElementById("code_execution_status_text");
-        if (divCodeExecutionStatusText && divCodeExecutionStatus) {
+        const buttonStopExecution = document.getElementById("code_execution_status_stop_button") as HTMLButtonElement;
+        if (divCodeExecutionStatusText && divCodeExecutionStatus && buttonStopExecution) {
             divCodeExecutionStatus.classList.add("active");
+            buttonStopExecution.style.display = "inline-block";
             if (mode === "run") {
                 divCodeExecutionStatusText.textContent = "Запуск"
             }
@@ -85,7 +87,9 @@ export class UIService {
     hideCodeExecutionStatus() {
         const divCodeExecutionStatus = document.getElementById("code_execution_status");
         const divCodeExecutionStatusText = document.getElementById("code_execution_status_text");
-        if (divCodeExecutionStatusText && divCodeExecutionStatus) {
+        const buttonStopExecution = document.getElementById("code_execution_status_stop_button") as HTMLButtonElement;
+        if (divCodeExecutionStatusText && divCodeExecutionStatus && buttonStopExecution) {
+            buttonStopExecution.style.display = "none";
             divCodeExecutionStatus.classList.remove("active");
             divCodeExecutionStatusText.textContent = "";
         }
@@ -355,6 +359,13 @@ export class UIService {
                     console.error(e);
                 }
             });
+    }
+
+    private configureCodeExecutionStopButton() {
+        const buttonStopExecution = document.getElementById("code_execution_status_stop_button") as HTMLButtonElement;
+        buttonStopExecution.addEventListener("click", () => {
+            this.pyodideService.stopCodeExecution();
+        });
     }
 
     private async refreshOutputFilesList() {

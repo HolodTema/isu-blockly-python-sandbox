@@ -1,6 +1,7 @@
 export enum WorkerCommand {
     Init = "init",
     StartRunCode = "startRunCode",
+    StopRunCode = "stopRunCode",
 
     StartDebugCode = "startDebugCode",
     DebugUserCommandContinue = "debugUserCommandContinue",
