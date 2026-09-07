@@ -62,8 +62,16 @@ export class UIService {
                     this.hideCodeExecutionStatus();
                 }
             }
-            if (key == AppStateKey.DebugCurrentLine) {
+            if (key === AppStateKey.DebugCurrentLine) {
                 codeMirrorService.setDebugCurrentLine(state.getDebugCurrentLine())
+            }
+            if (key === AppStateKey.IsRunning) {
+                if (state.getIsRunning()) {
+                    this.showCodeExecutionStatus("run");
+                }
+                else {
+                    this.hideCodeExecutionStatus();
+                }
             }
         });
     }
@@ -105,7 +113,6 @@ export class UIService {
     private configureButtonRunCode() {
         document.getElementById("button_run_code")!
             .addEventListener("click", async (e: PointerEvent) => {
-                this.showCodeExecutionStatus("run");
                 await new Promise(resolve => requestAnimationFrame(resolve));
                 try {
                     await this.pyodideService.runCode();
@@ -231,10 +238,6 @@ export class UIService {
         });
     }
 
-    private showErrorToastNoResultFiles() {
-        this.toastService.showErrorToast("Выполненный код не сохранял результирующих файлов для загрузки");
-    }
-
     private showSplashScreenWithHideTimer() {
         const splash: HTMLElement = document.getElementById('splash_screen_container')!;
 
@@ -352,7 +355,6 @@ export class UIService {
                     return;
                 }
                 const inputFiles = Array.from(this.state.getInputFilenames());
-                this.showCodeExecutionStatus("debug");
                 try {
                     await this.pyodideService.debugCode(code, breakpoints, inputFiles);
                 } catch (e) {

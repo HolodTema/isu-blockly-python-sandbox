@@ -11,6 +11,7 @@ export class AppState {
     private recordDebugVariables: Record<string, any> = {};
     private isDebugging: boolean = false;
     private debugCurrentLine: number | null = null;
+    private isRunning: boolean = false;
     private listeners: Array<(key: AppStateKey, state: AppState)=>void> = [];
 
     subscribe(listener: (key: AppStateKey, state: AppState)=>void) {
@@ -55,6 +56,11 @@ export class AppState {
     setDebugCurrentLine(debugCurrentLine: number | null) {
         this.debugCurrentLine = debugCurrentLine;
         this.notifyAllListeners(AppStateKey.DebugCurrentLine);
+    }
+
+    setIsRunning(isRunning: boolean) {
+        this.isRunning = isRunning;
+        this.notifyAllListeners(AppStateKey.IsRunning);
     }
 
     isInputFilenameInSet(inputFilename: string): boolean {
@@ -105,6 +111,10 @@ export class AppState {
 
     getDebugCurrentLine(): number | null {
         return this.debugCurrentLine;
+    }
+
+    getIsRunning(): boolean {
+        return this.isRunning;
     }
 
     private notifyAllListeners(updatedKey: AppStateKey) {

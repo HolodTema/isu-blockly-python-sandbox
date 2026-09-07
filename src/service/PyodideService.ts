@@ -54,6 +54,15 @@ export class PyodideService {
             if (msg.type === WorkerEvent.Error) {
                 const errorMessage = msg.payload || "Unknown PyodideWorker error";
                 this.state.setStrCodeOutput(`Error: ${errorMessage}`);
+                if (this.state.getIsRunning()) {
+                    this.state.setIsRunning(false);
+                }
+            }
+            if (msg.type === WorkerEvent.RunCodeDone) {
+                this.state.setIsRunning(false);
+            }
+            if (msg.type === WorkerEvent.RunCodeCancelled) {
+                this.state.setIsRunning(false);
             }
             if (msg.type === WorkerEvent.OutputFilesZipReady) {
                 const blob: Blob = new Blob([msg.payload], {type: "application/zip"});
@@ -89,6 +98,7 @@ export class PyodideService {
         await this.waitForInitComplete();
         const arrInputFiles: string[] = Array.from(this.state.getInputFilenames());
         this.state.setStrCodeOutput("");
+        this.state.setIsRunning(true);
         try {
             await this.sendWorkerCommandAsync(WorkerCommand.StartRunCode, { code, arrInputFiles });
         }

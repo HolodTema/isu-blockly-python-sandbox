@@ -10,4 +10,5 @@ export enum AppStateKey {
     RecordDebugVariables = "RecordDebugVariables",
     IsDebugging = "IsDebugging",
     DebugCurrentLine = "DebugCurrentLine",
+    IsRunning = "IsRunning",
 }
