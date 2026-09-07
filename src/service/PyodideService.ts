@@ -1,34 +1,81 @@
 import {AppState} from "../state/AppState";
+import {CodeOutputTabType} from "../state/CodeOutputTabType";
+import {WorkerCommand} from "../worker/WorkerCommand";
+import {WorkerEvent} from "../worker/WorkerEvent";
 
 export class PyodideService {
-    private worker: Worker = new Worker(
-        new URL("../worker/pyodideWorker.js", import.meta.url)
-    );
-    private isReady: boolean = false;
+    private worker: Worker;
+    private isInitComplete: boolean = false;
     private mapPendingPromises: Map<number, {resolve: Function; reject: Function}> = new Map();
-    private messageId: number = 0;
+    private workerCommandPromiseId: number = 0;
 
     constructor(private state: AppState) {
+        this.worker = new Worker(
+            new URL("../worker/pyodideWorker.ts", import.meta.url),
+            { type: "module" }
+        );
         this.worker.addEventListener("message", (event: MessageEvent<any>) => {
             const msg = event.data;
-            if (msg.type === "init") {
-                this.isReady = true;
+            if (typeof msg === "string" && msg === "WorkerEvent.OnDebugFileCreated") {
+                this.sendWorkerCommandAsync(WorkerCommand.ReadDebugFile, null)
+                    .then(data => {
+                        this.state.setRecordDebugVariables(data.variables);
+                        this.state.setDebugCurrentLine(data.line);
+                        this.state.setCurrentCodeOutputTabType(CodeOutputTabType.Debug);
+                    })
+                    .catch(err => console.error("Failed to read debug file:", err));
+                return;
+            }
+            if (msg.type === WorkerEvent.InitComplete) {
+                this.isInitComplete = true;
                 console.log("Pyodide worker: init complete");
                 return;
             }
-            if (msg.type === "stdout") {
+            if (msg.type === WorkerEvent.Stdout) {
                 const currentCodeOutput = this.state.getStrCodeOutput();
                 this.state.setStrCodeOutput(currentCodeOutput + msg.payload);
                 return;
             }
-            if (msg.type === "log") {
+            if (msg.type === WorkerEvent.Log) {
                 console.log("Pyodide worker:", msg.payload);
                 return;
             }
-            if (msg.type === "error") {
-                this.state.setStrCodeOutput(`Error: ${msg.payload}`);
+            if (msg.type === WorkerEvent.DebugCodeDone) {
+                this.state.setIsDebugging(false);
+                this.state.setRecordDebugVariables({});
+                this.state.setDebugCurrentLine(null);
+                return;
             }
-            if (msg.type === "zipReady") {
+            if (msg.type === WorkerEvent.OnDebugFileRead) {
+                this.state.setRecordDebugVariables(msg.payload.variables);
+                this.state.setDebugCurrentLine(msg.payload.line);
+                this.state.setCurrentCodeOutputTabType(CodeOutputTabType.Debug);
+                return;
+            }
+            if (msg.type === WorkerEvent.Error) {
+                const errorMessage = msg.payload || "Unknown PyodideWorker error";
+                this.state.setStrCodeOutput(`Error: ${errorMessage}`);
+                if (this.state.getIsRunning()) {
+                    this.state.setIsRunning(false);
+                }
+                if (this.state.getIsDebugging()) {
+                    this.state.setIsDebugging(false);
+                    this.state.setRecordDebugVariables({});
+                    this.state.setDebugCurrentLine(null);
+                }
+            }
+            if (msg.type === WorkerEvent.RunCodeDone) {
+                this.state.setIsRunning(false);
+            }
+            if (msg.type === WorkerEvent.RunCodeCancelled) {
+                this.state.setIsRunning(false);
+            }
+            if (msg.type === WorkerEvent.DebugCodeCancelled) {
+                this.state.setIsDebugging(false);
+                this.state.setRecordDebugVariables({});
+                this.state.setDebugCurrentLine(null);
+            }
+            if (msg.type === WorkerEvent.OutputFilesZipReady) {
                 const blob: Blob = new Blob([msg.payload], {type: "application/zip"});
                 const url: string = URL.createObjectURL(blob);
                 const a: HTMLAnchorElement = document.createElement("a");
@@ -53,31 +100,18 @@ export class PyodideService {
         });
     }
 
-    sendCommand(type: string, payload: any): Promise<any> {
-        return new Promise((resolve: Function, reject: Function) => {
-            const id: number = this.messageId++;
-            this.mapPendingPromises.set(id, {resolve, reject});
-            this.worker.postMessage({id, type, payload});
-        });
-    }
-
-    async runPythonCode(code: string, inputFilenames: string[] = []): Promise<void> {
-        if (!this.isReady) {
-            await new Promise((resolve: Function) => {
-                const check = () => {
-                    if (this.isReady) {
-                        resolve();
-                    }
-                    else {
-                        setTimeout(check, 100);
-                    }
-                };
-                check();
-            });
+    async runCode() {
+        const code = this.state.getStrCodeToLaunch().trim();
+        if (code.length === 0) {
+            this.state.setStrCodeOutput('# Пустая программа\n');
+            return;
         }
+        await this.waitForInitComplete();
+        const arrInputFiles: string[] = Array.from(this.state.getInputFilenames());
         this.state.setStrCodeOutput("");
+        this.state.setIsRunning(true);
         try {
-            await this.sendCommand("run", { code, inputFilenames });
+            await this.sendWorkerCommandAsync(WorkerCommand.StartRunCode, { code, arrInputFiles });
         }
         catch (error: any) {
             this.state.setStrCodeOutput(`Runtime error: ${error.message}`);
@@ -85,41 +119,91 @@ export class PyodideService {
         }
     }
 
-    saveInputFileToPyodideMemory(filename: string, byteArray: Uint8Array) {
-        this.worker.postMessage({
-            id: this.messageId++,
-            type: "loadFile",
-            payload: {filename, data: byteArray.buffer}
-        }, [byteArray.buffer]);
-    }
-
-    removeInputFileFromPyodideMemory(filename: string) {
-        this.sendCommand("removeFile", filename)
-            .catch(e => console.warn(e));
-    }
-
-    async saveResultFilesIntoZipArchive(): Promise<boolean> {
-        await this.sendCommand("saveZip", null);
-        return true;
-    }
-
-    async runCurrentCodeFromWorkspace() {
-        const code = this.state.getStrCodeToLaunch().trim();
-        if (code.length === 0) {
-            this.state.setStrCodeOutput('# Пустая программа\n');
-            return;
+    async debugCode(code: string, breakpoints: number[], inputFilenames: string[] = []): Promise<void> {
+        await this.waitForInitComplete();
+        this.state.setStrCodeOutput("")
+        this.state.setRecordDebugVariables({});
+        this.state.setDebugCurrentLine(null);
+        this.state.setIsDebugging(true);
+        try {
+            await this.sendWorkerCommandAsync(WorkerCommand.StartDebugCode, { code, breakpoints, inputFilenames });
         }
-        const inputFiles = Array.from(this.state.getInputFilenames());
-        await this.runPythonCode(code, inputFiles);
+        catch (e) {
+            this.state.setStrCodeOutput(`Debug error: ${e}`);
+            this.state.setIsDebugging(false);
+            console.error("Debug error:", e);
+        }
     }
 
-    async listOutputFiles(): Promise<string[]> {
-        const result = await this.sendCommand("listOutputFiles", null);
+    stopCodeExecution() {
+        if (this.state.getIsDebugging()) {
+            this.sendDebugUserCommandStop();
+        }
+        else {
+            this.sendWorkerCommand(WorkerCommand.StopRunCode)
+        }
+    }
+
+    loadInputFile(filename: string, byteArray: Uint8Array) {
+        this.sendWorkerCommand(WorkerCommand.LoadInputFile, {filename, data: byteArray.buffer});
+    }
+
+    removeInputFile(filename: string) {
+        this.sendWorkerCommand(WorkerCommand.RemoveInputFile, filename)
+    }
+
+    sendDebugUserCommandContinue() {
+        this.sendWorkerCommand(WorkerCommand.DebugUserCommandContinue);
+    }
+
+    sendDebugUserCommandStep() {
+        this.sendWorkerCommand(WorkerCommand.DebugUserCommandStep);
+    }
+
+    sendDebugUserCommandStop() {
+        this.sendWorkerCommand(WorkerCommand.DebugUserCommandStop);
+    }
+
+    async saveOutputFilesZip(): Promise<void> {
+        await this.sendWorkerCommandAsync(WorkerCommand.SaveOutputFilesZip);
+    }
+
+    async getListOutputFiles(): Promise<string[]> {
+        const result = await this.sendWorkerCommandAsync(WorkerCommand.GetListOutputFiles, null);
         return result as string[];
     }
 
     async readOutputFile(filename: string): Promise<string> {
-        const result = await this.sendCommand("readOutputFile", filename);
+        const result = await this.sendWorkerCommandAsync(WorkerCommand.ReadOutputFile, filename);
         return result as string;
+    }
+
+    private sendWorkerCommand(type: WorkerCommand, payload?: any) {
+        this.worker.postMessage({
+            type: type,
+            payload: payload
+        });
+    }
+
+    private async sendWorkerCommandAsync(type: WorkerCommand, payload?: any): Promise<any> {
+        return new Promise((resolve: Function, reject: Function) => {
+            const id: number = this.workerCommandPromiseId++;
+            this.mapPendingPromises.set(id, {resolve, reject});
+            this.worker.postMessage({id, type, payload});
+        });
+    }
+
+    private async waitForInitComplete(): Promise<void> {
+        if (this.isInitComplete) return;
+        await new Promise((resolve) => {
+            const check = () => {
+                if (this.isInitComplete) {
+                    resolve({});
+                } else {
+                    setTimeout(check, 100);
+                }
+            };
+            check();
+        });
     }
 }

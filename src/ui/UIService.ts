@@ -5,21 +5,26 @@ import {PyodideService} from "../service/PyodideService";
 import {ProjectService} from "../service/ProjectService";
 import {ToastService} from "../service/ToastService";
 import {CodeOutputTabType} from "../state/CodeOutputTabType";
-import {fieldRegistry} from "blockly";
+import {CodeMirrorService} from "../service/codeMirrorService";
 
 
 export class UIService {
+
+    private buttonDebugContinue = document.getElementById("button_debug_continue") as HTMLButtonElement;
+    private buttonDebugStep = document.getElementById("button_debug_step") as HTMLButtonElement;
+    private buttonDebugStop = document.getElementById("button_debug_stop") as HTMLButtonElement;
 
     constructor(
         private state: AppState,
         private blocklyService: BlocklyService,
         private pyodideService: PyodideService,
         private projectService: ProjectService,
+        private codeMirrorService: CodeMirrorService,
         private toastService: ToastService
     ) {
         const divCodeOutput: HTMLElement = document.getElementById("code_output")!;
 
-        this.configureButtonConvertToCode();
+        // this.configureButtonConvertToCode();
         this.configureButtonRunCode();
         this.configureButtonSaveProject();
         this.configureButtonExpandOutput(divCodeOutput);
@@ -28,6 +33,9 @@ export class UIService {
         this.configureButtonAddInputFile();
         this.showSplashScreenWithHideTimer();
         this.configureCodeOutputTabButtons();
+        this.configureDebugUI();
+        this.configureButtonDebugCode();
+        this.configureCodeExecutionStopButton()
 
         this.state.subscribe((key: string, state: AppState) => {
             if (key === AppStateKey.StrCodeOutput) {
@@ -38,6 +46,32 @@ export class UIService {
             }
             if (key === AppStateKey.CurrentCodeOutputTabType) {
                 this.switchCodeOutputTab(state.getCurrentCodeOutputTabType());
+                if (state.getCurrentCodeOutputTabType() === CodeOutputTabType.Debug) {
+                    this.updateDebugVariablesTable(state.getRecordDebugVariables());
+                }
+            }
+            if (key === AppStateKey.RecordDebugVariables) {
+                this.updateDebugVariablesTable(state.getRecordDebugVariables());
+            }
+            if (key === AppStateKey.IsDebugging) {
+                const isDebugging = state.getIsDebugging();
+                this.setDebugButtonsEnabled(isDebugging);
+                if (isDebugging) {
+                    this.showCodeExecutionStatus('debug');
+                } else {
+                    this.hideCodeExecutionStatus();
+                }
+            }
+            if (key === AppStateKey.DebugCurrentLine) {
+                codeMirrorService.setDebugCurrentLine(state.getDebugCurrentLine())
+            }
+            if (key === AppStateKey.IsRunning) {
+                if (state.getIsRunning()) {
+                    this.showCodeExecutionStatus("run");
+                }
+                else {
+                    this.hideCodeExecutionStatus();
+                }
             }
         });
     }
@@ -45,8 +79,10 @@ export class UIService {
     showCodeExecutionStatus(mode: "run" | "debug") {
         const divCodeExecutionStatus = document.getElementById("code_execution_status");
         const divCodeExecutionStatusText = document.getElementById("code_execution_status_text");
-        if (divCodeExecutionStatusText && divCodeExecutionStatus) {
+        const buttonStopExecution = document.getElementById("code_execution_status_stop_button") as HTMLButtonElement;
+        if (divCodeExecutionStatusText && divCodeExecutionStatus && buttonStopExecution) {
             divCodeExecutionStatus.classList.add("active");
+            buttonStopExecution.style.display = "block";
             if (mode === "run") {
                 divCodeExecutionStatusText.textContent = "Запуск"
             }
@@ -59,28 +95,28 @@ export class UIService {
     hideCodeExecutionStatus() {
         const divCodeExecutionStatus = document.getElementById("code_execution_status");
         const divCodeExecutionStatusText = document.getElementById("code_execution_status_text");
-        if (divCodeExecutionStatusText && divCodeExecutionStatus) {
+        const buttonStopExecution = document.getElementById("code_execution_status_stop_button") as HTMLButtonElement;
+        if (divCodeExecutionStatusText && divCodeExecutionStatus && buttonStopExecution) {
+            buttonStopExecution.style.display = "none";
             divCodeExecutionStatus.classList.remove("active");
             divCodeExecutionStatusText.textContent = "";
         }
     }
 
-    private configureButtonConvertToCode() {
-        document.getElementById("button_convert_to_code")!
-            .addEventListener("click", (e: PointerEvent) => {
-                this.blocklyService.generateAndUpdateCode();
-            });
-    }
+    // private configureButtonConvertToCode() {
+    //     document.getElementById("button_convert_to_code")!
+    //         .addEventListener("click", (e: PointerEvent) => {
+    //             this.blocklyService.generateAndUpdateCode();
+    //         });
+    // }
 
     private configureButtonRunCode() {
         document.getElementById("button_run_code")!
             .addEventListener("click", async (e: PointerEvent) => {
-                this.showCodeExecutionStatus("run");
                 await new Promise(resolve => requestAnimationFrame(resolve));
                 try {
-                    await this.pyodideService.runCurrentCodeFromWorkspace();
-                }
-                finally {
+                    await this.pyodideService.runCode();
+                } finally {
                     if (this.state.getCurrentCodeOutputTabType() === CodeOutputTabType.OutputFiles) {
                         await this.refreshOutputFilesList();
                     }
@@ -157,7 +193,7 @@ export class UIService {
                         console.error("Error: unable to upload input file into pyodide. File with this name has already been uploaded");
                         return;
                     }
-                    this.pyodideService.saveInputFileToPyodideMemory(file.name, byteArray);
+                    this.pyodideService.loadInputFile(file.name, byteArray);
                     this.state.addInputFilename(file.name);
 
                     const divInputFilesList = document.getElementById("input_files_list")!;
@@ -171,7 +207,7 @@ export class UIService {
                     buttonRemoveInputFile.src = "assets/images/ic_close_black.svg";
                     buttonRemoveInputFile.alt = "remove";
                     buttonRemoveInputFile.addEventListener("click", (e) => {
-                        this.pyodideService.removeInputFileFromPyodideMemory(file.name);
+                        this.pyodideService.removeInputFile(file.name);
                         divInputFilesList.removeChild(divInputFile);
                         this.state.removeInputFilename(file.name);
                     })
@@ -202,10 +238,6 @@ export class UIService {
         });
     }
 
-    private showErrorToastNoResultFiles() {
-        this.toastService.showErrorToast("Выполненный код не сохранял результирующих файлов для загрузки");
-    }
-
     private showSplashScreenWithHideTimer() {
         const splash: HTMLElement = document.getElementById('splash_screen_container')!;
 
@@ -233,7 +265,7 @@ export class UIService {
 
     private switchCodeOutputTab(tabType: CodeOutputTabType) {
         document.querySelectorAll(".tab_button").forEach((tabButton) => {
-           tabButton.classList.toggle("active", tabButton.getAttribute("data-tab") === tabType);
+            tabButton.classList.toggle("active", tabButton.getAttribute("data-tab") === tabType);
         });
         document.querySelectorAll(".tab_content").forEach((tabContent) => {
             tabContent.classList.toggle("active", tabContent.id === `tab_content_${tabType}`);
@@ -249,9 +281,98 @@ export class UIService {
         }
     }
 
+    private configureDebugUI() {
+        this.buttonDebugContinue.addEventListener('click', () => {
+            this.pyodideService.sendDebugUserCommandContinue()
+        });
+        this.buttonDebugStep.addEventListener('click', () => {
+            this.pyodideService.sendDebugUserCommandStep();
+        });
+        this.buttonDebugStop.addEventListener('click', () => {
+            this.pyodideService.sendDebugUserCommandStop();
+        });
+        this.setDebugButtonsEnabled(false);
+    }
+
+    private setDebugButtonsEnabled(enabled: boolean) {
+        this.buttonDebugContinue.disabled = !enabled;
+        this.buttonDebugStep.disabled = !enabled;
+        this.buttonDebugStop.disabled = !enabled;
+    }
+
+    private updateDebugVariablesTable(variables: Record<string, any>) {
+        const tableBody = document.getElementById("debug_variables_table_body");
+        if (!tableBody) {
+            return;
+        }
+
+        tableBody.innerHTML = "";
+
+        if (!variables || Object.keys(variables).length === 0) {
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = 2;
+            td.textContent = 'Нет переменных (еще не дошли до точки останова)';
+            td.style.textAlign = 'center';
+            td.style.color = '#888';
+            tr.appendChild(td);
+            tableBody.appendChild(tr);
+            return;
+        }
+
+        for (const [key, value] of Object.entries(variables)) {
+            const tr = document.createElement('tr');
+            const tdKey = document.createElement('td');
+            tdKey.textContent = key;
+            const tdValue = document.createElement('td');
+            if (typeof value === 'string') {
+                tdValue.textContent = value;
+            } else {
+                try {
+                    tdValue.textContent = JSON.stringify(value, null, 2);
+                } catch {
+                    tdValue.textContent = String(value);
+                }
+            }
+            tr.appendChild(tdKey);
+            tr.appendChild(tdValue);
+            tableBody.appendChild(tr);
+        }
+    }
+
+    private configureButtonDebugCode() {
+        document.getElementById("button_debug_code")!
+            .addEventListener("click", async () => {
+                const code = this.state.getStrCodeToLaunch().trim();
+                if (code.length === 0) {
+                    this.toastService.showInfoToast("Еще нет программы для отладки");
+                    return;
+                }
+                const breakpoints = this.codeMirrorService.getBreakpointsArray();
+                console.log('Breakpoints from editor:', breakpoints);
+                if (breakpoints.length === 0) {
+                    this.toastService.showInfoToast("Поставьте хотя бы одну точку останова (клик возле номера строки)");
+                    return;
+                }
+                const inputFiles = Array.from(this.state.getInputFilenames());
+                try {
+                    await this.pyodideService.debugCode(code, breakpoints, inputFiles);
+                } catch (e) {
+                    console.error(e);
+                }
+            });
+    }
+
+    private configureCodeExecutionStopButton() {
+        const buttonStopExecution = document.getElementById("code_execution_status_stop_button") as HTMLButtonElement;
+        buttonStopExecution.addEventListener("click", () => {
+            this.pyodideService.stopCodeExecution();
+        });
+    }
+
     private async refreshOutputFilesList() {
         try {
-            const listOutputFiles: string[] = await this.pyodideService.listOutputFiles();
+            const listOutputFiles: string[] = await this.pyodideService.getListOutputFiles();
             const listOutputFilesWithoutInputFiles = listOutputFiles.filter(filename => !this.state.isInputFilenameInSet(filename));
 
             const divOutputFilesList = document.getElementById("output_files_list");
@@ -296,11 +417,10 @@ export class UIService {
                 font-size: 14px;
             `;
             buttonDownloadAllFiles.addEventListener('click', () => {
-                this.pyodideService.saveResultFilesIntoZipArchive();
+                this.pyodideService.saveOutputFilesZip();
             });
             divOutputFilesList.appendChild(buttonDownloadAllFiles);
-        }
-        catch (e) {
+        } catch (e) {
             console.error("Error while getting list of code-output-files:", e);
         }
     }
@@ -313,8 +433,7 @@ export class UIService {
         try {
             const outputFileText = await this.pyodideService.readOutputFile(filename);
             divOutputFilesPreview.textContent = outputFileText;
-        }
-        catch (e) {
+        } catch (e) {
             divOutputFilesPreview.textContent = `Ошибка чтения файла: ${e}`;
         }
     }

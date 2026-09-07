@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["es2020", "webworker"],
+    "types": ["vite/client"],
+    "module": "ESNext",
+    "moduleResolution": "bundler"
+  },
+  "include": ["src/worker/**/*.ts"]
+}

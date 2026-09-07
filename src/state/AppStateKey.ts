@@ -7,4 +7,8 @@ export enum AppStateKey {
     AddInputFilename = "AddInputFilename",
     RemoveInputFilename = "RemoveInputFilename",
     CurrentCodeOutputTabType = "CurrentCodeOutputTab",
+    RecordDebugVariables = "RecordDebugVariables",
+    IsDebugging = "IsDebugging",
+    DebugCurrentLine = "DebugCurrentLine",
+    IsRunning = "IsRunning",
 }
