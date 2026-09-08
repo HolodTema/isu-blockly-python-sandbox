@@ -58,16 +58,26 @@ export function initBaseBlocks(generator: PythonGenerator, mode: "display"|"exec
     };
 
     generator.forBlock["custom_for_block"] = function(block: Blockly.Block): string {
-        const varId = block.getFieldValue("VAR");
+        const varId = block.getFieldValue("VAR_COUNTER");
         const varName = generator.getVariableName(varId) || "i";
-
 
         const start = generator.valueToCode(block, "START", Order.ATOMIC) || "0";
         const stop = generator.valueToCode(block, "STOP", Order.ATOMIC) || "0";
         const step = generator.valueToCode(block, "STEP", Order.ATOMIC) || "1";
 
-        const body = generator.statementToCode(block, "DO");
-
+        let body: string = generator.statementToCode(block, "DO");
+        if (body.length == 0) {
+            body = "    pass";
+        }
         return `for ${varName} in range(${start}, ${stop}, ${step}):\n${body}\n`;
+    };
+
+    generator.forBlock["custom_variables_set_block"] = function(block: Blockly.Block): string {
+        const varId = block.getFieldValue("VAR_NAME");
+        const varModel = block.workspace.getVariableMap().getVariableById(varId);
+        const varName = varModel ? varModel.getName() : "var";
+
+        const value = generator.valueToCode(block, "VAR_VALUE", Order.NONE) || "None";
+        return `${varName} = ${value}\n`;
     };
 }

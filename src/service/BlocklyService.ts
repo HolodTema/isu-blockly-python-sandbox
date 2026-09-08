@@ -8,6 +8,7 @@ import {initPandasBlocks} from "../blocks/pandasBlocks";
 import {initConvertBlocks} from "../blocks/convertBlocks";
 import {initTextFileBlocks} from "../blocks/textFileBlocks";
 import {initHttpBlocks} from "../blocks/httpBlocks";
+import {configureVariablesCategory} from "../blocks/variableBlocks";
 
 
 export class BlocklyService {
@@ -55,7 +56,7 @@ export class BlocklyService {
         Object.assign(this.codeToLaunchGenerator.forBlock, originalForBlockFunctions);
         Object.assign(this.codeToShowGenerator.forBlock, originalForBlockFunctions);
         this.configureCodeGenerator(this.codeToLaunchGenerator, "execution")
-        this.configureCodeGenerator(this.codeToShowGenerator, "display")
+        this.configureCodeGenerator(this.codeToShowGenerator, "display");
     }
 
     private configureBlocklyStateSaving() {
@@ -119,12 +120,16 @@ export class BlocklyService {
     private async init() {
         try {
             Blockly.setLocale(Ru);
+            Blockly.setLocale({
+                "VARIABLES_DEFAULT_NAME": "x"
+            });
             await this.initBlocklyWorkspace();
             this.initBlocklyDiv();
             this.initCodeGenerators();
             this.createStartBlock();
             this.configureBlocklyStateSaving();
             this.configureBlocklyResize();
+            configureVariablesCategory(this.workspace!);
             console.log("Blockly: initialization complete");
         } catch (e) {
             console.error("Blockly init-error:", e);
