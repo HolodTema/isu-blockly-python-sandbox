@@ -51,7 +51,7 @@
                 },
                 {
                     "kind": "block",
-                    "type": "controls_for"
+                    "type": "custom_for_block"
                 }
             ]
         },

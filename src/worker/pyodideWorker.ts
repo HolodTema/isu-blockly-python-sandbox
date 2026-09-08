@@ -1,4 +1,3 @@
-import {loadPyodide} from "https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.mjs";
 import {WorkerCommand} from "./WorkerCommand";
 import {WorkerEvent} from "./WorkerEvent";
 
@@ -18,6 +17,7 @@ async function initPyodide(): Promise<void> {
     if (isInitComplete) return;
     try {
         self.postMessage({ type: WorkerEvent.Log, payload: "Pyodide init is in progress" });
+        const { loadPyodide } = await import("https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.mjs");
         pyodide = await loadPyodide();
         await pyodide.loadPackage("requests");
         await pyodide.loadPackage("pandas");

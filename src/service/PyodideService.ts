@@ -2,6 +2,7 @@ import {AppState} from "../state/AppState";
 import {CodeOutputTabType} from "../state/CodeOutputTabType";
 import {WorkerCommand} from "../worker/WorkerCommand";
 import {WorkerEvent} from "../worker/WorkerEvent";
+import PyodideWorker from '../worker/pyodideWorker.ts?worker';
 
 export class PyodideService {
     private worker: Worker;
@@ -10,10 +11,7 @@ export class PyodideService {
     private workerCommandPromiseId: number = 0;
 
     constructor(private state: AppState) {
-        this.worker = new Worker(
-            new URL("../worker/pyodideWorker.ts", import.meta.url),
-            { type: "module" }
-        );
+        this.worker = new PyodideWorker();
         this.worker.addEventListener("message", (event: MessageEvent<any>) => {
             const msg = event.data;
             if (typeof msg === "string" && msg === "WorkerEvent.OnDebugFileCreated") {
