@@ -56,4 +56,18 @@ export function initBaseBlocks(generator: PythonGenerator, mode: "display"|"exec
         const text = generator.valueToCode(block, "TEXT", Order.NONE) || '""';
         return [`input(${text})`, Order.FUNCTION_CALL];
     };
+
+    generator.forBlock["custom_for_block"] = function(block: Blockly.Block): string {
+        const varId = block.getFieldValue("VAR");
+        const varName = generator.getVariableName(varId) || "i";
+
+
+        const start = generator.valueToCode(block, "START", Order.ATOMIC) || "0";
+        const stop = generator.valueToCode(block, "STOP", Order.ATOMIC) || "0";
+        const step = generator.valueToCode(block, "STEP", Order.ATOMIC) || "1";
+
+        const body = generator.statementToCode(block, "DO");
+
+        return `for ${varName} in range(${start}, ${stop}, ${step}):\n${body}\n`;
+    };
 }
