@@ -1,0 +1,372 @@
+main {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    overflow: hidden;
+    height: 95%;
+}
+
+#blockly_workspace {
+    height: 100%;
+    min-width: 50%;
+    max-width: 100%;
+    flex-grow: 1;
+}
+
+#code_workspace {
+    height: 100%;
+    width: 50%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+main.code-hidden #blockly_workspace {
+    flex: 1 1 100%;
+}
+
+main.code-hidden #code_workspace {
+    display: none;
+}
+
+#codeViewer {
+    flex-grow: 1;
+    height: 100%;
+}
+
+#codemirror_workspace {
+    height: 100%;
+}
+
+.cm-theme {
+    height: 100%;
+}
+
+.cm-editor {
+    height: 100%;
+}
+
+.breakpoints-gutter {
+    width: 24px !important;
+    min-width: 24px !important;
+}
+
+.breakpoint-marker {
+    display: block;
+    width: 12px;
+    height: 12px;
+    margin: 5px auto 0 auto;
+    border-radius: 50%;
+    background-color: #e74c3c;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+#input_files_toolbar {
+    flex-direction: row;
+    display: flex;
+    align-items: center;
+    background-color: var(--main-gr);
+    padding: 10px;
+}
+
+#input_add_input_file {
+    display: none;
+}
+
+#img_add_input_file {
+    display: block;
+    height: 16px;
+}
+
+#button_add_input_file {
+    display: block;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 16px;
+    color: white;
+}
+
+#button_add_input_file:hover {
+    color: var(--hover);
+}
+
+#input_files_list {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    align-items: center;
+    padding: 0 0 0 10px;
+    gap: 5px 0;
+}
+
+.input_file {
+    height: fit-content;
+    display: flex;
+    margin: 0 10px 0 0;
+    background-color: #ffffff;
+    border-bottom-right-radius: 10px;
+    border-top-right-radius: 10px;
+    align-items: center;
+}
+
+.input_file_text {
+    color: #ffffff;
+    margin: 0;
+    padding: 5px 5px;
+    font-size: 16px;
+    border-bottom-right-radius: 10px;
+    border-top-right-radius: 10px;
+    background-color: #066C08;
+    white-space: nowrap;
+}
+
+.button_remove_input_file {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
+#code_output_header {
+    display: flex;
+    padding: 0 15px;
+    background-color: var(--main-gr);
+    flex-direction: row;
+    align-content: center;
+    justify-content: space-between;
+}
+
+#code_output_header_left {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    align-content: center;
+}
+
+#code_output_header_right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: end;
+}
+
+#img_download_result_files {
+    display: block;
+    height: 16px;
+}
+
+#button_download_result_files {
+    display: block;
+    font-size: 16px;
+    padding: 0 0 0 5px;
+    color: white;
+}
+
+#button_download_result_files:hover {
+    color: var(--hover);
+}
+
+#button_expand_output {
+    display: block;
+    width: 16px;
+    height: 16px;
+    color: white;
+}
+
+#code_output_tab_bar {
+    display: flex;
+    flex-direction: row;
+    margin: 0 0 0 10px;
+}
+
+.tab_button {
+    background: transparent;
+    border: none;
+    padding: 6px 12px;
+    color: rgba(255, 255, 255, 0.6);
+    font-family: 'mclaren', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.3s, border-color 0.3s;
+}
+
+.tab_button:hover {
+    color: white;
+}
+
+.tab_button.active {
+    color: white;
+    border-bottom-color: white;
+}
+
+.tab_content {
+    display: none;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    min-height: 0;
+}
+
+.tab_content.active {
+    display: block;
+}
+
+.tab_content_output_files.active {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    height: 100%;
+    padding: 5px;
+}
+
+#output_files_list {
+    flex: 0 0 200px;
+    border-right: 1px solid #444;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+#output_files_preview {
+    flex: 1;
+    overflow-y: auto;
+    padding-left: 10px;
+    white-space: pre-wrap;
+    font-family: 'Cascadia Code', monospace;
+    font-size: 14px;
+}
+
+.file_item {
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    color: #ccc;
+    transition: background 0.2s;
+}
+
+.file_item:hover {
+    background-color: #2a2a2a;
+}
+
+.file_item.active {
+    background-color: #3a3a3a;
+    color: #8BC34A;
+}
+
+.button_download_all_output_files {
+    margin-top: 10px;
+    background: #07830a;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-family: 'mclaren', sans-serif;
+    font-size: 14px;
+    width: 100%;
+    text-align: center;
+}
+
+.button_download_all_output_files:hover {
+    background: #0a9e0d;
+}
+
+.output_files_empty {
+    color: #888;
+    padding: 8px;
+}
+
+.tab_content_debug.active {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+#debug_variables_container {
+    flex: 1;
+    overflow: auto;
+    min-height: 0;
+}
+
+#debug_variables_table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    color: white;
+}
+
+#debug_variables_table th,
+#debug_variables_table td {
+    border: 1px solid #444;
+    padding: 4px 8px;
+    text-align: left;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+#debug_variables_table th:first-child,
+#debug_variables_table td:first-child {
+    width: 30%;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#debug_variables_table th:last-child,
+#debug_variables_table td:last-child {
+    width: 70%;
+}
+
+.debug_variables_empty {
+    text-align: center;
+    color: #888;
+}
+
+#debug_controls {
+    padding: 8px;
+    display: flex;
+    gap: 10px;
+}
+
+#debug_controls button {
+    padding: 6px 16px;
+    background: #07830a;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#debug_controls button:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+#code_output {
+    background-color: black;
+    color: white;
+    padding: 5px;
+    width: 100%;
+    white-space: pre-wrap;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+#code_output::selection {
+    background-color: white;
+    color: black;
+}
+
+.code_output_expanded {
+    height: 50%;
+}
+
+.code_output_not_expanded {
+    height: 0;
+}
