@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PyodideWorkerClient } from "./coderApi";
+import { downloadBlob } from "../../shared/lib/download";
 
 export function useCodeRunner() {
     const [output, setOutput] = useState("");
@@ -11,6 +12,9 @@ export function useCodeRunner() {
         const client = new PyodideWorkerClient({
             onStdout: (chunk) => setOutput((prev) => prev + chunk),
             onError: (message) => setOutput((prev) => prev + `\n${message}\n`),
+            onOutputFilesZip: (data) => {
+                downloadBlob(new Blob([data], { type: "application/zip" }), "result_files.zip");
+            },
         });
         clientRef.current = client;
         client.whenReady().then(() => setIsReady(true));
@@ -21,7 +25,7 @@ export function useCodeRunner() {
         };
     }, []);
 
-    const runCode = useCallback(async (code: string) => {
+    const runCode = useCallback(async (code: string, inputFilenames: string[] = []) => {
         const client = clientRef.current;
         if (!client) return;
 
@@ -33,7 +37,7 @@ export function useCodeRunner() {
         setOutput("");
         setIsRunning(true);
         try {
-            await client.runCode(code);
+            await client.runCode(code, inputFilenames);
         } catch (e) {
             setOutput((prev) => prev + `\nОшибка выполнения: ${(e as Error).message}\n`);
         } finally {
@@ -45,5 +49,5 @@ export function useCodeRunner() {
         clientRef.current?.stopCode();
     }, []);
 
-    return { output, isReady, isRunning, runCode, stopCode };
+    return { output, isReady, isRunning, runCode, stopCode, clientRef };
 }

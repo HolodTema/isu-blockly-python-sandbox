@@ -3,11 +3,13 @@ import { Header } from '../widgets/Header/Header';
 import { SideConsoleBar } from '../widgets/SideConsoleBar/SideConsoleBar';
 import { LoadScreen } from '../widgets/LoadScreen/LoadScreen';
 import { useCodeRunner } from '../features/CodeRunner/useCodeRunner';
+import { useProjectFiles } from '../features/Files/useProjectFiles';
 import { pickProjectFile, readProjectFile, saveProjectToFile } from '../features/Project/projectFile';
 import type { BlocklyCanvasHandle, GeneratedCode } from '../shared/ui/BlocklyCanvas';
 
 export function CodeRunnerPage() {
-    const { output, isReady, isRunning, runCode, stopCode } = useCodeRunner();
+    const { output, isReady, isRunning, runCode, stopCode, clientRef } = useCodeRunner();
+    const files = useProjectFiles(clientRef);
     const [code, setCode] = useState<GeneratedCode>({ toLaunch: '', toShow: '' });
     const blocklyRef = useRef<BlocklyCanvasHandle | null>(null);
     const blocklyStateRef = useRef<object>({});
@@ -27,6 +29,13 @@ export function CodeRunnerPage() {
         });
     }, [code.toShow]);
 
+    // Программа могла создать файлы, поэтому список обновляем сразу после
+    // завершения запуска - иначе он обновится только при смене вкладки.
+    const handleRun = useCallback(async () => {
+        await runCode(code.toLaunch, files.inputFilenames);
+        await files.refreshOutputFiles();
+    }, [runCode, code.toLaunch, files]);
+
     const handleOpenProject = useCallback(async () => {
         const file = await pickProjectFile();
         if (!file) return;
@@ -43,7 +52,7 @@ export function CodeRunnerPage() {
         <>
             <LoadScreen isLoading={!isReady} />
             <Header
-                onRun={() => runCode(code.toLaunch)}
+                onRun={handleRun}
                 onStop={stopCode}
                 onSaveProject={handleSaveProject}
                 onOpenProject={handleOpenProject}
@@ -55,6 +64,7 @@ export function CodeRunnerPage() {
                 onCodeChange={handleCodeChange}
                 onStateChange={handleStateChange}
                 blocklyRef={blocklyRef}
+                files={files}
             />
         </>
     );

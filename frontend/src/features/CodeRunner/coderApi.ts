@@ -10,6 +10,7 @@ interface PendingPromise {
 export interface PyodideWorkerCallbacks {
     onStdout: (chunk: string) => void;
     onError?: (message: string) => void;
+    onOutputFilesZip?: (data: ArrayBuffer) => void;
 }
 
 export class PyodideWorkerClient {
@@ -41,6 +42,11 @@ export class PyodideWorkerClient {
         }
         if (msg.type === WorkerEvent.Log) {
             console.log("Pyodide worker:", msg.payload);
+            return;
+        }
+        // Воркер отправляет архив без id, отдельным событием, а не ответом на команду.
+        if (msg.type === WorkerEvent.OutputFilesZipReady) {
+            this.callbacks.onOutputFilesZip?.(msg.payload);
             return;
         }
 
@@ -98,6 +104,10 @@ export class PyodideWorkerClient {
 
     removeInputFile(filename: string): void {
         this.notify(WorkerCommand.RemoveInputFile, filename);
+    }
+
+    saveOutputFilesZip(): void {
+        this.notify(WorkerCommand.SaveOutputFilesZip);
     }
 
     listOutputFiles(): Promise<string[]> {

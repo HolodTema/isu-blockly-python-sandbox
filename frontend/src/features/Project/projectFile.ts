@@ -1,3 +1,5 @@
+import { downloadBlob } from "../../shared/lib/download";
+
 export interface ProjectFile {
     python: string;
     blocklyState: Record<string, unknown>;
@@ -6,17 +8,7 @@ export interface ProjectFile {
 const PROJECT_FILE_EXTENSION = ".chef";
 
 export function saveProjectToFile(project: ProjectFile, filename = `project${PROJECT_FILE_EXTENSION}`): void {
-    const blob = new Blob([JSON.stringify(project)]);
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    downloadBlob(new Blob([JSON.stringify(project)]), filename);
 }
 
 export function pickProjectFile(): Promise<File | null> {
