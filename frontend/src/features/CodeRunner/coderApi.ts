@@ -1,72 +1,115 @@
-import type { MainToWorkerCommand, WorkerToMainMessage } from "../../shared/types";
+import { WorkerCommand } from "../../worker/WorkerCommand";
+import { WorkerEvent } from "../../worker/WorkerEvent";
+import PyodideWorker from "../../worker/pyodideWorker.ts?worker";
+
+interface PendingPromise {
+    resolve: (value: any) => void;
+    reject: (error: Error) => void;
+}
+
+export interface PyodideWorkerCallbacks {
+    onStdout: (chunk: string) => void;
+    onError?: (message: string) => void;
+}
 
 export class PyodideWorkerClient {
-    private worker = new Worker(new URL("../../worker/pyodideWorker.js", import.meta.url));
-    private pending = new Map<number, {resolve:(v:unknown)=> void; reject: (e:Error)=> void}>();
+    private worker: Worker;
+    private pending = new Map<number, PendingPromise>();
     private nextId = 0;
-    private ready: Promise<void>;
-    private onStdout: (chunk: string) => void;
+    private isInitComplete = false;
+    private resolveReady!: () => void;
+    private ready = new Promise<void>((resolve) => {
+        this.resolveReady = resolve;
+    });
 
-    constructor(onStdout: (chunk: string) => void) {
-        this.onStdout = onStdout;
-        this.ready = new Promise((resolve) => {
-            this.worker.addEventListener("message", (e: MessageEvent<WorkerToMainMessage>) => {
-                this.handleMessage(e.data, resolve);
-            });
+    constructor(private callbacks: PyodideWorkerCallbacks) {
+        this.worker = new PyodideWorker();
+        this.worker.addEventListener("message", (event: MessageEvent) => {
+            this.handleMessage(event.data);
         });
     }
 
-    private settle(msg: Extract<WorkerToMainMessage, { id: number }>) {
-        const p = this.pending.get(msg.id);
-        if (!p) return;
+    private handleMessage(msg: any) {
+        if (msg.type === WorkerEvent.InitComplete) {
+            this.isInitComplete = true;
+            this.resolveReady();
+            return;
+        }
+        if (msg.type === WorkerEvent.Stdout) {
+            this.callbacks.onStdout(msg.payload);
+            return;
+        }
+        if (msg.type === WorkerEvent.Log) {
+            console.log("Pyodide worker:", msg.payload);
+            return;
+        }
+
+        if (typeof msg.id !== "number") {
+            if (msg.type === WorkerEvent.Error) {
+                this.callbacks.onError?.(msg.payload);
+            }
+            return;
+        }
+
+        const promise = this.pending.get(msg.id);
+        if (!promise) return;
         this.pending.delete(msg.id);
-        msg.type === "error" ? p.reject(new Error(msg.payload)) : p.resolve(msg.payload);
+        if (msg.type === WorkerEvent.Error) {
+            promise.reject(new Error(msg.payload));
+        } else {
+            promise.resolve(msg.payload);
+        }
     }
 
-
-    private downloadZip(data: ArrayBuffer) {
-        const url = URL.createObjectURL(new Blob([data], { type: "application/zip" }));
-        const a = Object.assign(document.createElement("a"), { href: url, download: "result_files.zip" });
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    private handleMessage(msg: WorkerToMainMessage, resolveReady: () => void) {
-        if (msg.type === "init") return resolveReady();
-        if (msg.type === "stdout") return this.onStdout(msg.payload);
-        if (msg.type === "log") return console.log("Pyodide worker:", msg.payload);
-        if (msg.type === "error") return console.error("Pyodide worker error:", msg.payload);
-        if (msg.type === "zipReady") return this.downloadZip(msg.payload);
-        if ("id"in msg) this.settle(msg)
-}
- private send<T>(cmd: Omit<MainToWorkerCommand, "id">, transfer: Transferable[] = []): Promise<T> {
+    private send<T>(type: WorkerCommand, payload: unknown, transfer: Transferable[] = []): Promise<T> {
         const id = this.nextId++;
-        this.worker.postMessage({ id, ...cmd }, transfer);
-        return new Promise((resolve, reject) => {
-            this.pending.set(id, { resolve: resolve as (v: unknown) => void, reject });
+        return new Promise<T>((resolve, reject) => {
+            this.pending.set(id, { resolve, reject });
+            this.worker.postMessage({ id, type, payload }, transfer);
         });
     }
 
-    async run(code: string): Promise<void> {
+    private notify(type: WorkerCommand, payload: unknown = null) {
+        this.worker.postMessage({ id: this.nextId++, type, payload });
+    }
+
+    whenReady(): Promise<void> {
+        return this.ready;
+    }
+
+    get isReady(): boolean {
+        return this.isInitComplete;
+    }
+
+    async runCode(code: string, inputFilenames: string[] = []): Promise<unknown> {
         await this.ready;
-        await this.send({ type: "run", payload: code });
+        return this.send(WorkerCommand.StartRunCode, { code, inputFilenames });
     }
 
-    loadFile(filename: string, data: Uint8Array) {
-        const buffer = data.buffer as unknown as ArrayBuffer;
-        return this.send({ type: "loadFile", payload: { filename, data: buffer } }, [buffer]);
+    stopCode(): void {
+        this.notify(WorkerCommand.StopRunCode);
     }
 
-    removeFile(filename: string) {
-        return this.send({ type: "removeFile", payload: filename });
+    async loadInputFile(filename: string, data: Uint8Array): Promise<void> {
+        await this.ready;
+        const buffer = data.buffer as ArrayBuffer;
+        this.notify(WorkerCommand.LoadInputFile, { filename, data: buffer });
     }
 
-    saveZip() {
-        return this.send({ type: "saveZip", payload: null });
+    removeInputFile(filename: string): void {
+        this.notify(WorkerCommand.RemoveInputFile, filename);
     }
 
-    dispose() {
+    listOutputFiles(): Promise<string[]> {
+        return this.send(WorkerCommand.GetListOutputFiles, null);
+    }
+
+    readOutputFile(filename: string): Promise<string> {
+        return this.send(WorkerCommand.ReadOutputFile, filename);
+    }
+
+    dispose(): void {
+        this.pending.clear();
         this.worker.terminate();
     }
 }
-

@@ -1,26 +1,49 @@
-import {useEffect, useState , useCallback,useRef} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { PyodideWorkerClient } from "./coderApi";
 
 export function useCodeRunner() {
-    const [output,setOutput] = useState("");
-    const clientRef = useRef<PyodideWorkerClient | undefined>(undefined);
-    
+    const [output, setOutput] = useState("");
+    const [isReady, setIsReady] = useState(false);
+    const [isRunning, setIsRunning] = useState(false);
+    const clientRef = useRef<PyodideWorkerClient | null>(null);
+
     useEffect(() => {
-        clientRef.current = new PyodideWorkerClient((chunk)=> setOutput(prevOutput => prevOutput + chunk));
-        return () => clientRef.current?.dispose();
+        const client = new PyodideWorkerClient({
+            onStdout: (chunk) => setOutput((prev) => prev + chunk),
+            onError: (message) => setOutput((prev) => prev + `\n${message}\n`),
+        });
+        clientRef.current = client;
+        client.whenReady().then(() => setIsReady(true));
 
-    },[]);
+        return () => {
+            client.dispose();
+            clientRef.current = null;
+        };
+    }, []);
 
-    const runCode = useCallback( async (code: string) => {
-        if (!code.trim()) return setOutput("Пустая программа");
+    const runCode = useCallback(async (code: string) => {
+        const client = clientRef.current;
+        if (!client) return;
+
+        if (!code.trim()) {
+            setOutput("Программа пуста - соберите блоки на холсте");
+            return;
+        }
+
         setOutput("");
-                try {
-            await clientRef.current!.run(code);
+        setIsRunning(true);
+        try {
+            await client.runCode(code);
         } catch (e) {
-            setOutput(`Runtime error: ${(e as Error).message}`);
+            setOutput((prev) => prev + `\nОшибка выполнения: ${(e as Error).message}\n`);
+        } finally {
+            setIsRunning(false);
         }
     }, []);
 
-    return { output, runCode, client: clientRef.current };
-}    
- 
+    const stopCode = useCallback(() => {
+        clientRef.current?.stopCode();
+    }, []);
+
+    return { output, isReady, isRunning, runCode, stopCode };
+}

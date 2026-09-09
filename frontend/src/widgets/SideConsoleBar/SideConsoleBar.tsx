@@ -4,7 +4,11 @@ import icAddInputFile from '../../shared/assets/ic_add_input_file.svg'
 import icExpandDown from '../../shared/assets/ic_expand_down.svg'
 import icDownloadResultFiles from '../../shared/assets/ic_download_result_files.svg'
 
-export function SideConsoleBar(){
+interface SideConsoleBarProps {
+    output?: string;
+}
+
+export function SideConsoleBar({ output }: SideConsoleBarProps){
     return (
     <main>
     <div id="blockly_workspace"></div>
@@ -32,7 +36,9 @@ export function SideConsoleBar(){
                 <a id="button_download_result_files" className="font_powered_mclaren">Скачать итоговые файлы</a>
             </div>
         </div>
-        <div id="code_output" className="font_powered_cascadia_code code_output_expanded">Запусти код и посмотри результат его работы здесь!</div>
+        <div id="code_output" className="font_powered_cascadia_code code_output_expanded" style={{ whiteSpace: 'pre-wrap' }}>
+            {output ? output : 'Запусти код и посмотри результат его работы здесь!'}
+        </div>
 
     </div>
 </main>
