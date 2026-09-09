@@ -25,15 +25,25 @@ main {
 }
 
 #blockly_workspace {
+    flex: 1 1 50%;          /* по умолчанию занимает половину */
     height: 100%;
-    min-width: 50%;
-    max-width: 100%;
-    flex-grow: 1;
+    min-width: 0;           /* чтобы мог сжиматься */
 }
 
 #code_workspace {
+    flex: 1 1 50%;          /* по умолчанию половина */
     height: 100%;
-    width: 50%;
-    flex-grow: 1;
+    display: flex;          /* чтобы внутренние элементы корректно растягивались */
+    flex-direction: column;
 }
+
+/* Когда код скрыт */
+main.code-hidden #blockly_workspace {
+    flex: 1 1 100%;         /* занимает всю ширину */
+}
+
+main.code-hidden #code_workspace {
+    display: none;          /* скрываем */
+}
+
 

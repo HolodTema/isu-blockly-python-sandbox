@@ -1,10 +1,12 @@
 import {AppState} from "../state/AppState";
-import {EditorView, keymap, gutter, GutterMarker} from '@codemirror/view';
+import {CodePreviewTransformer} from "../util/CodePreviewTransformer";
+import {EditorView, keymap, gutter, GutterMarker, Decoration} from '@codemirror/view';
 import {EditorState, Compartment, Extension} from '@codemirror/state';
 import {python} from '@codemirror/lang-python';
 import {oneDark} from '@codemirror/theme-one-dark';
 import {defaultKeymap} from '@codemirror/commands';
 import {basicSetup} from 'codemirror';
+import {AppStateKey} from "../state/AppStateKey";
 
 
 export class CodeMirrorService {
@@ -12,6 +14,8 @@ export class CodeMirrorService {
     private editor: EditorView;
     private setBreakpoints: Set<number> = new Set();
     private gutterCompartment: Compartment = new Compartment();
+    private activeLineDecoration: any = null;
+    private activeLineExtension: Compartment = new Compartment();
 
     constructor(private state: AppState, containerId: string) {
         this.container = document.getElementById(containerId)!
@@ -23,17 +27,18 @@ export class CodeMirrorService {
             EditorView.editable.of(false),
             EditorView.lineWrapping,
             this.gutterCompartment.of(this.createBreakpointGutter()),
+            this.activeLineExtension.of([]),
             EditorView.updateListener.of((update) => {
                 if (update.docChanged) {
                     const code = update.state.doc.toString();
-                    this.state.setStrGeneratedCode(code);
+                    this.state.setStrCodeToShow(code);
                 }
             }),
             keymap.of(defaultKeymap),
         ];
 
         const startEditorState = EditorState.create({
-            doc: this.state.getStrGeneratedCode(),
+            doc: this.state.getStrCodeToShow(),
             extensions: listExtensions,
         });
 
@@ -43,15 +48,19 @@ export class CodeMirrorService {
         });
 
         this.state.subscribe((key: string, state: AppState) => {
-            if (key === "generatedCode") {
-                this.setCodeString(state.getStrGeneratedCode());
+            if (key === AppStateKey.StrCodeToShow) {
+                this.setCodeString(state.getStrCodeToShow());
             }
         });
     }
 
     setCodeString(codeString: string) {
+        console.log(codeString);
         const currentCodeString = this.getCodeString();
         if (currentCodeString !== codeString) {
+            // const transformer = new CodePreviewTransformer(codeString)
+            // const codeToPreview = transformer.convertToPreviewCode()
+            console.log(codeString);
             const transaction = this.editor.state.update({
                 changes: {
                     from: 0,
@@ -69,6 +78,25 @@ export class CodeMirrorService {
 
     getBreakpointsArray() {
         return Array.from(this.setBreakpoints);
+    }
+
+    setDebugCurrentLine(lineNumber: number | null) {
+        if (lineNumber === null) {
+            this.editor.dispatch({
+                effects: this.activeLineExtension.reconfigure([])
+            });
+            return;
+        }
+        const line = this.editor.state.doc.line(lineNumber);
+        // Правильная декорация
+        const decoration = Decoration.set(
+            Decoration.line({
+                attributes: { style: 'background-color: rgba(255, 255, 0, 0.2);' }
+            }).range(line.from, line.from)
+        );
+        this.editor.dispatch({
+            effects: this.activeLineExtension.reconfigure([EditorView.decorations.of(decoration)])
+        });
     }
 
     private createBreakpointGutter(): Extension {

@@ -1,8 +1,14 @@
 
 export enum AppStateKey {
     JsonBlocklyState = "JsonBlocklyState",
-    StrGeneratedCode = "StrGeneratedCode",
+    StrCodeToLaunch = "StrCodeToLaunch",
+    StrCodeToShow = "StrCodeToShow",
     StrCodeOutput = "StrCodeOutput",
     AddInputFilename = "AddInputFilename",
-    RemoveInputFilename = "RemoveInputFilename"
+    RemoveInputFilename = "RemoveInputFilename",
+    CurrentCodeOutputTabType = "CurrentCodeOutputTab",
+    RecordDebugVariables = "RecordDebugVariables",
+    IsDebugging = "IsDebugging",
+    DebugCurrentLine = "DebugCurrentLine",
+    IsRunning = "IsRunning",
 }

@@ -11,7 +11,7 @@ export class ProjectService {
 
     saveProjectToFile() {
         const data = {
-            python: this.state.getStrGeneratedCode(),
+            python: this.state.getStrCodeToShow(),
             blocklyState: this.state.getJsonBlocklyState(),
         }
 
@@ -40,13 +40,15 @@ export class ProjectService {
                     return;
                 }
 
-                this.state.setStrGeneratedCode(data.python);
+                this.state.setStrCodeToShow(data.python);
                 this.state.setJsonBlocklyState(data.blocklyState);
 
                 this.codeMirrorService.setCodeString(data.python);
                 this.blocklyService.loadWorkspaceState(data.blocklyState);
 
                 console.log("Successfully loaded project from file");
+
+                this.blocklyService.generateAndUpdateCode();
             }
             catch (e) {
                 console.error("Unable to load project from file:", e);

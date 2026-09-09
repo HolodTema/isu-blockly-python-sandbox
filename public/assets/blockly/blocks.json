@@ -1,7 +1,7 @@
 [
     {
         "type": "start_block",
-        "message0": "Начало программы",
+        "message0": "начало программы",
         "nextStatement": null,
         "colour": 0,
         "tooltip": "Программа начинается с этого блока"
@@ -117,11 +117,12 @@
     },
     {
         "type": "text_file_write_to_end_block",
-        "message0": "Записать текст %1 в конец файла %2",
+        "message0": "записать текст %1 в конец файла %2",
         "args0": [
             {
                 "type": "input_value",
-                "name": "TEXT_TO_WRITE"
+                "name": "TEXT_TO_WRITE",
+                "check": "String"
             },
             {
                 "type": "input_value",
@@ -136,7 +137,7 @@
     },
     {
         "type": "text_file_close_block",
-        "message0": "Закрыть файл %1",
+        "message0": "закрыть файл %1",
         "args0": [
             {
                 "type": "input_value",
@@ -151,7 +152,7 @@
     },
     {
         "type": "text_join_block",
-        "message0": "Объединить текст %1 и текст %2",
+        "message0": "объединить текст %1 и текст %2",
         "args0": [
             {
                 "type": "input_value",
@@ -171,7 +172,7 @@
 
     {
         "type": "print_block",
-        "message0": "напечатать %1",
+        "message0": "вывести ( %1 )",
         "args0": [
             {
                 "type": "input_value",
@@ -180,13 +181,13 @@
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": 160,
+        "colour": 0,
         "tooltip": "Печатает текст в консоль"
     },
 
     {
         "type": "import_lib_requests_block",
-        "message0": "Подключить библиотеку requests",
+        "message0": "подключить библиотеку requests",
         "previousStatement": null,
         "nextStatement": null,
         "colour": 26,
@@ -278,7 +279,8 @@
         "args4": [
             {
                 "type": "input_value",
-                "name": "STATUS_CODE"
+                "name": "STATUS_CODE",
+                "check": "Number"
             }
         ],
         "message5": "сохранить тело ответа в переменную %1",
@@ -310,7 +312,7 @@
 
     {
         "type": "pandas_import_block",
-        "message0": "Подключить библиотеку pandas как pd",
+        "message0": "подключить библиотеку pandas как pd",
         "previousStatement": null,
         "nextStatement": null,
         "colour": 270,
@@ -318,21 +320,27 @@
     },
     {
         "type": "pandas_read_html_block",
-        "message0": "прочитать HTML‑таблицу из HTML-текста %1",
+        "message0": "прочитать HTML‑таблицу из %1 в переменную %2",
         "args0": [
             {
                 "type": "input_value",
-                "name": "HTML_TEXT",
+                "name": "TEXT_WITH_TABLE",
                 "check": "String"
+            },
+            {
+                "type": "field_variable",
+                "name": "RESULT_VAR",
+                "variable": "df"
             }
         ],
-        "output": null,
+        "previousStatement": null,
+        "nextStatement": null,
         "colour": 270,
-        "tooltip": "Парсит HTML‑строку и возвращает первую таблицу как DataFrame"
+        "tooltip": "Получает таблицу из HTML-строки или по HTTP-адресу и помещает ее как pandas DataFrame объект в переменную."
     },
     {
         "type": "pandas_concat_block",
-        "message0": "Объединить список таблиц в %1 в одну таблицу",
+        "message0": "объединить список таблиц %1 в одну таблицу",
         "args0": [
             {
                 "type": "input_value",
@@ -340,26 +348,26 @@
                 "check": "Array"
             }
         ],
-        "output": null,
+        "output": "PandasDataFrame",
         "colour": 270,
         "tooltip": "Объединяет все DataFrame из списка в один"
     },
     {
         "type": "pandas_head_block",
-        "message0": "Первые 5 строк таблицы %1",
+        "message0": "первые 5 строк таблицы %1",
         "args0": [
             {
                 "type": "input_value",
-                "name": "DF"
+                "name": "PandasDataFrame"
             }
         ],
-        "output": null,
+        "output": "PandasDataFrame",
         "colour": 270,
         "tooltip": "Возвращает первые 5 строк DataFrame"
     },
     {
         "type": "pandas_head_n_block",
-        "message0": "Первые %1 строк таблицы %2",
+        "message0": "первые %1 строк таблицы %2",
         "args0": [
             {
                 "type": "input_value",
@@ -368,20 +376,20 @@
             },
             {
                 "type": "input_value",
-                "name": "DF"
+                "name": "PandasDataFrame"
             }
         ],
-        "output": null,
+        "output": "PandasDataFrame",
         "colour": 270,
         "tooltip": "Возвращает первые N строк DataFrame"
     },
     {
         "type": "pandas_tail_n_block",
-        "message0": "Последние %2 строк таблицы %1",
+        "message0": "последние %2 строк таблицы %1",
         "args0": [
             {
                 "type": "input_value",
-                "name": "DF"
+                "name": "PandasDataFrame"
             },
             {
                 "type": "input_value",
@@ -389,18 +397,18 @@
                 "check": "Number"
             }
         ],
-        "output": null,
+        "output": "PandasDataFrame",
         "colour": 270,
         "tooltip": "Возвращает последние N строк DataFrame"
     },
     {
         "type": "pandas_append_to_list_block",
-        "message0": "Добавить элемент %2 в список %1",
+        "message0": "добавить элемент %2 в список %1",
         "args0": [
             {
                 "type": "input_value",
                 "name": "LIST",
-                "check": "Array"
+                "check": "PandasSeries"
             },
             {
                 "type": "input_value",
@@ -414,11 +422,12 @@
     },
     {
         "type": "pandas_info_block",
-        "message0": "Показать информацию о таблице %1",
+        "message0": "показать информацию о таблице %1",
         "args0": [
             {
                 "type": "input_value",
-                "name": "DF"
+                "name": "DF",
+                "check": "PandasDataFrame"
             }
         ],
         "previousStatement": null,
@@ -428,11 +437,12 @@
     },
     {
         "type": "pandas_to_csv_block",
-        "message0": "Сохранить таблицу %1 в CSV-файл с именем %2",
+        "message0": "сохранить таблицу %1 в CSV-файл с именем %2",
         "args0": [
             {
                 "type": "input_value",
-                "name": "DF"
+                "name": "DF",
+                "check": "PandasDataFrame"
             },
             {
                 "type": "field_input",
@@ -444,5 +454,243 @@
         "nextStatement": null,
         "colour": 270,
         "tooltip": "Сохраняет DataFrame в CSV-файл (без индекса)"
+    },
+    {
+        "type": "pandas_read_json_block",
+        "message0": "Прочитать JSON-таблицу из %1 с форматом %2 в переменную %3",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT_WITH_TABLE",
+                "check": "String"
+            },
+            {
+                "type": "field_dropdown",
+                "name": "ORIENT",
+                "options": [
+                    ["индекс (index)", "index"],
+                    ["столбцы (columns)", "columns"],
+                    ["записи (records)", "records"],
+                    ["раздельно (split)", "split"],
+                    ["таблица (table)", "table"],
+                    ["значения (values)", "values"]
+                ]
+            },
+            {
+                "type": "field_variable",
+                "name": "RESULT_VAR",
+                "variable": "df"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 270,
+        "tooltip": "Считывает pandas-таблицу из JSON-строки или по HTTP-адресу, по которому лежит JSON-файл. Сохраняет считанную таблицу в переменную. Параметр 'формат' задаёт структуру JSON (чаще всего используют 'записи' для списка объектов)."
+    },
+    {
+        "type": "pandas_read_csv_block",
+        "message0": "Прочитать CSV-таблицу из %1 с разделителем %2 в переменную %3",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT_WITH_TABLE",
+                "check": "String"
+            },
+            {
+                "type": "field_dropdown",
+                "name": "SEP",
+                "options": [
+                    ["запятая", ","],
+                    ["точка с запятой", ";"],
+                    ["пробел", " "],
+                    ["табуляция", "\t"]
+                ]
+            },
+            {
+                "type": "field_variable",
+                "name": "RESULT_VAR",
+                "variable": "df"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 270,
+        "tooltip": "Считывает pandas-таблицу из CSV-таблицы или по HTTP-адресу, по которому лежит CSV-файл. Сохраняет считанную таблицу в переменную. Параметр 'разделитель' задаёт символ, который разделяет ячейки таблицы (обычно это пробел, запятая и тд.)"
+    },
+
+
+    {
+        "type":  "convert_to_int_block",
+        "message0": "целое %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "VALUE_TO_CONVERT",
+                "check": ["String", "Number", "Boolean"]
+            }
+        ],
+        "output": "Number",
+        "colour": 63,
+        "tooltip": "Конвертирует строку, логическое значение или дробное число в целое число"
+    },
+
+    {
+        "type":  "convert_to_str_block",
+        "message0": "строка %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "VALUE_TO_CONVERT",
+                "Check": ["Number", "String", "Boolean"]
+            }
+        ],
+        "output": "String",
+        "colour": 63,
+        "tooltip": "Конвертирует число, логическое значение или другой объект в строку"
+    },
+
+    {
+        "type":  "convert_to_float_block",
+        "message0": "дробное %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "VALUE_TO_CONVERT",
+                "check": ["Number", "String", "Boolean"]
+            }
+        ],
+        "output": "Number",
+        "colour": 63,
+        "tooltip": "Конвертирует строку или целое число в дробное число"
+    },
+
+    {
+        "type":  "convert_to_bool_block",
+        "message0": "логическое %1",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "VALUE_TO_CONVERT",
+                "check": [
+                    "Number",
+                    "String",
+                    "Boolean"
+                ]
+            }
+        ],
+        "output": "Boolean",
+        "colour": 63,
+        "tooltip": "Конвертирует строку или число в логическое значение True или False"
+    },
+
+    {
+        "type":  "comment_block",
+        "message0": "#%1",
+        "args0": [
+            {
+                "type": "field_input",
+                "name": "COMMENT_TEXT",
+                "text": "комментарий"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 0,
+        "tooltip": "Простой python-комментарий. Он не влияет на выполнение прогрмммы и объясняет, что происходит в коде"
+    },
+
+    {
+        "type": "print_two_values_block",
+        "message0": "вывести ( %1 %2 )",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT1"
+            },
+            {
+                "type": "input_value",
+                "name": "TEXT2"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 0,
+        "tooltip": "Печатает текст в консоль"
+    },
+
+    {
+        "type": "input_block",
+        "message0": "ввести ( %1 )",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "TEXT",
+                "check": "String"
+            }
+        ],
+        "output": "String",
+        "colour": "0",
+        "tooltip": "Выводит строку на экран и ждет ввода строки от пользователя. Возвращает введенную пользователем строку"
+    },
+
+    {
+        "type": "custom_for_block",
+        "message0": "цикл по %1",
+        "args0": [
+            {
+                "type": "field_variable",
+                "name": "VAR_COUNTER",
+                "variable": null
+            }
+        ],
+        "message1": "от %1 до %2 шаг %3",
+        "args1": [
+            {
+                "type": "input_value",
+                "name": "START",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "STOP",
+                "check": "Number"
+            },
+            {
+                "type": "input_value",
+                "name": "STEP",
+                "check": "Number"
+            }
+        ],
+        "message2": "выполнить %1",
+        "args2": [
+            {
+                "type": "input_statement",
+                "name": "DO"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 120,
+        "tooltip": "Простой цикл for с range()"
+    },
+
+    {
+        "type": "custom_variables_set_block",
+        "message0": "присвоить %1 = %2",
+        "args0": [
+            {
+                "type": "field_variable",
+                "name": "VAR_NAME",
+                "variable": "x"
+            },
+            {
+                "type": "input_value",
+                "name": "VAR_VALUE"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 0,
+        "tooltip": "Задает переменной определенное значение"
     }
 ]
