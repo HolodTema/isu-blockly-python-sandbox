@@ -12,17 +12,19 @@ import icDebugCode from '../../shared/assets/ic_debug_code.svg'
 interface HeaderProps {
     onRun: () => void;
     onStop: () => void;
+    onSaveProject: () => void;
+    onOpenProject: () => void;
     isRunning: boolean;
 }
 
-export function Header({ onRun, onStop, isRunning }: HeaderProps) {
+export function Header({ onRun, onStop, onSaveProject, onOpenProject, isRunning }: HeaderProps) {
 
     return (
     <div className= 'header_container'>
         <div className = 'header_container__left'>
             <HeaderButton img={logo} text="CodeCheff" onClick={() => {}}></HeaderButton>
-            <HeaderButton img={icSaveProject} text="Сохранить" onClick={() => {}}></HeaderButton>
-            <HeaderButton img={icOpenProject} text="Открыть" onClick={() => {}}></HeaderButton>
+            <HeaderButton img={icSaveProject} text="Сохранить" onClick={onSaveProject}></HeaderButton>
+            <HeaderButton img={icOpenProject} text="Открыть" onClick={onOpenProject}></HeaderButton>
          </div>
          <div className = 'header_container__right'>
              <HeaderButton img={icRunCode} text="Запуск" onClick={isRunning ? onStop : onRun}></HeaderButton>

@@ -3,7 +3,8 @@ import CodeMirror from '@uiw/react-codemirror'
 import { python } from '@codemirror/lang-python'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { BlocklyCanvas } from '../../shared/ui/BlocklyCanvas'
-import type { GeneratedCode } from '../../shared/ui/BlocklyCanvas'
+import type { GeneratedCode, BlocklyCanvasHandle } from '../../shared/ui/BlocklyCanvas'
+import type { RefObject } from 'react'
 
 import icAddInputFile from '../../shared/assets/ic_add_input_file.svg'
 import icExpandDown from '../../shared/assets/ic_expand_down.svg'
@@ -13,12 +14,16 @@ interface SideConsoleBarProps {
     output?: string;
     codeToShow?: string;
     onCodeChange?: (code: GeneratedCode) => void;
+    onStateChange?: (state: object) => void;
+    blocklyRef?: RefObject<BlocklyCanvasHandle | null>;
 }
 
-export function SideConsoleBar({ output, codeToShow, onCodeChange }: SideConsoleBarProps){
+export function SideConsoleBar({ output, codeToShow, onCodeChange, onStateChange, blocklyRef }: SideConsoleBarProps){
     return (
     <main>
-    <div id="blockly_workspace"><BlocklyCanvas onCodeChange={onCodeChange} /></div>
+    <div id="blockly_workspace">
+        <BlocklyCanvas ref={blocklyRef} onCodeChange={onCodeChange} onStateChange={onStateChange} />
+    </div>
     <div id="code_workspace">
         <div id="input_files_toolbar">
             <input id="input_add_input_file" type="file" accept=".txt, .json, .csv" />
