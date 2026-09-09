@@ -30,7 +30,7 @@ export function useCodeRunner() {
         if (!client) return;
 
         if (!code.trim()) {
-            setOutput("Программа пуста - соберите блоки на холсте");
+            setOutput("# Пустая программа\n");
             return;
         }
 

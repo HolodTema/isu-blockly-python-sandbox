@@ -1,11 +1,13 @@
 import { CodeRunnerPage } from '../pages/CodeRunnerPage'
+import { ToastProvider } from '../shared/ui/ToastProvider'
 import '../index.css'
 
 export function App() {
 
-  return ( 
-    <CodeRunnerPage />
-
+  return (
+    <ToastProvider>
+      <CodeRunnerPage />
+    </ToastProvider>
   )
 
 }

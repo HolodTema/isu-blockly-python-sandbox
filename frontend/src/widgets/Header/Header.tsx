@@ -9,16 +9,21 @@ import icSaveProject from '../../shared/assets/ic_save_project.svg'
 import icOpenProject from '../../shared/assets/ic_open_project.svg'
 import icRunCode from '../../shared/assets/ic_run_code.svg'
 import icDebugCode from '../../shared/assets/ic_debug_code.svg'
+import icExpandLeft from '../../shared/assets/ic_expand_left.svg'
+import icExpandRight from '../../shared/assets/ic_expand_right.svg'
 
 interface HeaderProps {
     onRun: () => void;
     onStop: () => void;
     onSaveProject: () => void;
     onOpenProject: () => void;
+    onToggleCode: () => void;
+    onDebug: () => void;
     isRunning: boolean;
+    isCodeHidden: boolean;
 }
 
-export function Header({ onRun, onStop, onSaveProject, onOpenProject, isRunning }: HeaderProps) {
+export function Header({ onRun, onStop, onSaveProject, onOpenProject, onToggleCode, onDebug, isRunning, isCodeHidden }: HeaderProps) {
 
     return (
     <div className= 'header_container'>
@@ -30,8 +35,13 @@ export function Header({ onRun, onStop, onSaveProject, onOpenProject, isRunning 
          <div className = 'header_container__right'>
              <ExecutionStatus isRunning={isRunning} onStop={onStop} />
              <HeaderButton img={icRunCode} text="Запуск" onClick={onRun}></HeaderButton>
-            <HeaderButton img={icDebugCode} text="Отладка" onClick={() => {}}></HeaderButton>
-
+            <HeaderButton img={icDebugCode} text="Отладка" onClick={onDebug}></HeaderButton>
+             <img
+                 id="button_expand_code"
+                 src={isCodeHidden ? icExpandLeft : icExpandRight}
+                 alt={isCodeHidden ? 'Показать код' : 'Скрыть код'}
+                 onClick={onToggleCode}
+             />
          </div>
     </div>
 

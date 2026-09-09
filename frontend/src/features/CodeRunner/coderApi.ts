@@ -7,11 +7,20 @@ interface PendingPromise {
     reject: (error: Error) => void;
 }
 
+export interface DebugSnapshot {
+    line: number;
+    variables: Record<string, string>;
+}
+
 export interface PyodideWorkerCallbacks {
     onStdout: (chunk: string) => void;
     onError?: (message: string) => void;
     onOutputFilesZip?: (data: ArrayBuffer) => void;
+    onDebugPaused?: () => void;
 }
+
+// Питоновский код на брейкпоинте шлёт из воркера сырую строку, а не объект.
+const DEBUG_PAUSED_MESSAGE = "WorkerEvent.OnDebugFileCreated";
 
 export class PyodideWorkerClient {
     private worker: Worker;
@@ -31,6 +40,12 @@ export class PyodideWorkerClient {
     }
 
     private handleMessage(msg: any) {
+        if (typeof msg === "string") {
+            if (msg === DEBUG_PAUSED_MESSAGE) {
+                this.callbacks.onDebugPaused?.();
+            }
+            return;
+        }
         if (msg.type === WorkerEvent.InitComplete) {
             this.isInitComplete = true;
             this.resolveReady();
@@ -104,6 +119,32 @@ export class PyodideWorkerClient {
 
     removeInputFile(filename: string): void {
         this.notify(WorkerCommand.RemoveInputFile, filename);
+    }
+
+    // Обработчик паузы ставится позже клиента: его владелец - отдельный хук отладки.
+    setDebugPausedHandler(handler: () => void): void {
+        this.callbacks.onDebugPaused = handler;
+    }
+
+    async debugCode(code: string, breakpoints: number[], inputFilenames: string[] = []): Promise<unknown> {
+        await this.ready;
+        return this.send(WorkerCommand.StartDebugCode, { code, breakpoints, inputFilenames });
+    }
+
+    readDebugSnapshot(): Promise<DebugSnapshot> {
+        return this.send(WorkerCommand.ReadDebugFile, null);
+    }
+
+    debugContinue(): void {
+        this.notify(WorkerCommand.DebugUserCommandContinue);
+    }
+
+    debugStep(): void {
+        this.notify(WorkerCommand.DebugUserCommandStep);
+    }
+
+    debugStop(): void {
+        this.notify(WorkerCommand.DebugUserCommandStop);
     }
 
     saveOutputFilesZip(): void {

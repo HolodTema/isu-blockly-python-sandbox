@@ -22,6 +22,14 @@ main {
     position: relative;
 }
 
+main.code-hidden #blockly_workspace {
+    flex: 1 1 100%;
+}
+
+main.code-hidden #code_workspace {
+    display: none;
+}
+
 #codeViewer {
     flex-grow: 1;
     height: 100%;
@@ -268,6 +276,75 @@ main {
 .output_files_empty {
     color: #888;
     padding: 8px;
+}
+
+.tab_content_debug.active {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+#debug_variables_container {
+    flex: 1;
+    overflow: auto;
+    min-height: 0;
+}
+
+#debug_variables_table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    color: white;
+}
+
+#debug_variables_table th,
+#debug_variables_table td {
+    border: 1px solid #444;
+    padding: 4px 8px;
+    text-align: left;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+#debug_variables_table th:first-child,
+#debug_variables_table td:first-child {
+    width: 30%;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#debug_variables_table th:last-child,
+#debug_variables_table td:last-child {
+    width: 70%;
+}
+
+.debug_variables_empty {
+    text-align: center;
+    color: #888;
+}
+
+#debug_controls {
+    padding: 8px;
+    display: flex;
+    gap: 10px;
+}
+
+#debug_controls button {
+    padding: 6px 16px;
+    background: #07830a;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#debug_controls button:disabled {
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 #code_output {
