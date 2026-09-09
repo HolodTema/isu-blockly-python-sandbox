@@ -1,4 +1,5 @@
 import { HeaderButton } from './HeaderButton'
+import { ExecutionStatus } from './ExecutionStatus'
 
 
 import './Header.css'
@@ -27,7 +28,8 @@ export function Header({ onRun, onStop, onSaveProject, onOpenProject, isRunning 
             <HeaderButton img={icOpenProject} text="Открыть" onClick={onOpenProject}></HeaderButton>
          </div>
          <div className = 'header_container__right'>
-             <HeaderButton img={icRunCode} text="Запуск" onClick={isRunning ? onStop : onRun}></HeaderButton>
+             <ExecutionStatus isRunning={isRunning} onStop={onStop} />
+             <HeaderButton img={icRunCode} text="Запуск" onClick={onRun}></HeaderButton>
             <HeaderButton img={icDebugCode} text="Отладка" onClick={() => {}}></HeaderButton>
 
          </div>

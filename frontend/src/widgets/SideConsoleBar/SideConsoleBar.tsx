@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import './SideConsoleBar.css'
+import { CodeOutputTab, CODE_OUTPUT_TAB_LABELS } from '../../shared/types'
 import CodeMirror from '@uiw/react-codemirror'
 import { python } from '@codemirror/lang-python'
 import { oneDark } from '@codemirror/theme-one-dark'
@@ -19,6 +21,8 @@ interface SideConsoleBarProps {
 }
 
 export function SideConsoleBar({ output, codeToShow, onCodeChange, onStateChange, blocklyRef }: SideConsoleBarProps){
+    const [activeTab, setActiveTab] = useState<CodeOutputTab>(CodeOutputTab.Output);
+
     return (
     <main>
     <div id="blockly_workspace">
@@ -47,16 +51,38 @@ export function SideConsoleBar({ output, codeToShow, onCodeChange, onStateChange
         <div id="code_output_header">
             <div id="code_output_header_left">
                 <img id="button_expand_output" src={icExpandDown} alt="expand" />
-                <div id="tab_button_output" className="font_powered_mclaren">Вывод</div>
-                <div id="tab_button_debug" className="font_powered_mclaren">Отладка</div>
+                <div id="code_output_tab_bar">
+                    {(Object.keys(CODE_OUTPUT_TAB_LABELS) as CodeOutputTab[]).map((tab) => (
+                        <button
+                            key={tab}
+                            className={tab === activeTab ? 'tab_button active' : 'tab_button'}
+                            data-tab={tab}
+                            onClick={() => setActiveTab(tab)}
+                        >
+                            {CODE_OUTPUT_TAB_LABELS[tab]}
+                        </button>
+                    ))}
+                </div>
             </div>
             <div id="code_output_header_right">
-                <img id="img_download_result_files" src={icDownloadResultFiles} alt="" />
-                <a id="button_download_result_files" className="font_powered_mclaren">Скачать итоговые файлы</a>
+                {activeTab === CodeOutputTab.OutputFiles && (
+                    <>
+                        <img id="img_download_result_files" src={icDownloadResultFiles} alt="" />
+                        <a id="button_download_result_files" className="font_powered_mclaren">Скачать итоговые файлы</a>
+                    </>
+                )}
             </div>
         </div>
-        <div id="code_output" className="font_powered_cascadia_code code_output_expanded" style={{ whiteSpace: 'pre-wrap' }}>
-            {output ? output : 'Запусти код и посмотри результат его работы здесь!'}
+        <div id="code_output" className="font_powered_cascadia_code code_output_expanded">
+            <div className={activeTab === CodeOutputTab.Output ? 'tab_content active' : 'tab_content'}>
+                {output ? output : 'Запусти код и посмотри результат его работы здесь!'}
+            </div>
+            <div className={activeTab === CodeOutputTab.Debug ? 'tab_content active' : 'tab_content'}>
+                Отладка пока не подключена
+            </div>
+            <div className={activeTab === CodeOutputTab.OutputFiles ? 'tab_content active' : 'tab_content'}>
+                Итоговые файлы пока не подключены
+            </div>
         </div>
 
     </div>
