@@ -22,7 +22,7 @@ export function Header({ onRun, onStop, onSaveProject, onOpenProject, isRunning 
     return (
     <div className= 'header_container'>
         <div className = 'header_container__left'>
-            <HeaderButton img={logo} text="CodeCheff" onClick={() => {}}></HeaderButton>
+            <HeaderButton img={logo}  onClick={() => {}}></HeaderButton>
             <HeaderButton img={icSaveProject} text="Сохранить" onClick={onSaveProject}></HeaderButton>
             <HeaderButton img={icOpenProject} text="Открыть" onClick={onOpenProject}></HeaderButton>
          </div>
