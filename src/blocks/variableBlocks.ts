@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly';
-import {FlyoutItemInfoArray} from "blockly/core/utils/toolbox";
+
+type FlyoutItemInfoArray = Blockly.utils.toolbox.FlyoutItemInfoArray;
 
 function customVariablesCategory(workspace: Blockly.WorkspaceSvg) {
     let blocks: FlyoutItemInfoArray;
