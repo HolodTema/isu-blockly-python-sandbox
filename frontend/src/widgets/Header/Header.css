@@ -1,4 +1,7 @@
 .header_container {
+    box-sizing: border-box;
+    height: 5%;
+    flex-shrink: 0;
     display: flex;
     padding: 5px 20px 5px 10px;
     background-color: var(--main-gr);
