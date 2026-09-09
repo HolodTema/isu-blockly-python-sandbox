@@ -8,10 +8,9 @@ export class CodePreviewTransformer {
     convertToPreviewCode(): string {
         // Remove variable declarations like "x = None"
         this.removeVariableNoneDeclarations();
-        return this.codeToLaunch;
-
         this.removeTopEmptyLines();
         this.removeBottomEmptyLines();
+        return this.codeToLaunch;
     }
 
     private removeVariableNoneDeclarations(): void {

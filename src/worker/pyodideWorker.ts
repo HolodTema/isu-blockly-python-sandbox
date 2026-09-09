@@ -5,13 +5,32 @@ let pyodide: any = null;
 let isInitComplete: boolean = false;
 let currentRunTask: any | null = null;
 
+const STDOUT_FLUSH_INTERVAL_MS = 50;
+
 class WorkerStdout {
     private buffer: string = "";
+    private flushTimerId: ReturnType<typeof setTimeout> | null = null;
+
     write(text: string) {
         this.buffer += text;
-        self.postMessage({ type: WorkerEvent.Stdout, payload: text });
+        if (this.flushTimerId === null) {
+            this.flushTimerId = setTimeout(() => this.flush(), STDOUT_FLUSH_INTERVAL_MS);
+        }
+    }
+
+    flush() {
+        if (this.flushTimerId !== null) {
+            clearTimeout(this.flushTimerId);
+            this.flushTimerId = null;
+        }
+        if (this.buffer === "") return;
+        const payload = this.buffer;
+        this.buffer = "";
+        self.postMessage({ type: WorkerEvent.Stdout, payload });
     }
 }
+
+let workerStdout: WorkerStdout | null = null;
 
 async function initPyodide(): Promise<void> {
     if (isInitComplete) return;
@@ -24,10 +43,10 @@ async function initPyodide(): Promise<void> {
         await pyodide.loadPackage("lxml");
         await pyodide.loadPackage("micropip");
 
-        const stdout = new WorkerStdout();
+        workerStdout = new WorkerStdout();
         const jsStdout = {
-            write: (text: string): void => stdout.write(text),
-            flush: (): void => {},
+            write: (text: string): void => workerStdout!.write(text),
+            flush: (): void => workerStdout!.flush(),
         };
         pyodide.globals.set("_worker_stdout", jsStdout);
 
@@ -98,8 +117,10 @@ await _main()
 `
         );
         const result = await currentRunTask;
+        workerStdout?.flush();
         self.postMessage({ id, type: WorkerEvent.RunCodeDone, payload: result });
     } catch (e: any) {
+        workerStdout?.flush();
         if (e.message && e.message.includes("StopExecution")) {
             self.postMessage({ id, type: WorkerEvent.RunCodeCancelled, payload: "Code running was cancelled by user" });
         } else if (e.message && e.message.includes("CancelledError")) {
@@ -180,8 +201,10 @@ ${debugReadyCode.split('\n').map((line: string) => "    " + line).join("\n")}
 await __main__()
 `;
         await pyodide.runPythonAsync(finalCode);
+        workerStdout?.flush();
         self.postMessage({ id, type: WorkerEvent.DebugCodeDone, payload: "ok" });
     } catch (e: any) {
+        workerStdout?.flush();
         if (e.message && e.message.includes("CancelledError")) {
             self.postMessage({ id, type: WorkerEvent.DebugCodeCancelled, payload: "debug was cancelled by the user" });
         }
@@ -256,9 +279,8 @@ self.addEventListener('message', async (event: MessageEvent) => {
             await handleRunCode(payload, id);
             break;
         case WorkerCommand.StopRunCode:
-            pyodide.runPython("_is_stop_run_code = True");
-            if (currentRunTask) {
-                pyodide.runPython("if '_current_run_task' in globals() and _current_run_task: _current_run_task.cancel()");
+            if (pyodide) {
+                pyodide.runPython("_is_stop_run_code = True");
             }
             break;
 
