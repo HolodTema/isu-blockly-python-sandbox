@@ -1,4 +1,5 @@
 import './SideConsoleBar.css'
+import { BlocklyCanvas } from '../../shared/ui/BlocklyCanvas'
 
 import icAddInputFile from '../../shared/assets/ic_add_input_file.svg'
 import icExpandDown from '../../shared/assets/ic_expand_down.svg'
@@ -11,7 +12,7 @@ interface SideConsoleBarProps {
 export function SideConsoleBar({ output }: SideConsoleBarProps){
     return (
     <main>
-    <div id="blockly_workspace"></div>
+    <div id="blockly_workspace"><BlocklyCanvas /></div>
     <div id="code_workspace">
         <div id="input_files_toolbar">
             <input id="input_add_input_file" type="file" accept=".txt, .json, .csv" />
