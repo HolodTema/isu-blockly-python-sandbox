@@ -1,16 +1,13 @@
 import { useCallback, useRef, useState } from 'react';
 import { Header } from '../widgets/Header/Header';
 import { SideConsoleBar } from '../widgets/SideConsoleBar/SideConsoleBar';
+import { LoadScreen } from '../widgets/LoadScreen/LoadScreen';
 import { useCodeRunner } from '../features/CodeRunner/useCodeRunner';
 import { pickProjectFile, readProjectFile, saveProjectToFile } from '../features/Project/projectFile';
 import type { BlocklyCanvasHandle, GeneratedCode } from '../shared/ui/BlocklyCanvas';
 
 export function CodeRunnerPage() {
-    const { output, runCode, client } = useCodeRunner();
-    const isRunning = Boolean((client as any)?.isRunning);
-    const stopCode = () => {
-        (client as any)?.stop?.();
-    };
+    const { output, isReady, isRunning, runCode, stopCode } = useCodeRunner();
     const [code, setCode] = useState<GeneratedCode>({ toLaunch: '', toShow: '' });
     const blocklyRef = useRef<BlocklyCanvasHandle | null>(null);
     const blocklyStateRef = useRef<object>({});
@@ -44,6 +41,7 @@ export function CodeRunnerPage() {
 
     return (
         <>
+            <LoadScreen isLoading={!isReady} />
             <Header
                 onRun={() => runCode(code.toLaunch)}
                 onStop={stopCode}
