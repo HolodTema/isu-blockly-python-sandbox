@@ -1,5 +1,9 @@
 import './SideConsoleBar.css'
+import CodeMirror from '@uiw/react-codemirror'
+import { python } from '@codemirror/lang-python'
+import { oneDark } from '@codemirror/theme-one-dark'
 import { BlocklyCanvas } from '../../shared/ui/BlocklyCanvas'
+import type { GeneratedCode } from '../../shared/ui/BlocklyCanvas'
 
 import icAddInputFile from '../../shared/assets/ic_add_input_file.svg'
 import icExpandDown from '../../shared/assets/ic_expand_down.svg'
@@ -7,12 +11,14 @@ import icDownloadResultFiles from '../../shared/assets/ic_download_result_files.
 
 interface SideConsoleBarProps {
     output?: string;
+    codeToShow?: string;
+    onCodeChange?: (code: GeneratedCode) => void;
 }
 
-export function SideConsoleBar({ output }: SideConsoleBarProps){
+export function SideConsoleBar({ output, codeToShow, onCodeChange }: SideConsoleBarProps){
     return (
     <main>
-    <div id="blockly_workspace"><BlocklyCanvas /></div>
+    <div id="blockly_workspace"><BlocklyCanvas onCodeChange={onCodeChange} /></div>
     <div id="code_workspace">
         <div id="input_files_toolbar">
             <input id="input_add_input_file" type="file" accept=".txt, .json, .csv" />
@@ -24,6 +30,13 @@ export function SideConsoleBar({ output }: SideConsoleBarProps){
         </div>
         <div id="codeViewer">
             <div id="codemirror_workspace">
+                <CodeMirror
+                    value={codeToShow ?? ''}
+                    height="100%"
+                    theme={oneDark}
+                    extensions={[python()]}
+                    editable={false}
+                />
             </div>
         </div>
         <div id="code_output_header">
