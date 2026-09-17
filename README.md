@@ -1,98 +1,77 @@
-# Визуальный конструктор кода для сборки и подготовки данных
+# React + TypeScript + Vite
 
-Аналог Scratch или trinket.io для сбора и предобработки данных. Событийно-ориентированное
-программирование при помощи drag-and-drop блоков кода, которые автоматически конвертируются
-в python и методы библиотек pandas, requests, json. Возможность выполнения и отладки
-сгенерированного python-кода на сервере. Импорт-экспорт проекта в файл. Возможность создания
-аккаунта для сохранения созданных проектов на сервере.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-# Используемые технологии
+Currently, two official plugins are available:
 
-Frontend: Html, CSS, Vanila JS, Pyodide, CodeMirror, Blockly
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-# Как добавлять новые блоки
+## React Compiler
 
-### 1. Добавить блок в public/assets/blockly/blocks.json
+The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
 
-Добавляются по правилам из документации Blockly. 
+Note: This will impact Vite dev & build performances.
 
-https://docs.blockly.com/guides/create-custom-blocks/define/json-and-js/
+## Expanding the ESLint configuration
 
-Расскажу кратко:
-
-При помощи параметров JSON messageN и argN задается текст и места крепления
-блоков. 
-
-previousStatement - крепление блока вверху. Может быть null для любого блока или строкой для валидации прикрепляемого блока.
-
-nextStatement - крепление блока снизу. Может быть null для любого блока или
-строкой для валидации прикрепляемого блока.
-
-output - крепление блока слева, возвращаемое значение блока.
-
-input - это поле находится внутри поля argN и отвечает за крепления блоков 
-справа или посередине блока.
-
------------------------
-
-Пример блока в blocks.json - блок print()
-
-```json
-{
-    "type": "print_block",
-    "message0": "напечатать %1",
-    "args0": [
-        {
-            "type": "input_value",
-            "name": "TEXT"
-        }
-    ],
-    "previousStatement": null,
-    "nextStatement": null,
-    "colour": 160,
-    "tooltip": "Печатает текст в консоль"
-},
-```
-
-### 2. Добавить созданный блок в тулбокс - в файл /public/assets/blockly/toolbox.json
-
-Файл toolbox.json отвечает за тулбокс - список, откуда пользователь достает
-блоки для работы. Файл разделен на категории блоков. Нужно добавить в 
-список блоков категории созданный блок.
-
-```json
-{
-      "kind": "category",
-      "name": "Pandas",
-      "colour": "#9C27B0",
-      "contents": [
-        { "kind": "block", "type": "pandas_import_block" },
-        { "kind": "block", "type": "pandas_read_html_block" },
-        { "kind": "block", "type": "pandas_concat_block" },
-        { "kind": "block", "type": "pandas_head_n_block" },
-        { "kind": "block", "type": "pandas_tail_n_block" },
-        { "kind": "block", "type": "pandas_append_to_list_block" },
-        { "kind": "block", "type": "pandas_to_csv_block" },
-        { "kind": "block", "type": "pandas_info_block" }
-      ]
-    }
-}
-```
-
-### 3. Написать JS-функцию, которая возвращает Python-код из нашего блока
-
-Это делается в файле /src/service/BlocklyService.ts в методе 
-configureCodeGenerator()
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
 ```js
-export default class BlocklyService {
-    //...
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
-    configureCodeGenerator() {
-        //...
-        pythonGenerator.forBlock["block_name"] = function(block) {
-            return "some python code";
-        }
-    }
-}
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+
+```
+
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+
 ```
