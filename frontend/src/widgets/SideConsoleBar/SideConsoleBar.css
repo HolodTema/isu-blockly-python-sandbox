@@ -73,7 +73,9 @@ main.code-hidden #code_workspace {
     display: flex;
     align-items: center;
     background-color: var(--main-gr);
-    padding: 10px;
+    height: 55px;
+    box-sizing: border-box;
+    padding: 0 10px;
 }
 
 #input_add_input_file {
@@ -104,23 +106,27 @@ main.code-hidden #code_workspace {
     align-items: center;
     padding: 0 0 0 10px;
     gap: 5px 0;
+    flex: 1;
+    min-width: 0;
 }
 
 .input_file {
-    height: fit-content;
+    height: 24px;
     display: flex;
     margin: 0 10px 0 0;
     background-color: #ffffff;
     border-bottom-right-radius: 10px;
     border-top-right-radius: 10px;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .input_file_text {
     color: #ffffff;
     margin: 0;
-    padding: 5px 5px;
+    padding: 0 8px;
     font-size: 16px;
+    line-height: 24px;
     border-bottom-right-radius: 10px;
     border-top-right-radius: 10px;
     background-color: #066C08;
