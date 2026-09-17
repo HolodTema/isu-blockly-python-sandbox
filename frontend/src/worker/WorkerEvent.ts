@@ -9,7 +9,7 @@ export enum WorkerEvent {
     DebugCodeDone = "debugCodeDone",
     DebugCodeCancelled = "debugCodeCancelled",
 
-    OnDebugFileCreated = "WorkerEvent.onDebugFileCreated",
+    OnDebugFileCreated = "WorkerEvent.OnDebugFileCreated",
     OnDebugFileRead = "onDebugFileRead",
 
     OnInputFileLoaded = "onInputFileLoaded",
