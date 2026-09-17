@@ -2,7 +2,7 @@ import pandas as pd
 import requests
 from io import StringIO
 
-_PROXY_PREFIX = "http://130.49.175.150:8080/"
+_PROXY_PREFIX = "https://proxy.codechef.ru/"
 
 if not hasattr(pd, '_PATCH_APPLIED'):
     _original_read_html = pd.read_html
