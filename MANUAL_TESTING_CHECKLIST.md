@@ -27,13 +27,15 @@ Steps:
 
 Expected: Output shows `Hello`.
 
-### RUN-03 (P0) Run with input()
+### (NOT READY!) RUN-03 (P0) Run with input()
 Steps:
 1. Add `x = int(ввести("Число"))`.
 2. Add `вывести (x * 2)`.
 3. Click "Run". Enter `5` in the prompt.
 
 Expected: Output shows `10`.
+
+PS. Input() block is not raedy yet, skip RUN-03 case.
 
 ### RUN-04 (P1) Run HTTP request
 Steps:
@@ -80,7 +82,7 @@ Expected: Execution stops within a few seconds. Output shows cancellation messag
 
 ### RUN-09 (P2) Stop long HTTP request
 Steps:
-1. Add a loop with a `requests.get(...)` call with `timeout=10`.
+1. Add a loop with a `requests.get(...)` 
 2. Click "Run".
 3. Click "×" while the request is in flight.
 
@@ -154,13 +156,15 @@ Steps:
 
 Expected: File removed from toolbar. Subsequent code that reads the file fails with `FileNotFoundError`.
 
-### IN-04 (P2) Duplicate input file name
+### (NOT READY!) IN-04 (P2) Duplicate input file name
 Steps:
 1. Load `data_comma.csv`.
 2. Load `data_comma.csv` again.
 
 Expected: Error message in console. Second file is not added. Toolbar shows only one chip.
 
+PS. Now if we upload input_files with the same names, there will be quiet replacement, 
+without console logs or toasts shown. I suppose it is not critical bug.
 ### IN-05 (P1) Load multiple input files
 Steps:
 1. Load `data_comma.csv`.
