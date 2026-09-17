@@ -4,12 +4,13 @@ import icClose from '../../shared/assets/ic_close_black.svg';
 interface ExecutionStatusProps {
     isRunning: boolean;
     onStop: () => void;
+    text?: string;
 }
 
-export function ExecutionStatus({ isRunning, onStop }: ExecutionStatusProps) {
+export function ExecutionStatus({ isRunning, onStop, text = 'Выполняется' }: ExecutionStatusProps) {
     return (
         <div id="code_execution_status" className={isRunning ? 'active' : undefined}>
-            <div id="code_execution_status_text" className="font_powered_mclaren">Выполняется</div>
+            <div id="code_execution_status_text" className="font_powered_mclaren">{text}</div>
             <div id="code_execution_status_progress_bar_container">
                 <div id="code_execution_status_progress_bar"></div>
             </div>

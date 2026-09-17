@@ -20,20 +20,21 @@ interface HeaderProps {
     onToggleCode: () => void;
     onDebugCode: () => void;
     isRunning: boolean;
+    isDebugging: boolean;
     isCodeHidden: boolean;
 }
 
 export function Header({
-                           onRunCode,
-                           onStopExecution,
-                           onSaveProject,
-                           onOpenProject,
-                           onToggleCode,
-                           onDebugCode,
-                           isRunning,
-                           isCodeHidden
-                       }: HeaderProps) {
-
+    onRunCode,
+    onStopExecution,
+    onSaveProject,
+    onOpenProject,
+    onToggleCode,
+    onDebugCode,
+    isRunning,
+    isDebugging,
+    isCodeHidden
+}: HeaderProps) {
     return (
         <div className='header_container'>
             <div className='header_container__left'>
@@ -45,7 +46,11 @@ export function Header({
                 <HeaderButton img={icDebugCode} text="Отладка" onClick={onDebugCode}></HeaderButton>
             </div>
             <div className='header_container__right'>
-                <ExecutionStatus isRunning={isRunning} onStop={onStopExecution}/>
+                <ExecutionStatus
+                    isRunning={isRunning || isDebugging}
+                    onStop={onStopExecution}
+                    text={isDebugging ? 'Отладка' : 'Выполняется'}
+                />
                 <img
                     id="button_expand_code"
                     src={isCodeHidden ? icExpandLeft : icExpandRight}

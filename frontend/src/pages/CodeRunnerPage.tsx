@@ -66,17 +66,27 @@ export function CodeRunnerPage() {
         }
     }, []);
 
+    const handleStopExecution = useCallback(() => {
+        if (debug.isDebugging) {
+            debug.stopDebug();
+        }
+        else {
+            stopCode();
+        }
+    }, [debug.isDebugging, debug.stopDebug, stopCode]);
+
     return (
         <>
             <LoadScreen isLoading={!isReady} />
             <Header
                 onRunCode={handleRun}
-                onStopExecution={stopCode}
+                onStopExecution={handleStopExecution}
                 onSaveProject={handleSaveProject}
                 onOpenProject={handleOpenProject}
                 onToggleCode={() => setIsCodeHidden((prev) => !prev)}
                 onDebugCode={handleDebug}
                 isRunning={isRunning}
+                isDebugging={debug.isDebugging}
                 isCodeHidden={isCodeHidden}
             />
             <SideConsoleBar
