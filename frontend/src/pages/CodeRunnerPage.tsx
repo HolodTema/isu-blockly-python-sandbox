@@ -64,8 +64,13 @@ export function CodeRunnerPage() {
             blocklyRef.current?.loadState(project.blocklyState);
         } catch (e) {
             console.error('Не удалось открыть проект:', e);
+            let shortFilename = file.name;
+            if (shortFilename.length > 15) {
+                shortFilename = `${shortFilename.substring(0, 12)}...`
+            }
+            toast.showError(`Не удалось открыть ${shortFilename}. Файл поврежден или имеет неверный формат`);
         }
-    }, []);
+    }, [toast]);
 
     const handleStopExecution = useCallback(() => {
         if (debug.isDebugging) {
