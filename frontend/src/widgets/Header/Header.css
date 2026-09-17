@@ -1,6 +1,6 @@
 .header_container {
     box-sizing: border-box;
-    height: 5%;
+    height: 3%;
     flex-shrink: 0;
     display: flex;
     padding: 5px 20px 5px 10px;
@@ -49,4 +49,10 @@
 
 .header-button:hover img {
     filter: drop-shadow(0 0 0 var(--hover-secondary));
+}
+
+#button_expand_code {
+    display: inline-block;
+    height: 16px;
+    width: 16px;
 }

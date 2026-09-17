@@ -188,6 +188,7 @@ async function handleReadOutputFile(filename: string, id: number) {
 }
 
 async function handleDebugCode(payload: { code: string; breakpoints: number[]; inputFilenames: string[] }, id: number) {
+    console.log("pyodideWorker.handleDebugCode");
     try {
         const { code, breakpoints, inputFilenames } = payload;
         await cleanFilesystemBesidesInputFiles(inputFilenames);

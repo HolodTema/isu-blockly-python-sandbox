@@ -8,7 +8,6 @@
     margin: 0;
 }
 
-
 @font-face {
     font-family: "mclaren";
     src: url("./shared/fonts/mclaren.ttf") format("truetype");
@@ -41,4 +40,3 @@ html, body, #root {
     flex-direction: column;
     align-content: stretch;
 }
-

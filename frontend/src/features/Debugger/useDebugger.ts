@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
-import type { PyodideWorkerClient } from "../CodeRunner/coderApi";
+import type { PyodideWorkerClient } from "../CodeRunner/PyodideWorkerClient.ts";
 
 export function useDebugger(clientRef: RefObject<PyodideWorkerClient | null>) {
     const [isDebugging, setIsDebugging] = useState(false);
@@ -57,15 +57,17 @@ export function useDebugger(clientRef: RefObject<PyodideWorkerClient | null>) {
         }
     }, [clientRef, reset]);
 
-    // После продолжения и шага выполнение снова идёт, значит пауза снимается
-    // до следующего сигнала от воркера.
     const resume = useCallback((command: "continue" | "step") => {
         const client = clientRef.current;
         if (!client) return;
         setIsPaused(false);
         setCurrentLine(null);
-        if (command === "continue") client.debugContinue();
-        else client.debugStep();
+        if (command === "continue") {
+            client.debugContinue();
+        }
+        else {
+            client.debugStep();
+        }
     }, [clientRef]);
 
     const stopDebug = useCallback(() => {

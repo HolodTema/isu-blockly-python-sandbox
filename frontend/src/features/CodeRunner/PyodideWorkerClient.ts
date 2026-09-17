@@ -2,7 +2,7 @@ import { WorkerCommand } from "../../worker/WorkerCommand";
 import { WorkerEvent } from "../../worker/WorkerEvent";
 import PyodideWorker from "../../worker/pyodideWorker.ts?worker";
 
-interface PendingPromise {
+interface PromiseCallbacks {
     resolve: (value: any) => void;
     reject: (error: Error) => void;
 }
@@ -19,13 +19,10 @@ export interface PyodideWorkerCallbacks {
     onDebugPaused?: () => void;
 }
 
-// Питоновский код на брейкпоинте шлёт из воркера сырую строку, а не объект.
-const DEBUG_PAUSED_MESSAGE = "WorkerEvent.OnDebugFileCreated";
-
 export class PyodideWorkerClient {
     private worker: Worker;
-    private pending = new Map<number, PendingPromise>();
-    private nextId = 0;
+    private mapPromiseCallbacks = new Map<number, PromiseCallbacks>();
+    private nextPromiseCallbackId = 0;
     private isInitComplete = false;
     private resolveReady!: () => void;
     private ready = new Promise<void>((resolve) => {
@@ -35,13 +32,15 @@ export class PyodideWorkerClient {
     constructor(private callbacks: PyodideWorkerCallbacks) {
         this.worker = new PyodideWorker();
         this.worker.addEventListener("message", (event: MessageEvent) => {
-            this.handleMessage(event.data);
+            this.handleWorkerEvent(event.data);
         });
     }
 
-    private handleMessage(msg: any) {
+    private handleWorkerEvent(msg: any) {
         if (typeof msg === "string") {
-            if (msg === DEBUG_PAUSED_MESSAGE) {
+            // python code on breakpoint sends plain string, not WorkerEvent object from worker
+            if (msg === WorkerEvent.OnDebugFileCreated) {
+                console.log("WorkerEvent.OnDebugFileCreated");
                 this.callbacks.onDebugPaused?.();
             }
             return;
@@ -59,12 +58,10 @@ export class PyodideWorkerClient {
             console.log("Pyodide worker:", msg.payload);
             return;
         }
-        // Воркер отправляет архив без id, отдельным событием, а не ответом на команду.
         if (msg.type === WorkerEvent.OutputFilesZipReady) {
             this.callbacks.onOutputFilesZip?.(msg.payload);
             return;
         }
-
         if (typeof msg.id !== "number") {
             if (msg.type === WorkerEvent.Error) {
                 this.callbacks.onError?.(msg.payload);
@@ -72,9 +69,9 @@ export class PyodideWorkerClient {
             return;
         }
 
-        const promise = this.pending.get(msg.id);
+        const promise = this.mapPromiseCallbacks.get(msg.id);
         if (!promise) return;
-        this.pending.delete(msg.id);
+        this.mapPromiseCallbacks.delete(msg.id);
         if (msg.type === WorkerEvent.Error) {
             promise.reject(new Error(msg.payload));
         } else {
@@ -83,15 +80,15 @@ export class PyodideWorkerClient {
     }
 
     private send<T>(type: WorkerCommand, payload: unknown, transfer: Transferable[] = []): Promise<T> {
-        const id = this.nextId++;
+        const id = this.nextPromiseCallbackId++;
         return new Promise<T>((resolve, reject) => {
-            this.pending.set(id, { resolve, reject });
+            this.mapPromiseCallbacks.set(id, { resolve, reject });
             this.worker.postMessage({ id, type, payload }, transfer);
         });
     }
 
     private notify(type: WorkerCommand, payload: unknown = null) {
-        this.worker.postMessage({ id: this.nextId++, type, payload });
+        this.worker.postMessage({ id: this.nextPromiseCallbackId++, type, payload });
     }
 
     whenReady(): Promise<void> {
@@ -121,13 +118,13 @@ export class PyodideWorkerClient {
         this.notify(WorkerCommand.RemoveInputFile, filename);
     }
 
-    // Обработчик паузы ставится позже клиента: его владелец - отдельный хук отладки.
     setDebugPausedHandler(handler: () => void): void {
         this.callbacks.onDebugPaused = handler;
     }
 
     async debugCode(code: string, breakpoints: number[], inputFilenames: string[] = []): Promise<unknown> {
         await this.ready;
+        console.log("pyodideWorkerClient.debugCode()");
         return this.send(WorkerCommand.StartDebugCode, { code, breakpoints, inputFilenames });
     }
 
@@ -160,7 +157,7 @@ export class PyodideWorkerClient {
     }
 
     dispose(): void {
-        this.pending.clear();
+        this.mapPromiseCallbacks.clear();
         this.worker.terminate();
     }
 }
