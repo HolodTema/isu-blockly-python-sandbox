@@ -1,14 +1,13 @@
 import { useCallback, useRef, useState } from "react";
 import type { RefObject } from "react";
-import type { PyodideWorkerClient } from "../CodeRunner/coderApi";
+import type { PyodideWorkerClient } from "../CodeRunner/PyodideWorkerClient.ts";
 
-export function useProjectFiles(clientRef: RefObject<PyodideWorkerClient | null>) {
+export function useInputOutputFiles(clientRef: RefObject<PyodideWorkerClient | null>) {
     const [inputFilenames, setInputFilenames] = useState<string[]>([]);
     const [outputFilenames, setOutputFilenames] = useState<string[]>([]);
     const [selectedOutputFile, setSelectedOutputFile] = useState<string | null>(null);
-    const [outputFilePreview, setOutputFilePreview] = useState("");
+    const [selectedOutputFilePreviewText, setSelectedOutputFilePreviewText] = useState("");
 
-    // Итоговыми считаются только те файлы, которых не было среди входных.
     const inputFilenamesRef = useRef<Set<string>>(new Set());
 
     const addInputFile = useCallback(async (file: File) => {
@@ -37,7 +36,7 @@ export function useProjectFiles(clientRef: RefObject<PyodideWorkerClient | null>
             const produced = all.filter((name) => !inputFilenamesRef.current.has(name));
             setOutputFilenames(produced);
             setSelectedOutputFile(null);
-            setOutputFilePreview("");
+            setSelectedOutputFilePreviewText("");
         } catch (e) {
             console.error("Не удалось получить список итоговых файлов:", e);
         }
@@ -49,9 +48,9 @@ export function useProjectFiles(clientRef: RefObject<PyodideWorkerClient | null>
 
         setSelectedOutputFile(filename);
         try {
-            setOutputFilePreview(await client.readOutputFile(filename));
+            setSelectedOutputFilePreviewText(await client.readOutputFile(filename));
         } catch (e) {
-            setOutputFilePreview(`Не удалось прочитать файл: ${(e as Error).message}`);
+            setSelectedOutputFilePreviewText(`Не удалось прочитать файл: ${(e as Error).message}`);
         }
     }, [clientRef]);
 
@@ -65,7 +64,7 @@ export function useProjectFiles(clientRef: RefObject<PyodideWorkerClient | null>
         removeInputFile,
         outputFilenames,
         selectedOutputFile,
-        outputFilePreview,
+        selectedOutputFilePreviewText,
         refreshOutputFiles,
         previewOutputFile,
         downloadOutputFilesZip,

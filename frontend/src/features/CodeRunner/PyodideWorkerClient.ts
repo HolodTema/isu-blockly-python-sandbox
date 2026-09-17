@@ -2,7 +2,7 @@ import { WorkerCommand } from "../../worker/WorkerCommand";
 import { WorkerEvent } from "../../worker/WorkerEvent";
 import PyodideWorker from "../../worker/pyodideWorker.ts?worker";
 
-interface PendingPromise {
+interface PromiseCallbacks {
     resolve: (value: any) => void;
     reject: (error: Error) => void;
 }
@@ -19,12 +19,9 @@ export interface PyodideWorkerCallbacks {
     onDebugPaused?: () => void;
 }
 
-// Питоновский код на брейкпоинте шлёт из воркера сырую строку, а не объект.
-const DEBUG_PAUSED_MESSAGE = "WorkerEvent.OnDebugFileCreated";
-
 export class PyodideWorkerClient {
     private worker: Worker;
-    private pending = new Map<number, PendingPromise>();
+    private mapPromiseCallbacks = new Map<number, PromiseCallbacks>();
     private nextId = 0;
     private isInitComplete = false;
     private resolveReady!: () => void;
@@ -41,7 +38,8 @@ export class PyodideWorkerClient {
 
     private handleMessage(msg: any) {
         if (typeof msg === "string") {
-            if (msg === DEBUG_PAUSED_MESSAGE) {
+            // python code on breakpoint sends plain string, not WorkerEvent object from worker
+            if (msg === `WorkerEvent.${WorkerEvent.OnDebugFileCreated}`) {
                 this.callbacks.onDebugPaused?.();
             }
             return;
@@ -72,9 +70,9 @@ export class PyodideWorkerClient {
             return;
         }
 
-        const promise = this.pending.get(msg.id);
+        const promise = this.mapPromiseCallbacks.get(msg.id);
         if (!promise) return;
-        this.pending.delete(msg.id);
+        this.mapPromiseCallbacks.delete(msg.id);
         if (msg.type === WorkerEvent.Error) {
             promise.reject(new Error(msg.payload));
         } else {
@@ -85,7 +83,7 @@ export class PyodideWorkerClient {
     private send<T>(type: WorkerCommand, payload: unknown, transfer: Transferable[] = []): Promise<T> {
         const id = this.nextId++;
         return new Promise<T>((resolve, reject) => {
-            this.pending.set(id, { resolve, reject });
+            this.mapPromiseCallbacks.set(id, { resolve, reject });
             this.worker.postMessage({ id, type, payload }, transfer);
         });
     }
@@ -160,7 +158,7 @@ export class PyodideWorkerClient {
     }
 
     dispose(): void {
-        this.pending.clear();
+        this.mapPromiseCallbacks.clear();
         this.worker.terminate();
     }
 }

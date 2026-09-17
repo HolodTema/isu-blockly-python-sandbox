@@ -2,13 +2,13 @@ import { downloadBlob } from "../../shared/lib/download";
 
 export interface ProjectFile {
     python: string;
-    blocklyState: Record<string, unknown>;
+    blocklyState: Record<string, any>;
 }
 
 const PROJECT_FILE_EXTENSION = ".chef";
 
-export function saveProjectToFile(project: ProjectFile, filename = `project${PROJECT_FILE_EXTENSION}`): void {
-    downloadBlob(new Blob([JSON.stringify(project)]), filename);
+export function saveProjectToFile(projectFile: ProjectFile, filename = `project${PROJECT_FILE_EXTENSION}`): void {
+    downloadBlob(new Blob([JSON.stringify(projectFile)]), filename);
 }
 
 export function pickProjectFile(): Promise<File | null> {

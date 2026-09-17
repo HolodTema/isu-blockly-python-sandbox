@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { PyodideWorkerClient } from "./coderApi";
+import { PyodideWorkerClient } from "./PyodideWorkerClient.ts";
 import { downloadBlob } from "../../shared/lib/download";
 
 export function useCodeRunner() {

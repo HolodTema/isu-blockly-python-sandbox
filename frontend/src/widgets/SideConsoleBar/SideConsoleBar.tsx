@@ -7,11 +7,11 @@ import { oneDark } from '@codemirror/theme-one-dark'
 import { BlocklyCanvas } from '../../shared/ui/BlocklyCanvas'
 import type { GeneratedCode, BlocklyCanvasHandle } from '../../shared/ui/BlocklyCanvas'
 import type { RefObject } from 'react'
-import type { useProjectFiles } from '../../features/Files/useProjectFiles'
+import type { useInputOutputFiles } from '../../features/Files/useInputOutputFiles.ts'
 import type { useDebugger } from '../../features/Debugger/useDebugger'
 import { breakpointGutter, activeLineHighlight } from '../../shared/ui/breakpointGutter'
 
-type ProjectFilesApi = ReturnType<typeof useProjectFiles>
+type InputOutputFilesApi = ReturnType<typeof useInputOutputFiles>
 type DebuggerApi = ReturnType<typeof useDebugger>
 
 import icAddInputFile from '../../shared/assets/ic_add_input_file.svg'
@@ -25,17 +25,17 @@ interface SideConsoleBarProps {
     onCodeChange?: (code: GeneratedCode) => void;
     onStateChange?: (state: object) => void;
     blocklyRef?: RefObject<BlocklyCanvasHandle | null>;
-    files: ProjectFilesApi;
+    inputOutputFiles: InputOutputFilesApi;
     isCodeHidden?: boolean;
     debug: DebuggerApi;
 }
 
-export function SideConsoleBar({ output, codeToShow, onCodeChange, onStateChange, blocklyRef, files, isCodeHidden, debug }: SideConsoleBarProps){
+export function SideConsoleBar({ output, codeToShow, onCodeChange, onStateChange, blocklyRef, inputOutputFiles, isCodeHidden, debug }: SideConsoleBarProps){
     const [activeTab, setActiveTab] = useState<CodeOutputTab>(CodeOutputTab.Output);
     const [isOutputExpanded, setIsOutputExpanded] = useState(true);
     const inputFileRef = useRef<HTMLInputElement>(null);
 
-    const { refreshOutputFiles } = files;
+    const { refreshOutputFiles } = inputOutputFiles;
 
     // Список итоговых файлов обновляем при каждом открытии вкладки: программа
     // могла создать новые файлы с прошлого раза.
@@ -66,7 +66,7 @@ export function SideConsoleBar({ output, codeToShow, onCodeChange, onStateChange
                 accept=".txt, .json, .csv"
                 onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) files.addInputFile(file);
+                    if (file) inputOutputFiles.addInputFile(file);
                     e.target.value = '';
                 }}
             />
@@ -79,14 +79,14 @@ export function SideConsoleBar({ output, codeToShow, onCodeChange, onStateChange
                 Входные файлы
             </a>
             <div id="input_files_list">
-                {files.inputFilenames.map((filename) => (
+                {inputOutputFiles.inputFilenames.map((filename) => (
                     <div className="input_file" key={filename}>
                         <div className="input_file_text">{filename}</div>
                         <img
                             className="button_remove_input_file"
                             src={icClose}
                             alt="Удалить"
-                            onClick={() => files.removeInputFile(filename)}
+                            onClick={() => inputOutputFiles.removeInputFile(filename)}
                         />
                     </div>
                 ))}
@@ -175,29 +175,29 @@ export function SideConsoleBar({ output, codeToShow, onCodeChange, onStateChange
             </div>
             <div className={activeTab === CodeOutputTab.OutputFiles ? 'tab_content tab_content_output_files active' : 'tab_content tab_content_output_files'}>
                 <div id="output_files_list">
-                    {files.outputFilenames.length === 0 ? (
+                    {inputOutputFiles.outputFilenames.length === 0 ? (
                         <div className="output_files_empty">Программа еще не создавала файлы</div>
                     ) : (
                         <>
-                            {files.outputFilenames.map((filename) => (
+                            {inputOutputFiles.outputFilenames.map((filename) => (
                                 <div
                                     key={filename}
-                                    className={filename === files.selectedOutputFile ? 'file_item active' : 'file_item'}
-                                    onClick={() => files.previewOutputFile(filename)}
+                                    className={filename === inputOutputFiles.selectedOutputFile ? 'file_item active' : 'file_item'}
+                                    onClick={() => inputOutputFiles.previewOutputFile(filename)}
                                 >
                                     {filename}
                                 </div>
                             ))}
                             <button
                                 className="file_item button_download_all_output_files"
-                                onClick={files.downloadOutputFilesZip}
+                                onClick={inputOutputFiles.downloadOutputFilesZip}
                             >
                                 Скачать все файлы
                             </button>
                         </>
                     )}
                 </div>
-                <div id="output_files_preview">{files.outputFilePreview}</div>
+                <div id="output_files_preview">{inputOutputFiles.selectedOutputFilePreviewText}</div>
             </div>
         </div>
 

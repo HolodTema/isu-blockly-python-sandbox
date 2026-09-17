@@ -8,6 +8,8 @@ export enum WorkerEvent {
 
     DebugCodeDone = "debugCodeDone",
     DebugCodeCancelled = "debugCodeCancelled",
+
+    OnDebugFileCreated = "WorkerEvent.onDebugFileCreated",
     OnDebugFileRead = "onDebugFileRead",
 
     OnInputFileLoaded = "onInputFileLoaded",
