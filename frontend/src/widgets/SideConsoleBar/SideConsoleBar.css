@@ -47,9 +47,14 @@ main.code-hidden #code_workspace {
     height: 100%;
 }
 
+.cm-gutter {
+    background-color: #1e1f22;
+}
+
 .breakpoints-gutter {
     width: 24px !important;
     min-width: 24px !important;
+    background-color: #1e1f22;
 }
 
 .breakpoint-marker {
