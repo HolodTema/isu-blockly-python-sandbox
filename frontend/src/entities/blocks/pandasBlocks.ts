@@ -9,21 +9,24 @@ export function initPandasBlocks(generator: PythonGenerator, mode: "display"|"ex
 
     generator.forBlock["pandas_read_html_block"] = function(block: Blockly.Block): string {
         const blockArg = generator.valueToCode(block, "TEXT_WITH_TABLE", Order.ATOMIC) || '""';
-        const resultVar = block.getFieldValue("RESULT_VAR").value || "df";
+        const resultVarId = block.getFieldValue("RESULT_VAR");
+        const resultVar = generator.getVariableName(resultVarId) || "df";
         return `${resultVar} = pd.read_html(${blockArg})[0]\n`;
     };
 
     generator.forBlock["pandas_read_json_block"] = function(block: Blockly.Block): string {
         const blockArg = generator.valueToCode(block, "TEXT_WITH_TABLE", Order.ATOMIC) || '""';
         const orient = block.getFieldValue("ORIENT") || "records";
-        const resultVar = block.getFieldValue("RESULT_VAR")?.value || "df";
+        const resultVarId = block.getFieldValue("RESULT_VAR");
+        const resultVar = generator.getVariableName(resultVarId) || "df";
         return `${resultVar} = pd.read_json(${blockArg}, orient="${orient}")\n`;
     };
 
     generator.forBlock["pandas_read_csv_block"] = function(block: Blockly.Block): string {
         const blockArg = generator.valueToCode(block, "TEXT_WITH_TABLE", Order.ATOMIC) || '""';
         const sep = block.getFieldValue("SEP") || ",";
-        const resultVar = block.getFieldValue("RESULT_VAR")?.value || "df";
+        const resultVarId = block.getFieldValue("RESULT_VAR");
+        const resultVar = generator.getVariableName(resultVarId) || "df";
         return `${resultVar} = pd.read_csv(${blockArg}, sep="${sep}")\n`;
     }
 
