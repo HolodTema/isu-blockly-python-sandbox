@@ -11,7 +11,7 @@ import type { BlocklyCanvasHandle, GeneratedCode } from '../shared/ui/BlocklyCan
 
 export function CodeRunnerPage() {
     const toast = useToast();
-    const { output, isReady, isRunning, runCode, stopCode, clientRef } = useCodeRunner();
+    const { output, isReady, isRunning, runCode, stopCode, clearCodeOutput, clientRef } = useCodeRunner();
     const inputOutputFiles = useInputOutputFiles(clientRef);
     const debug = useDebugger(clientRef);
     const [code, setCode] = useState<GeneratedCode>({ toLaunch: '', toShow: '' });
@@ -50,9 +50,10 @@ export function CodeRunnerPage() {
             toast.showInfo('Поставьте хотя бы одну точку останова (клик возле номера строки)');
             return;
         }
+        clearCodeOutput();
         await debug.startDebug(code.toLaunch, inputOutputFiles.inputFilenames);
         await inputOutputFiles.refreshOutputFiles();
-    }, [debug, code.toLaunch, inputOutputFiles, toast]);
+    }, [debug, code.toLaunch, inputOutputFiles, toast, clearCodeOutput]);
 
     const handleOpenProject = useCallback(async () => {
         const file = await pickProjectFile();

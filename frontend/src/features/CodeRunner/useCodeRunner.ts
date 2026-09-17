@@ -49,5 +49,9 @@ export function useCodeRunner() {
         clientRef.current?.stopCode();
     }, []);
 
-    return { output, isReady, isRunning, runCode, stopCode, clientRef };
+    const clearCodeOutput = useCallback(() => {
+        setOutput("");
+    }, [])
+
+    return { output, isReady, isRunning, runCode, stopCode, clearCodeOutput, clientRef };
 }
