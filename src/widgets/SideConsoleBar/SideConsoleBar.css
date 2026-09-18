@@ -31,20 +31,30 @@ main.code-hidden #code_workspace {
 }
 
 #codeViewer {
-    flex-grow: 1;
-    height: 100%;
+    flex: 3 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 #codemirror_workspace {
-    height: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .cm-theme {
-    height: 100%;
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .cm-editor {
-    height: 100%;
+    flex: 1 1 0;
+    min-height: 0;
 }
 
 .cm-gutter {
@@ -388,13 +398,15 @@ main.code-hidden #code_workspace {
 }
 
 #code_output {
+    display: flex;
+    flex: 2 1 0;
+    min-height: 0;
     background-color: black;
     color: white;
     padding: 5px;
     width: 100%;
     white-space: pre-wrap;
     overflow-y: auto;
-    display: flex;
     flex-direction: column;
 }
 
@@ -403,12 +415,12 @@ main.code-hidden #code_workspace {
     color: black;
 }
 
-.code_output_expanded {
-    height: 50%;
-}
-
-.code_output_not_expanded {
+#code_output.code_output_not_expanded {
+    flex: 0 0 auto;
     height: 0;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
 .tab_content_input.active {
