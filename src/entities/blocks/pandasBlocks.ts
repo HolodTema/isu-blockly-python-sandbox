@@ -85,4 +85,15 @@ export function initPandasBlocks(generator: PythonGenerator, mode: "display"|"ex
         }
         return [`${dfVar}[${columnsToPythonList(columns)}]`, Order.FUNCTION_CALL];
     };
+
+    generator.forBlock["pandas_drop_columns_block"] = function (block: Blockly.Block): [string, Order] {
+        const dfVarId = block.getFieldValue("DF");
+        const dfVar = generator.getVariableName(dfVarId) || "df";
+        const columnsStr = block.getFieldValue("COLUMNS") || '';
+        const columns = parseColumns(columnsStr);
+        if (columns.length === 0) {
+            return [dfVar, Order.ATOMIC];
+        }
+        return [`${dfVar}.drop(columns=${columnsToPythonList(columns)})`, Order.FUNCTION_CALL];
+    };
 }

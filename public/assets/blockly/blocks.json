@@ -537,6 +537,26 @@
         "colour": 270,
         "tooltip": "Возвращает таблицу только с указанными колонками. Имена перечисляются через запятую. Если указать одно имя, получится таблица из одной колонки."
     },
+    {
+        "type": "pandas_drop_columns_block",
+        "message0": "из таблицы %1 удалить колонки %2",
+        "args0": [
+            {
+                "type": "field_variable",
+                "name": "DF",
+                "check": "PandasDataFrame",
+                "variable": "df"
+            },
+            {
+                "type": "field_input",
+                "name": "COLUMNS",
+                "text": "Column1, Column2"
+            }
+        ],
+        "output": "PandasDataFrame",
+        "colour": 270,
+        "tooltip": "Возвращает таблицу без указанных колонок. Имена перечисляются через запятую. Исходная таблица не меняется — создаётся новая."
+    },
 
 
     {
