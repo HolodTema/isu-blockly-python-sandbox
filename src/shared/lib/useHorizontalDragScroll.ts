@@ -33,7 +33,7 @@ export function useHorizontalDragScroll<T extends HTMLElement>() {
         document.addEventListener('pointermove', onMove);
         document.addEventListener('pointerup', onUp);
         document.addEventListener('pointercancel', onUp);
-        
+
         return () => {
             document.removeEventListener('pointermove', onMove);
             document.removeEventListener('pointerup', onUp);

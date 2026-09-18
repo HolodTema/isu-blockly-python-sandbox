@@ -27,15 +27,15 @@ Steps:
 
 Expected: Output shows `Hello`.
 
-### (NOT READY!) RUN-03 (P0) Run with input()
+### RUN-03 (P0) Run with input()
 Steps:
 1. Add `x = int(ввести("Число"))`.
 2. Add `вывести (x * 2)`.
-3. Click "Run". Enter `5` in the prompt.
+3. Open the "Ввод" tab.
+4. Type `5` in the textarea.
+5. Click "Run".
 
-Expected: Output shows `10`.
-
-PS. Input() block is not raedy yet, skip RUN-03 case.
+Expected: Output shows `10`. No browser prompt is shown.
 
 ### RUN-04 (P1) Run HTTP request
 Steps:
@@ -82,7 +82,7 @@ Expected: Execution stops within a few seconds. Output shows cancellation messag
 
 ### RUN-09 (P2) Stop long HTTP request
 Steps:
-1. Add a loop with a `requests.get(...)` 
+1. Add a loop with a `requests.get(...)`
 2. Click "Run".
 3. Click "×" while the request is in flight.
 
@@ -129,7 +129,7 @@ Steps:
 1. Click "Открыть проект".
 2. Select a `.txt` file or a corrupted `.chef` file.
 
-Expected: Error message in console. Application does not crash. Workspace remains unchanged.
+Expected: Toast "Не удалось открыть ...". Application does not crash. Workspace remains unchanged.
 
 ---
 
@@ -163,8 +163,9 @@ Steps:
 
 Expected: Error message in console. Second file is not added. Toolbar shows only one chip.
 
-PS. Now if we upload input_files with the same names, there will be quiet replacement, 
+PS. Now if we upload input_files with the same names, there will be quiet replacement,
 without console logs or toasts shown. I suppose it is not critical bug.
+
 ### IN-05 (P1) Load multiple input files
 Steps:
 1. Load `data_comma.csv`.
@@ -293,7 +294,82 @@ Expected: Debugging terminates without leaving the worker in a broken state. Sub
 
 ---
 
-## 6. UI / General Behavior
+## 6. Input Tab (stdin)
+
+### INPUT-01 (P0) Provide input via the Input tab
+Steps:
+1. Build program:
+   - `x = int(ввести("Число"))`
+   - `вывести (x * 2)`
+2. Open the "Ввод" tab.
+3. Type `5` in the textarea.
+4. Click "Run".
+
+Expected: Output shows `10`.
+
+### INPUT-02 (P0) Multiple inputs on separate lines
+Steps:
+1. Build program:
+   - `a = int(ввести("A"))`
+   - `b = int(ввести("B"))`
+   - `вывести (a + b)`
+2. Open the "Ввод" tab.
+3. Type on two lines:
+
+4. Click "Run".
+
+Expected: Output shows `7`.
+
+### INPUT-03 (P1) String input
+Steps:
+1. Build program:
+- `name = ввести("Имя")`
+- `вывести ("Привет, " + name)`
+2. Open the "Ввод" tab. Type `Мир`.
+3. Click "Run".
+
+Expected: Output shows `Привет, Мир`.
+
+### INPUT-04 (P1) Input tab value persists between runs
+Steps:
+1. Open the "Ввод" tab. Type `hello`.
+2. Run any program.
+3. Switch to another tab and back to "Ввод".
+
+Expected: Textarea still contains `hello`.
+
+### INPUT-05 (P1) Empty Input tab
+Steps:
+1. Make sure the "Ввод" tab is empty.
+2. Run a program that does not use `ввести`.
+
+Expected: Program runs normally. No errors.
+
+### INPUT-06 (P1) Not enough input lines
+Steps:
+1. Build program:
+- `a = int(ввести("A"))`
+- `b = int(ввести("B"))`
+2. Open the "Ввод" tab. Type only `5`.
+3. Click "Run".
+
+Expected: First input is read as `5`. Second raises `EOFError` in the Output tab. Program stops.
+
+### INPUT-07 (P2) Input with debug
+Steps:
+1. Build program:
+- `x = int(ввести("X"))`
+- `y = x * 2`
+- `вывести (y)`
+2. Set a breakpoint on the line with `y = x * 2`.
+3. Open the "Ввод" tab. Type `10`.
+4. Click "Отладка".
+
+Expected: Execution pauses at the breakpoint. Variables table shows `x = 10`. Click "Продолжить" → output shows `20`.
+
+---
+
+## 7. UI / General Behavior
 
 ### UI-01 (P1) Toggle code panel
 Steps:
@@ -303,7 +379,7 @@ Expected: Blockly workspace resizes to fill the freed area. Code panel hides or 
 
 ### UI-02 (P2) Switch output tabs
 Steps:
-1. Switch between "Вывод", "Отладка", "Итоговые файлы".
+1. Switch between "Вывод", "Отладка", "Итоговые файлы", "Ввод".
 
 Expected: Content changes accordingly. Active tab is highlighted.
 
@@ -311,7 +387,7 @@ Expected: Content changes accordingly. Active tab is highlighted.
 Steps:
 1. Resize the browser window to roughly 50% of screen width.
 
-Expected: Header items do not overflow. Progress bar and stop button remain visible. No horizontal scroll.
+Expected: Header items do not overflow. Progress bar and stop button remain visible. Output tab bar becomes horizontally scrollable without breaking layout. No horizontal page scroll.
 
 ### UI-04 (P2) Stop button visibility
 Steps:
@@ -326,9 +402,16 @@ Steps:
 
 Expected: Toast message appears and disappears after ~3 seconds.
 
+### UI-06 (P2) Output tab bar drag-scroll
+Steps:
+1. Resize the browser window so that all four output tabs do not fit in the tab bar.
+2. Click and drag horizontally on an empty area of the tab bar.
+
+Expected: Tab bar scrolls horizontally. A thin scrollbar is visible. Dragging beyond the tab bar bounds still scrolls. A plain click (without movement) on a tab still switches to it.
+
 ---
 
-## 7. Regression Scenarios (After Refactoring)
+## 8. Regression Scenarios (After Refactoring)
 
 These cases are designed to catch regressions introduced by large structural changes (for example, migration to a new framework).
 
@@ -381,6 +464,15 @@ Steps:
 3. Repeat three times.
 
 Expected: Every session starts and ends cleanly. No worker failures.
+
+### REG-07 (P1) Input tab + debug + run
+Steps:
+1. Build a program with `ввести`, set a breakpoint before the input line.
+2. Open the "Ввод" tab and type a value.
+3. Click "Отладка", stop at breakpoint, click "Продолжить".
+4. Click "Run" without changing the input.
+
+Expected: Both debug and run consume the same stdin. No `EOFError`, no leftover state.
 
 ---
 
