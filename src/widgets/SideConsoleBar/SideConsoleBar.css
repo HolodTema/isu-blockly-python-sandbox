@@ -61,6 +61,26 @@ main.code-hidden #code_workspace {
     background-color: #1e1f22;
 }
 
+.cm-scroller::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.cm-scroller::-webkit-scrollbar-track {
+    background: transparent;
+}
+.cm-scroller::-webkit-scrollbar-thumb {
+    background: rgba(150, 150, 150, 0.4);
+    border-radius: 4px;
+}
+.cm-scroller::-webkit-scrollbar-thumb:hover {
+    background: rgba(150, 150, 150, 0.7);
+}
+
+.cm-scroller {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(150, 150, 150, 0.4) transparent;
+}
+
 .breakpoints-gutter {
     width: 24px !important;
     min-width: 24px !important;
