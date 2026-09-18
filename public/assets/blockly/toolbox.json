@@ -348,6 +348,14 @@
                 {
                     "kind": "block",
                     "type": "pandas_info_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "pandas_select_columns_block"
+                },
+                {
+                    "kind": "block",
+                    "type": "pandas_drop_columns_block"
                 }
             ]
         }

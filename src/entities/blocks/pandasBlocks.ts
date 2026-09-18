@@ -63,4 +63,37 @@ export function initPandasBlocks(generator: PythonGenerator, mode: "display"|"ex
         const df = generator.valueToCode(block, "DF", Order.ATOMIC) || '""';
         return `${df}.info()\n`;
     };
+
+    function parseColumns(raw: string): string[] {
+        return raw
+            .split(',')
+            .map((c) => c.trim())
+            .filter((c) => c.length > 0);
+    }
+
+    function columnsToPythonList(columns: string[]): string {
+        return '[' + columns.map((c) => `"${c}"`).join(', ') + ']';
+    }
+
+    generator.forBlock["pandas_select_columns_block"] = function (block: Blockly.Block): [string, Order] {
+        const dfVarId = block.getFieldValue("DF");
+        const dfVar = generator.getVariableName(dfVarId) || "df";
+        const columnsStr = block.getFieldValue("COLUMNS") || '';
+        const columns = parseColumns(columnsStr);
+        if (columns.length === 0) {
+            return [`${dfVar}[[]]`, Order.FUNCTION_CALL];
+        }
+        return [`${dfVar}[${columnsToPythonList(columns)}]`, Order.FUNCTION_CALL];
+    };
+
+    generator.forBlock["pandas_drop_columns_block"] = function (block: Blockly.Block): [string, Order] {
+        const dfVarId = block.getFieldValue("DF");
+        const dfVar = generator.getVariableName(dfVarId) || "df";
+        const columnsStr = block.getFieldValue("COLUMNS") || '';
+        const columns = parseColumns(columnsStr);
+        if (columns.length === 0) {
+            return [dfVar, Order.ATOMIC];
+        }
+        return [`${dfVar}.drop(columns=${columnsToPythonList(columns)})`, Order.FUNCTION_CALL];
+    };
 }
