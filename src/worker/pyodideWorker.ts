@@ -32,6 +32,15 @@ class WorkerStdout {
 
 let workerStdout: WorkerStdout | null = null;
 
+function installStdin(stdinText: string) {
+    pyodide.runPython(
+`
+import sys, io
+sys.stdin = io.StringIO(${JSON.stringify(stdinText)})
+`
+    );
+}
+
 async function initPyodide(): Promise<void> {
     if (isInitComplete) return;
     try {
@@ -97,11 +106,12 @@ _debugger_state = {
     await pyodide.runPythonAsync(script);
 }
 
-async function handleRunCode(payload: { code: string; inputFilenames: string[] }, id: number) {
+async function handleRunCode(payload: { code: string; inputFilenames: string[]; stdinText: string }, id: number) {
     try {
-        const { code, inputFilenames } = payload;
+        const { code, inputFilenames, stdinText } = payload;
         await cleanFilesystemBesidesInputFiles(inputFilenames);
         await runPatchCode();
+        installStdin(stdinText);
 
         const scriptStopRunCodeCheck = await fetch("/assets/python/stopRunCodeCheck.py");
         await pyodide.runPythonAsync(await scriptStopRunCodeCheck.text());
@@ -187,12 +197,13 @@ async function handleReadOutputFile(filename: string, id: number) {
     }
 }
 
-async function handleDebugCode(payload: { code: string; breakpoints: number[]; inputFilenames: string[] }, id: number) {
+async function handleDebugCode(payload: { code: string; breakpoints: number[]; inputFilenames: string[], stdinText: string }, id: number) {
     console.log("pyodideWorker.handleDebugCode");
     try {
-        const { code, breakpoints, inputFilenames } = payload;
+        const { code, breakpoints, inputFilenames, stdinText } = payload;
         await cleanFilesystemBesidesInputFiles(inputFilenames);
         await runPatchCode();
+        installStdin(stdinText);
         const debugReadyCode = await getTransformedDebugReadyCode(code);
         await runDebugPrepareCode(breakpoints);
         const finalCode = `

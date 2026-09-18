@@ -40,7 +40,7 @@ export function useDebugger(clientRef: RefObject<PyodideWorkerClient | null>) {
         setVariables({});
     }, []);
 
-    const startDebug = useCallback(async (code: string, inputFilenames: string[] = []) => {
+    const startDebug = useCallback(async (code: string, inputFilenames: string[] = [], stdinText: string = '') => {
         const client = clientRef.current;
         if (!client || !code.trim()) return;
 
@@ -49,7 +49,7 @@ export function useDebugger(clientRef: RefObject<PyodideWorkerClient | null>) {
         setVariables({});
         setCurrentLine(null);
         try {
-            await client.debugCode(code, breakpointsRef.current, inputFilenames);
+            await client.debugCode(code, breakpointsRef.current, inputFilenames, stdinText);
         } catch (e) {
             console.error("Отладка завершилась с ошибкой:", e);
         } finally {
