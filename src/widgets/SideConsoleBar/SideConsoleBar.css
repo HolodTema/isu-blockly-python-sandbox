@@ -228,6 +228,8 @@ main.code-hidden #code_workspace {
     transition: color 0.3s, border-color 0.3s;
     flex-shrink: 0;
     white-space: nowrap;
+    -webkit-user-drag: none;
+    user-select: none;
 }
 
 .tab_button:hover {
