@@ -47,6 +47,13 @@
     color: var(--hover);
 }
 
+.header-button span.header-button__shortcut {
+    margin-left: auto;
+    padding-left: 24px;
+    font-size: 13px;
+    opacity: 0.6;
+}
+
 .header-button:hover img {
     filter: drop-shadow(0 0 0 var(--hover-secondary));
 }

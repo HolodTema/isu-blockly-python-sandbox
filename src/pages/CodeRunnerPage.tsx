@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Header } from '../widgets/Header/Header';
 import { SideConsoleBar } from '../widgets/SideConsoleBar/SideConsoleBar';
 import { LoadScreen } from '../widgets/LoadScreen/LoadScreen';
@@ -8,6 +8,7 @@ import { useDebugger } from '../features/Debugger/useDebugger';
 import { pickProjectFile, readProjectFile, saveProjectToFile } from '../features/Project/projectFile';
 import { useToast } from '../shared/ui/ToastProvider';
 import type { BlocklyCanvasHandle, GeneratedCode } from '../shared/ui/BlocklyCanvas';
+import { useNewProject } from '../features/NewProject/useNewProject.ts';
 
 export function CodeRunnerPage() {
     const toast = useToast();
@@ -18,6 +19,7 @@ export function CodeRunnerPage() {
     const blocklyRef = useRef<BlocklyCanvasHandle | null>(null);
     const blocklyStateRef = useRef<object>({});
     const [isCodeHidden, setIsCodeHidden] = useState(false);
+    const { createNewProject } = useNewProject();
 
     const handleCodeChange = useCallback((generated: GeneratedCode) => {
         setCode(generated);
@@ -72,6 +74,27 @@ export function CodeRunnerPage() {
         }
     }, [toast]);
 
+    // event.code, а не event.key: key зависит от раскладки (в русской Ctrl+S даёт 'ы').
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.ctrlKey && !event.altKey && event.code === 'KeyS') {
+                event.preventDefault();
+                handleSaveProject();
+            } else if (event.ctrlKey && !event.altKey && event.code === 'KeyO') {
+                event.preventDefault();
+                handleOpenProject();
+            } else if (event.altKey && !event.ctrlKey && event.code === 'KeyN') {
+                event.preventDefault();
+                createNewProject();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [handleSaveProject, handleOpenProject, createNewProject]);
+
     const handleStopExecution = useCallback(() => {
         if (debug.isDebugging) {
             debug.stopDebug();
@@ -89,6 +112,7 @@ export function CodeRunnerPage() {
                 onStopExecution={handleStopExecution}
                 onSaveProject={handleSaveProject}
                 onOpenProject={handleOpenProject}
+                onNewProject={createNewProject}
                 onToggleCode={() => setIsCodeHidden((prev) => !prev)}
                 onDebugCode={handleDebug}
                 isRunning={isRunning}

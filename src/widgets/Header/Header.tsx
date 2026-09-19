@@ -1,7 +1,6 @@
 import {HeaderButton} from './HeaderButton'
 import {ExecutionStatus} from './ExecutionStatus'
-import React, {Fragment, useState} from 'react'
-import {useNewProject} from '../../features/NewProject/useNewProject'
+import {Fragment, useState} from 'react'
 
 import './Header.css'
 
@@ -19,6 +18,7 @@ interface HeaderProps {
     onStopExecution: () => void;
     onSaveProject: () => void;
     onOpenProject: () => void;
+    onNewProject: () => void;
     onToggleCode: () => void;
     onDebugCode: () => void;
     isRunning: boolean;
@@ -31,6 +31,7 @@ export function Header({
     onStopExecution,
     onSaveProject,
     onOpenProject,
+    onNewProject,
     onToggleCode,
     onDebugCode,
     isRunning,
@@ -40,9 +41,9 @@ export function Header({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const menuItems = [
-        { text: 'Сохранить', icon: icSaveProject, onClick: onSaveProject },
-        { text: 'Открыть', icon: icOpenProject, onClick: onOpenProject },
-        { text: 'Создать проект', icon: icFolders, onClick: useNewProject().createNewProject }
+        { text: 'Открыть', icon: icOpenProject, onClick: onOpenProject, shortcut: 'Ctrl+O' },
+        { text: 'Создать проект', icon: icFolders, onClick: onNewProject, shortcut: 'Alt+N' },
+        { text: 'Сохранить', icon: icSaveProject, onClick: onSaveProject, shortcut: 'Ctrl+S' },
     ];
 
     return (
@@ -64,6 +65,7 @@ export function Header({
                                     <HeaderButton
                                         img={item.icon}
                                         text={item.text}
+                                        shortcut={item.shortcut}
                                         onClick={() => {
                                             item.onClick();
                                             setIsMenuOpen(false);
