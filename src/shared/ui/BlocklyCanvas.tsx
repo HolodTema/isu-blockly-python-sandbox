@@ -57,11 +57,6 @@ function generate(generator: PythonGenerator, ws: Blockly.WorkspaceSvg, startBlo
   return generator.finish(code)?.trim() ?? '';
 }
 
-function clearWorkspace(ws: Blockly.WorkspaceSvg): void {
-  ws.clear();
-  ws.clearUndo();
-}
-
 export const BlocklyCanvas = forwardRef<BlocklyCanvasHandle, Props>(
   ({ onStateChange, onCodeChange }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
