@@ -47,6 +47,13 @@
     color: var(--hover);
 }
 
+.header-button span.header-button__shortcut {
+    margin-left: auto;
+    padding-left: 24px;
+    font-size: 13px;
+    opacity: 0.6;
+}
+
 .header-button:hover img {
     filter: drop-shadow(0 0 0 var(--hover-secondary));
 }
@@ -55,4 +62,34 @@
     display: inline-block;
     height: 16px;
     width: 16px;
+}
+
+.header_menu {
+    position: relative;
+}
+
+.header_menu__dropdown {
+    position: absolute;
+    top: calc(100% + 5px); 
+    z-index: 1000;        
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    padding: 4px 0;
+    background-color: var(--main-gr);
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.header_menu__dropdown .header-button {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 16px;
+    justify-content: flex-start;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.header_menu__dropdown .header-button:hover {
+    background-color: rgba(0, 0, 0, 0.15);
 }

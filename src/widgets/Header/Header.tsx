@@ -1,6 +1,6 @@
 import {HeaderButton} from './HeaderButton'
 import {ExecutionStatus} from './ExecutionStatus'
-
+import {Fragment, useState} from 'react'
 
 import './Header.css'
 
@@ -11,12 +11,14 @@ import icRunCode from '../../shared/assets/ic_run_code.svg'
 import icDebugCode from '../../shared/assets/ic_debug_code.svg'
 import icExpandLeft from '../../shared/assets/ic_expand_left.svg'
 import icExpandRight from '../../shared/assets/ic_expand_right.svg'
+import icFolders from '../../shared/assets/ic_folders.svg'
 
 interface HeaderProps {
     onRunCode: () => void;
     onStopExecution: () => void;
     onSaveProject: () => void;
     onOpenProject: () => void;
+    onNewProject: () => void;
     onToggleCode: () => void;
     onDebugCode: () => void;
     isRunning: boolean;
@@ -29,22 +31,56 @@ export function Header({
     onStopExecution,
     onSaveProject,
     onOpenProject,
+    onNewProject,
     onToggleCode,
     onDebugCode,
     isRunning,
     isDebugging,
     isCodeHidden
 }: HeaderProps) {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const menuItems = [
+        { text: 'Открыть', icon: icOpenProject, onClick: onOpenProject, shortcut: 'Ctrl+O' },
+        { text: 'Создать проект', icon: icFolders, onClick: onNewProject, shortcut: 'Alt+N' },
+        { text: 'Сохранить', icon: icSaveProject, onClick: onSaveProject, shortcut: 'Ctrl+S' },
+    ];
+
     return (
         <div className='header_container'>
             <div className='header_container__left'>
-                <HeaderButton img={logo} onClick={() => {
-                }}></HeaderButton>
-                <HeaderButton img={icSaveProject} text="Сохранить" onClick={onSaveProject}></HeaderButton>
-                <HeaderButton img={icOpenProject} text="Открыть" onClick={onOpenProject}></HeaderButton>
-                <HeaderButton img={icRunCode} text="Запуск" onClick={onRunCode}></HeaderButton>
-                <HeaderButton img={icDebugCode} text="Отладка" onClick={onDebugCode}></HeaderButton>
+                <HeaderButton img={logo} onClick={() => {}} />
+
+                <div className='header_menu'>
+                    <HeaderButton
+                        img={icFolders}
+                        text="Проекты"
+                        onClick={() => setIsMenuOpen(prev => !prev)}
+                    />
+
+                    {isMenuOpen && (
+                        <div className='header_menu__dropdown'>
+                            {menuItems.map(item => (
+                                <Fragment key={item.text}>
+                                    <HeaderButton
+                                        img={item.icon}
+                                        text={item.text}
+                                        shortcut={item.shortcut}
+                                        onClick={() => {
+                                            item.onClick();
+                                            setIsMenuOpen(false);
+                                        }}
+                                    />
+                                </Fragment>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <HeaderButton img={icRunCode} text="Запуск" onClick={onRunCode} />
+                <HeaderButton img={icDebugCode} text="Отладка" onClick={onDebugCode} />
             </div>
+
             <div className='header_container__right'>
                 <ExecutionStatus
                     isRunning={isRunning || isDebugging}
@@ -59,6 +95,5 @@ export function Header({
                 />
             </div>
         </div>
-
     );
 }

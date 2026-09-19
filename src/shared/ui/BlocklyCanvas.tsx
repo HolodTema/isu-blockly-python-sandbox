@@ -21,7 +21,7 @@ export interface BlocklyCanvasHandle {
   loadState: (state: object) => void;
 }
 
-function createStartBlock(ws: Blockly.WorkspaceSvg): void {
+export function createStartBlock(ws: Blockly.WorkspaceSvg): void {
   const startBlock = ws.newBlock('start_block');
   startBlock.initSvg();
   startBlock.render();
@@ -29,6 +29,8 @@ function createStartBlock(ws: Blockly.WorkspaceSvg): void {
   startBlock.setDeletable(false);
   startBlock.setMovable(false);
 }
+
+
 
 interface Props {
   onStateChange?: (state: object) => void;
@@ -53,6 +55,11 @@ function generate(generator: PythonGenerator, ws: Blockly.WorkspaceSvg, startBlo
   generator.init(ws);
   const code = generator.blockToCode(startBlock) as string;
   return generator.finish(code)?.trim() ?? '';
+}
+
+function clearWorkspace(ws: Blockly.WorkspaceSvg): void {
+  ws.clear();
+  ws.clearUndo();
 }
 
 export const BlocklyCanvas = forwardRef<BlocklyCanvasHandle, Props>(
