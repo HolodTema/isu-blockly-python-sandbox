@@ -1,6 +1,7 @@
 import {HeaderButton} from './HeaderButton'
 import {ExecutionStatus} from './ExecutionStatus'
 import React, {Fragment, useState} from 'react'
+import {useNewProject} from '../../features/NewProject/useNewProject'
 
 import './Header.css'
 
@@ -41,7 +42,7 @@ export function Header({
     const menuItems = [
         { text: 'Сохранить', icon: icSaveProject, onClick: onSaveProject },
         { text: 'Открыть', icon: icOpenProject, onClick: onOpenProject },
-        { text: 'Создать проект', icon: icFolders, onClick: () => {} }
+        { text: 'Создать проект', icon: icFolders, onClick: useNewProject().createNewProject }
     ];
 
     return (
