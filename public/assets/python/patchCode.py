@@ -1,8 +1,10 @@
 import pandas as pd
 import requests
+import sys
+import builtins
 from io import StringIO
 
-_PROXY_PREFIX = "http://130.49.175.150:8080/"
+_PROXY_PREFIX = "https://proxy.codechef.ru/"
 
 if not hasattr(pd, '_PATCH_APPLIED'):
     _original_read_html = pd.read_html
@@ -47,9 +49,20 @@ if not hasattr(pd, '_PATCH_APPLIED'):
         url = _ensure_proxy(url)
         return _original_request(method, url, *args, **kwargs)
 
+    def _patched_input(prompt=""):
+        if prompt:
+            print(prompt, end="", flush=True)
+        line = sys.stdin.readline()
+        if line == "":
+            raise EOFError("EOF when reading a line")
+        value = line.rstrip("\n")
+        print(value, flush=True)
+        return value
+
     pd.read_html = _patched_read_html
     pd.read_json = _patched_read_json
     pd.read_csv = _patched_read_csv
     requests.request = _patched_request
+    builtins.input = _patched_input
 
     pd._PATCH_APPLIED = True

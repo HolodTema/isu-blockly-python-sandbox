@@ -25,7 +25,7 @@ export function useCodeRunner() {
         };
     }, []);
 
-    const runCode = useCallback(async (code: string, inputFilenames: string[] = []) => {
+    const runCode = useCallback(async (code: string, inputFilenames: string[] = [], stdinText: string = '') => {
         const client = clientRef.current;
         if (!client) return;
 
@@ -37,7 +37,7 @@ export function useCodeRunner() {
         setOutput("");
         setIsRunning(true);
         try {
-            await client.runCode(code, inputFilenames);
+            await client.runCode(code, inputFilenames, stdinText);
         } catch (e) {
             setOutput((prev) => prev + `\nОшибка выполнения: ${(e as Error).message}\n`);
         } finally {

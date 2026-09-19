@@ -10,6 +10,7 @@ import type { RefObject } from 'react'
 import type { useInputOutputFiles } from '../../features/Files/useInputOutputFiles.ts'
 import type { useDebugger } from '../../features/Debugger/useDebugger'
 import { breakpointGutter, activeLineHighlight } from '../../shared/ui/breakpointGutter'
+import { useHorizontalDragScroll } from "../../shared/lib/useHorizontalDragScroll.ts";
 
 type InputOutputFilesApi = ReturnType<typeof useInputOutputFiles>
 type DebuggerApi = ReturnType<typeof useDebugger>
@@ -28,14 +29,29 @@ interface SideConsoleBarProps {
     inputOutputFiles: InputOutputFilesApi;
     isCodeHidden?: boolean;
     debug: DebuggerApi;
+    stdinText: string,
+    onStdinTextChange: (value: string) => void;
 }
 
-export function SideConsoleBar({ output, codeToShow, onCodeChange, onStateChange, blocklyRef, inputOutputFiles, isCodeHidden, debug }: SideConsoleBarProps){
+export function SideConsoleBar({
+    output,
+    codeToShow,
+    onCodeChange,
+    onStateChange,
+    blocklyRef,
+    inputOutputFiles,
+    isCodeHidden,
+    debug,
+    stdinText,
+    onStdinTextChange
+}: SideConsoleBarProps){
     const [activeTab, setActiveTab] = useState<CodeOutputTab>(CodeOutputTab.Output);
     const [isOutputExpanded, setIsOutputExpanded] = useState(true);
     const inputFileRef = useRef<HTMLInputElement>(null);
 
     const { refreshOutputFiles } = inputOutputFiles;
+
+    const { elementRef: tabBarRef, onPointerDown: ontabBarPointerDown, wasDragged: wasTabBarDragged } = useHorizontalDragScroll<HTMLDivElement>();
 
     // Список итоговых файлов обновляем при каждом открытии вкладки: программа
     // могла создать новые файлы с прошлого раза.
@@ -115,13 +131,22 @@ export function SideConsoleBar({ output, codeToShow, onCodeChange, onStateChange
                     alt={isOutputExpanded ? 'Свернуть вывод' : 'Развернуть вывод'}
                     onClick={() => setIsOutputExpanded((prev) => !prev)}
                 />
-                <div id="code_output_tab_bar">
+                <div
+                    id="code_output_tab_bar"
+                    ref={tabBarRef}
+                    onPointerDown={ontabBarPointerDown}
+                >
                     {(Object.keys(CODE_OUTPUT_TAB_LABELS) as CodeOutputTab[]).map((tab) => (
                         <button
                             key={tab}
                             className={tab === activeTab ? 'tab_button active' : 'tab_button'}
                             data-tab={tab}
-                            onClick={() => setActiveTab(tab)}
+                            onClick={() => {
+                                if (wasTabBarDragged()) {
+                                    return;
+                                }
+                                setActiveTab(tab);
+                            }}
                         >
                             {CODE_OUTPUT_TAB_LABELS[tab]}
                         </button>
@@ -198,6 +223,15 @@ export function SideConsoleBar({ output, codeToShow, onCodeChange, onStateChange
                     )}
                 </div>
                 <div id="output_files_preview">{inputOutputFiles.selectedOutputFilePreviewText}</div>
+            </div>
+            <div className={activeTab === CodeOutputTab.Input ? 'tab_content tab_content_input active' : 'tab_content tab_content_input'}>
+                <textarea
+                    className="stdin_textarea"
+                    value={stdinText}
+                    onChange={(e) => onStdinTextChange(e.target.value)}
+                    placeholder="Введите строки для блока ввода. Каждая строка будет подана в python-функцию input()"
+                    spellCheck={false}
+                />
             </div>
         </div>
 

@@ -19,7 +19,11 @@ export function CodeRunnerPage() {
     const blocklyRef = useRef<BlocklyCanvasHandle | null>(null);
     const blocklyStateRef = useRef<object>({});
     const [isCodeHidden, setIsCodeHidden] = useState(false);
+
     const { createNewProject } = useNewProject();
+
+    const [stdinText, setStdinText] = useState('');
+
 
     const handleCodeChange = useCallback((generated: GeneratedCode) => {
         setCode(generated);
@@ -39,9 +43,9 @@ export function CodeRunnerPage() {
     // Программа могла создать файлы, поэтому список обновляем сразу после
     // завершения запуска - иначе он обновится только при смене вкладки.
     const handleRun = useCallback(async () => {
-        await runCode(code.toLaunch, inputOutputFiles.inputFilenames);
+        await runCode(code.toLaunch, inputOutputFiles.inputFilenames, stdinText);
         await inputOutputFiles.refreshOutputFiles();
-    }, [runCode, code.toLaunch, inputOutputFiles]);
+    }, [runCode, code.toLaunch, inputOutputFiles, stdinText]);
 
     const handleDebug = useCallback(async () => {
         if (code.toLaunch.trim().length === 0) {
@@ -53,9 +57,9 @@ export function CodeRunnerPage() {
             return;
         }
         clearCodeOutput();
-        await debug.startDebug(code.toLaunch, inputOutputFiles.inputFilenames);
+        await debug.startDebug(code.toLaunch, inputOutputFiles.inputFilenames, stdinText);
         await inputOutputFiles.refreshOutputFiles();
-    }, [debug, code.toLaunch, inputOutputFiles, toast, clearCodeOutput]);
+    }, [debug, code.toLaunch, inputOutputFiles, toast, clearCodeOutput, stdinText]);
 
     const handleOpenProject = useCallback(async () => {
         const file = await pickProjectFile();
@@ -128,6 +132,8 @@ export function CodeRunnerPage() {
                 inputOutputFiles={inputOutputFiles}
                 isCodeHidden={isCodeHidden}
                 debug={debug}
+                stdinText={stdinText}
+                onStdinTextChange={setStdinText}
             />
         </>
     );

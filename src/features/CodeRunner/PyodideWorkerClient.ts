@@ -99,9 +99,9 @@ export class PyodideWorkerClient {
         return this.isInitComplete;
     }
 
-    async runCode(code: string, inputFilenames: string[] = []): Promise<unknown> {
+    async runCode(code: string, inputFilenames: string[] = [], stdinText: string = ''): Promise<unknown> {
         await this.ready;
-        return this.send(WorkerCommand.StartRunCode, { code, inputFilenames });
+        return this.send(WorkerCommand.StartRunCode, { code, inputFilenames, stdinText });
     }
 
     stopCode(): void {
@@ -122,10 +122,9 @@ export class PyodideWorkerClient {
         this.callbacks.onDebugPaused = handler;
     }
 
-    async debugCode(code: string, breakpoints: number[], inputFilenames: string[] = []): Promise<unknown> {
+    async debugCode(code: string, breakpoints: number[], inputFilenames: string[] = [], stdinText: string = ''): Promise<unknown> {
         await this.ready;
-        console.log("pyodideWorkerClient.debugCode()");
-        return this.send(WorkerCommand.StartDebugCode, { code, breakpoints, inputFilenames });
+        return this.send(WorkerCommand.StartDebugCode, { code, breakpoints, inputFilenames, stdinText });
     }
 
     readDebugSnapshot(): Promise<DebugSnapshot> {
