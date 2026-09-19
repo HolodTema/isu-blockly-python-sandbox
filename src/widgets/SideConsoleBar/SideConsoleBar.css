@@ -31,24 +31,54 @@ main.code-hidden #code_workspace {
 }
 
 #codeViewer {
-    flex-grow: 1;
-    height: 100%;
+    flex: 3 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 #codemirror_workspace {
-    height: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .cm-theme {
-    height: 100%;
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .cm-editor {
-    height: 100%;
+    flex: 1 1 0;
+    min-height: 0;
 }
 
 .cm-gutter {
     background-color: #1e1f22;
+}
+
+.cm-scroller::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.cm-scroller::-webkit-scrollbar-track {
+    background: transparent;
+}
+.cm-scroller::-webkit-scrollbar-thumb {
+    background: rgba(150, 150, 150, 0.4);
+    border-radius: 4px;
+}
+.cm-scroller::-webkit-scrollbar-thumb:hover {
+    background: rgba(150, 150, 150, 0.7);
+}
+
+.cm-scroller {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(150, 150, 150, 0.4) transparent;
 }
 
 .breakpoints-gutter {
@@ -152,7 +182,9 @@ main.code-hidden #code_workspace {
     display: flex;
     align-items: center;
     flex-direction: row;
-    align-content: center;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
 }
 
 #code_output_header_right {
@@ -189,6 +221,29 @@ main.code-hidden #code_workspace {
     display: flex;
     flex-direction: row;
     margin: 0 0 0 10px;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    user-select: none;
+    cursor: grab;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    -webkit-overflow-scrolling: touch;
+}
+
+#code_output_tab_bar::-webkit-scrollbar {
+    height: 4px;
+}
+#code_output_tab_bar::-webkit-scrollbar-track {
+    background: transparent;
+}
+#code_output_tab_bar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+#code_output_tab_bar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .tab_button {
@@ -201,6 +256,10 @@ main.code-hidden #code_workspace {
     cursor: pointer;
     border-bottom: 2px solid transparent;
     transition: color 0.3s, border-color 0.3s;
+    flex-shrink: 0;
+    white-space: nowrap;
+    -webkit-user-drag: none;
+    user-select: none;
 }
 
 .tab_button:hover {
@@ -359,13 +418,15 @@ main.code-hidden #code_workspace {
 }
 
 #code_output {
+    display: flex;
+    flex: 2 1 0;
+    min-height: 0;
     background-color: black;
     color: white;
     padding: 5px;
     width: 100%;
     white-space: pre-wrap;
     overflow-y: auto;
-    display: flex;
     flex-direction: column;
 }
 
@@ -374,10 +435,44 @@ main.code-hidden #code_workspace {
     color: black;
 }
 
-.code_output_expanded {
-    height: 50%;
+#code_output.code_output_not_expanded {
+    flex: 0 0 auto;
+    height: 0;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
-.code_output_not_expanded {
-    height: 0;
+.tab_content_input.active {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 8px;
+    box-sizing: border-box;
 }
+
+.stdin_textarea {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    resize: none;
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 8px;
+    font-family: 'Cascadia Code', monospace;
+    font-size: 14px;
+    line-height: 1.4;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.stdin_textarea:focus {
+    border-color: var(--main-gr);
+}
+
+.stdin_textarea::placeholder {
+    color: #666;
+}
+
