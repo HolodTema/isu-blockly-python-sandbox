@@ -59,6 +59,7 @@ export function createTestContext(): TestContext {
             return workspace.newBlock(type);
         },
         generateCodeForBlock: (block) => {
+            generator.init(workspace);
             return blockGeneratedCodeToPlainString(generator.blockToCode(block));
         }
     };
