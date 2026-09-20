@@ -84,5 +84,5 @@ export function connectUsingStatement(
     childBlock: Blockly.Block,
     statementName: string
 ): void {
-    parentBlcok.getInput(statementName)!.connection!.connect(childBlock.previousConnection);
+    parentBlock.getInput(statementName)!.connection!.connect(childBlock.previousConnection!);
 }
