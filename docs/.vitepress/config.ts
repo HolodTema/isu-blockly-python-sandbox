@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: "CodeChef TypeDoc + Vitepress Docs",
-  description: "CodeChef project documentation",
+  title: "CodeChef docs",
+  description: "CodeChef is React-SPA project for visual programming using blocks and python-codegeneration",
   themeConfig: {
     nav: [
       { text: 'Main', link: '/' },

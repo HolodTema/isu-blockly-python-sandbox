@@ -13,6 +13,20 @@ import icExpandLeft from '../../shared/assets/ic_expand_left.svg'
 import icExpandRight from '../../shared/assets/ic_expand_right.svg'
 import icFolders from '../../shared/assets/ic_folders.svg'
 
+/**
+ * Top bar of the application with main actions and execution status.
+ *
+ * Layout is split into two parts:
+ * - left side: logo, "Проекты" dropdown and main action buttons (run, debug);
+ * - right side: execution status and code panel toggle.
+ *
+ * Project-related actions (open, new, save) are hidden inside dropdown menu
+ * to save horizontal space on narrow screens. Dropdown opens on click and
+ * closes automatically after any action inside is triggered.
+ *
+ * Component is controlled: it does not know about code, workspace or worker.
+ * Parent passes callbacks and receives user intents.
+ */
 interface HeaderProps {
     onRunCode: () => void;
     onStopExecution: () => void;
@@ -26,6 +40,23 @@ interface HeaderProps {
     isCodeHidden: boolean;
 }
 
+/**
+ * @example
+ * ```tsx
+ * <Header
+ *     onRunCode={handleRun}
+ *     onStopExecution={handleStop}
+ *     onSaveProject={handleSave}
+ *     onOpenProject={handleOpen}
+ *     onNewProject={handleNew}
+ *     onToggleCode={() => setIsCodeHidden(p => !p)}
+ *     onDebugCode={handleDebug}
+ *     isRunning={isRunning}
+ *     isDebugging={debug.isDebugging}
+ *     isCodeHidden={isCodeHidden}
+ * />
+ * ```
+ */
 export function Header({
     onRunCode,
     onStopExecution,
