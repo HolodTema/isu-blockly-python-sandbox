@@ -2,6 +2,28 @@ import { useCallback, useRef, useState } from "react";
 import type { RefObject } from "react";
 import type { PyodideWorkerClient } from "../CodeRunner/PyodideWorkerClient.ts";
 
+/**
+ * Hook which manages input and output files of worker filesystem.
+ *
+ * Input files are uploaded by user and stay in worker between runs. Output
+ * files are produced by Python code and are shown in "Итоговые файлы" tab.
+ * The hook keeps track of which files are input, so they are not shown as
+ * output by mistake.
+ *
+ * @param clientRef - Ref to worker client. If `null`, all operations silently
+ *   do nothing — this happens before worker is initialized.
+ *
+ * @returns
+ * - `inputFilenames` — names of uploaded input files in insertion order.
+ * - `addInputFile(file)` — uploads file, returns result object with `ok` flag.
+ * - `removeInputFile(name)` — deletes file from worker and from list.
+ * - `outputFilenames` — names of files produced by program, without inputs.
+ * - `selectedOutputFile` — name of file which is currently previewed.
+ * - `selectedOutputFilePreviewText` — content of selected output file.
+ * - `refreshOutputFiles()` — re-reads file list from worker.
+ * - `previewOutputFile(name)` — reads file content into preview.
+ * - `downloadOutputFilesZip()` — asks worker to pack all output into zip.
+ */
 export function useInputOutputFiles(clientRef: RefObject<PyodideWorkerClient | null>) {
     const [inputFilenames, setInputFilenames] = useState<string[]>([]);
     const [outputFilenames, setOutputFilenames] = useState<string[]>([]);

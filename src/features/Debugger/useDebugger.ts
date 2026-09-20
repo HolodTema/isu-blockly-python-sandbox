@@ -2,6 +2,32 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import type { PyodideWorkerClient } from "../CodeRunner/PyodideWorkerClient.ts";
 
+/**
+ * Hook which manages debug session state: breakpoints, current line and
+ * variables snapshot.
+ *
+ * Uses same worker client as {@link useCodeRunner}, so both hooks should be
+ * created in same component (or one should receive `clientRef` from another).
+ * This is important because only one debug session can be active at same time.
+ *
+ * The hook sets debug pause handler on the client. When worker hits breakpoint,
+ * handler reads snapshot from worker filesystem and updates hook state. UI can
+ * then show current line, variables and switch to debug tab.
+ *
+ * @param clientRef - Ref to worker client, usually taken from `useCodeRunner`.
+ *
+ * @returns
+ * - `isDebugging` — `true` while debug session is active (including pause).
+ * - `isPaused` — `true` when execution is stopped at breakpoint.
+ * - `currentLine` — 1-based line number where execution is paused, or `null`.
+ * - `variables` — map of variable names to their `repr()` values at pause.
+ * - `breakpoints` — sorted list of 1-based line numbers.
+ * - `toggleBreakpoint(line)` — adds or removes breakpoint.
+ * - `startDebug(code, inputFilenames?, stdinText?)` — starts debug session.
+ * - `debugContinue()` — resumes until next breakpoint.
+ * - `debugStep()` — moves to next line.
+ * - `stopDebug()` — stops debug session from inside.
+ */
 export function useDebugger(clientRef: RefObject<PyodideWorkerClient | null>) {
     const [isDebugging, setIsDebugging] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
