@@ -1,6 +1,28 @@
+/**
+ * Code generators for base blocks: start, conditions, loops, print, input,
+ * variables assignment and text join.
+ *
+ * Every generator produces Python code as string or as `[code, order]` tuple.
+ * Handlers are registered on given generator instance, so multiple generators
+ * (for example "execution" and "display") can live in same time without
+ * conflicts.
+ */
+
 import {PythonGenerator, Order} from "blockly/python";
 import * as Blockly from "blockly";
 
+/**
+ * Registers Python generators for all base blocks on given generator instance.
+ *
+ * Should be called once before first use of generator. If called again on same
+ * instance, handlers are just overwritten with new ones.
+ *
+ * @param generator - Python generator which will get new block handlers.
+ * @param mode - Current mode of generator. In "execution" mode some blocks can
+ *   generate extra code (for example stop-check inside loops), in "display"
+ *   mode code is only for preview and should stay readable. Right now both
+ *   modes produce same result, parameter is reserved for future use.
+ */
 export function initBaseBlocks(generator: PythonGenerator, mode: "display"|"execution") {
     generator.forBlock["start_block"] = function(block: Blockly.Block) {
         return "";
@@ -28,6 +50,14 @@ export function initBaseBlocks(generator: PythonGenerator, mode: "display"|"exec
         return `if ${cond1}:\n${then1}elif ${cond2}:\n${then2}else:\n${elseCode}\n`;
     };
 
+    /**
+     * Joins two text values into one string literal.
+     *
+     * Both operands come from text blocks as Python string literals with quotes
+     * already around them. We strip quotes from both sides, concatenate, and
+     * wrap result back in quotes. Without stripping result would be
+     * `"Hello""World"` which is not valid Python.
+     */
     generator.forBlock["text_join_block"] = function(block: Blockly.Block): [string, Order] {
         let textLeft = generator.valueToCode(block, "TEXT_LEFT", Order.NONE) || "";
         if (textLeft.length > 0) {
@@ -57,6 +87,12 @@ export function initBaseBlocks(generator: PythonGenerator, mode: "display"|"exec
         return [`input(${text})`, Order.FUNCTION_CALL];
     };
 
+    /**
+     * Generates `for` loop over `range(start, stop, step)`.
+     *
+     * If user did not attach any block inside "DO", `pass` is generated to keep
+     * Python syntax valid.
+     */
     generator.forBlock["custom_for_block"] = function(block: Blockly.Block): string {
         const varId = block.getFieldValue("VAR_COUNTER");
         const varName = generator.getVariableName(varId) || "i";
@@ -72,6 +108,10 @@ export function initBaseBlocks(generator: PythonGenerator, mode: "display"|"exec
         return `for ${varName} in range(${start}, ${stop}, ${step}):\n${body}\n`;
     };
 
+    /**
+     * Assigns value to variable. Uses variable model from workspace to get real
+     * name, because field value stores only variable id.
+     */
     generator.forBlock["custom_variables_set_block"] = function(block: Blockly.Block): string {
         const varId = block.getFieldValue("VAR_NAME");
         const varModel = block.workspace.getVariableMap().getVariableById(varId);
