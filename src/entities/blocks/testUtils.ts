@@ -71,6 +71,16 @@ export function createTextBlock(testContext: TestContext, text: string): Blockly
     return block;
 }
 
+export function createVariableGetBlock(
+    testContext: TestContext,
+    name: string,
+): Blockly.Block {
+    const variable = testContext.workspace.getVariableMap().createVariable(name);
+    const block = testContext.createBlockOfType('variables_get');
+    block.setFieldValue(variable.getId(), 'VAR');
+    return block;
+}
+
 export function connectUsingInputValue(
     parentBlock: Blockly.Block,
     childBlock: Blockly.Block,

@@ -36,13 +36,13 @@ export function initPandasBlocks(generator: PythonGenerator, mode: "display"|"ex
     };
 
     generator.forBlock["pandas_head_n_block"] = function(block: Blockly.Block): [string, Order] {
-        const df = generator.valueToCode(block, "DF", Order.ATOMIC) || '""';
+        const df = generator.valueToCode(block, "PandasDataFrame", Order.ATOMIC) || 'df';
         const n = generator.valueToCode(block, "N", Order.ATOMIC) || '5';
         return [`${df}.head(${n})`, Order.FUNCTION_CALL];
     };
 
     generator.forBlock["pandas_tail_n_block"] = function(block: Blockly.Block): [string, Order] {
-        const df = generator.valueToCode(block, "DF", Order.ATOMIC) || '""';
+        const df = generator.valueToCode(block, "PandasDataFrame", Order.ATOMIC) || 'df';
         const n = generator.valueToCode(block, "N", Order.ATOMIC) || '5';
         return [`${df}.tail(${n})`, Order.FUNCTION_CALL];
     };
