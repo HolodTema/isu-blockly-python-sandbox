@@ -5,7 +5,7 @@ import {useHorizontalDragScroll} from './useHorizontalDragScroll';
 
 type HookApi = ReturnType<typeof useHorizontalDragScroll<HTMLDivElement>>;
 
-function ScrollableTestComponent({onReady}: { onReady: (api: Api) => void }) {
+function ScrollableTestComponent({onReady}: { onReady: (api: HookApi) => void }) {
     const api = useHorizontalDragScroll<HTMLDivElement>();
     useEffect(() => {
         onReady(api);
