@@ -1,0 +1,17 @@
+{
+  "entryPoints": ["src"],
+  "entryPointStrategy": "expand",
+  "out": "docs/api",
+  "plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "src/worker/**/*",
+    "src/test/**/*"
+  ],
+  "readme": "none",
+  "githubPages": false,
+  "excludePrivate": true,
+  "excludeInternal": true
+}
+
