@@ -13,8 +13,17 @@ program from Blockly blocks, application generates Python code from block graph,
 and then runs this code in browser using Pyodide (Python compiled to WebAssembly).
 
 There is no backend server for code execution. All Python code runs inside a
-Web Worker in user's browser. Only external HTTP requests from user programs go
-through a CORS proxy which is set up separately.
+Web Worker in user's browser. The only external service which the application
+depends on is a CORS proxy — it is needed because browsers block direct
+cross-origin requests from page scripts.
+
+The diagram below shows the system from outside: who uses it, where it is
+hosted, and which external services it talks to. The SPA itself runs in the
+user's browser, while nginx and CORS proxy share the same VDS. All HTTP
+requests from Python code go through the proxy, because browsers do not allow
+arbitrary cross-origin calls from a page.
+
+![Context diagram](../diagrams/context.svg)
 
 Main technologies:
 
@@ -24,6 +33,20 @@ Main technologies:
 - **Pyodide** for running Python in browser;
 - **Web Worker** to keep Pyodide away from main thread;
 - **Vite** as bundler and dev server.
+
+## User scenarios
+
+The application has a single role: any visitor can use any feature without
+registration or authentication. There is no admin panel, no role separation,
+no per-user data on server. All state lives in browser and is either thrown
+away on page reload or saved by user as `.chef` file.
+
+The diagram below lists all major user scenarios. They all start from the same
+actor and have no preconditions except "application is loaded". This is
+intentional — the tool is designed to be opened and used immediately, without
+onboarding flow.
+
+![Use cases](../diagrams/use-cases.svg)
 
 ## Layer structure (Feature-Sliced Design)
 
@@ -138,31 +161,40 @@ Client is created once inside `useCodeRunner` hook and then shared with other
 hooks through ref. This way single worker serves code runner, debugger and file
 manager at the same time.
 
-### Diagram: PyodideWorkerClient - PyodideWorker debug-code pipeline
+### Run pipeline
 
-The diagram below shows a full debug cycle: starting a session, pausing at a
-breakpoint, reading the variable snapshot, and then continuing until the next
-pause, the end of the program, or an explicit stop. Participants match the
-actual module names in code — `PyodideWorkerClient` is the main-thread wrapper,
-`PyodideWorker` is the Web Worker script, and `Python runtime` is the Pyodide
-interpreter inside the worker.
+The diagram below shows what happens when user runs a program. There are two
+kinds of messages here. A command with `id` becomes a promise on the client
+side: `runCode()` returns a promise which resolves when worker answers with
+same `id`. But stdout chunks are sent **without** `id` — they are not responses
+to any specific request, they just arrive while code is executing. The client
+routes them to the `onStdout` callback, not to a promise.
 
-Two types of messages are shown:
+This split is the core of the protocol: **request-response with `id`** vs
+**fire-and-forget without `id`**. Once you understand it, the rest of
+`PyodideWorkerClient` becomes obvious.
 
-- **Solid arrows with `{id, ...}` payloads** — promise-based requests. The
-  client keeps a map of pending promises keyed by `id`, and the worker's reply
-  with the same `id` resolves or rejects the promise.
-- **Solid arrows with plain string payloads** — fire-and-forget events. The
-  worker (or Python code via `js.postMessage`) emits them without `id`, and
-  the client routes them to the matching callback (`onStdout`, `onDebugPaused`,
-  and so on).
+![Sequence diagram: run session](../diagrams/worker-run-sequence.svg)
 
-![Sequence diagram: debug session](/diagrams/worker-debug-sequence.svg)
+### Debug pipeline
 
-### Diagram: PyodideWorkerClient - PyodideWorker run-code pipeline
+Debug uses the same protocol, but adds one more channel. The diagram below
+shows why debug needs a separate callback `onDebugPaused` instead of just
+resolving the `debugCode` promise on pause.
 
+When execution hits a breakpoint, Python sends a message to the worker, and
+the worker forwards it to the client. This message has **no `id`** — it is not
+a response to any pending request. The `debugCode` promise is still pending at
+this moment: it will resolve only when debug session fully ends (program
+finished, user stopped, or exception raised). The pause event arrives in the
+middle of that pending request, so it has to go through a separate channel —
+the `onDebugPaused` callback.
 
-![Sequence diagram: run session](/diagrams/worker-run-sequence.svg)
+After user clicks "Continue", the client sends `DebugUserCommandContinue` via
+`notify` (no promise, no waiting). Worker resolves the `asyncio.Future` inside
+Python, and execution resumes until next breakpoint or end of program.
+
+![Sequence diagram: debug session](../diagrams/worker-debug-sequence.svg)
 
 ## Python code pipeline
 
@@ -255,13 +287,3 @@ Loading uses `Blockly.serialization.workspaces.load`. `start_block` is preserved
 as non-deletable and non-movable: if loaded state does not have one, it is
 created after load.
 
-## What is not covered here
-
-- Detailed API of every hook and component — see TSDoc comments in source code
-  and API Reference section.
-- CSS structure and layout — see CSS files and visual testing.
-- Deployment and infrastructure — see separate README for ops.
-
-If you want to add new block, start with "Adding a new block" guide (TODO).
-If you want to understand debug flow deeper, read `pyodideWorker.ts` and
-`debugPrepare.py` — they are heavily commented.
