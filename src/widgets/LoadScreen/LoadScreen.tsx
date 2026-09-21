@@ -35,7 +35,7 @@ interface LoadScreenProps {
  * Pointer events are disabled when hidden (`pointer-events: none` in CSS),
  * so splash screen does not block clicks after it becomes invisible but before
  * it is removed.
- * 
+ *
  * @example
  * ```tsx
  * const { isReady } = useCodeRunner();

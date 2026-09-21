@@ -1,5 +1,5 @@
 {
-  "entryPoints": ["src/shared", "src/entities", "src/features"],
+  "entryPoints": ["src/shared", "src/entities", "src/features", "src/worker"],
   "entryPointStrategy": "expand",
   "out": "docs/api",
   "plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
@@ -7,7 +7,6 @@
   "exclude": [
     "**/*.test.ts",
     "**/*.test.tsx",
-    "src/worker/**/*",
     "src/test/**/*"
   ],
   "readme": "none",

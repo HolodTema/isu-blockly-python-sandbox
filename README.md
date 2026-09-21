@@ -159,6 +159,8 @@ CORS proxy for HTTP requests runs separately and is available at
 
 ## Documentation
 
+You can read the docs at docs.codechef.com
+
 Full documentation is generated from two sources:
 
 - **API Reference** — from TSDoc comments in source code, using TypeDoc;
@@ -202,4 +204,6 @@ roundtrips, debug sessions and file operations.
 
 - **Production:** https://codechef.ru
 - **CORS proxy:** https://proxy.codechef.ru
+- **Docs:** https://docs.codechef.ru
+
 
