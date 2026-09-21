@@ -138,6 +138,32 @@ Client is created once inside `useCodeRunner` hook and then shared with other
 hooks through ref. This way single worker serves code runner, debugger and file
 manager at the same time.
 
+### Diagram: PyodideWorkerClient - PyodideWorker debug-code pipeline
+
+The diagram below shows a full debug cycle: starting a session, pausing at a
+breakpoint, reading the variable snapshot, and then continuing until the next
+pause, the end of the program, or an explicit stop. Participants match the
+actual module names in code — `PyodideWorkerClient` is the main-thread wrapper,
+`PyodideWorker` is the Web Worker script, and `Python runtime` is the Pyodide
+interpreter inside the worker.
+
+Two types of messages are shown:
+
+- **Solid arrows with `{id, ...}` payloads** — promise-based requests. The
+  client keeps a map of pending promises keyed by `id`, and the worker's reply
+  with the same `id` resolves or rejects the promise.
+- **Solid arrows with plain string payloads** — fire-and-forget events. The
+  worker (or Python code via `js.postMessage`) emits them without `id`, and
+  the client routes them to the matching callback (`onStdout`, `onDebugPaused`,
+  and so on).
+
+![Sequence diagram: debug session](/diagrams/worker-debug-sequence.svg)
+
+### Diagram: PyodideWorkerClient - PyodideWorker run-code pipeline
+
+
+![Sequence diagram: run session](/diagrams/worker-run-sequence.svg)
+
 ## Python code pipeline
 
 When user clicks "Run" or "Debug", Python code goes through several

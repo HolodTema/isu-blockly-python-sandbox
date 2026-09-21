@@ -1,0 +1,20 @@
+sequenceDiagram
+    autonumber
+    participant UI as React UI
+    participant C as PyodideWorkerClient
+    participant W as PyodideWorker
+    participant P as Python
+
+    Note over P,W: Debug adds a pause channel<br/>that is not a request-response.
+
+    UI->>C: debugCode(code, breakpoints)
+    C->>W: postMessage({id, StartDebugCode})
+    W->>P: runPythonAsync(code)
+
+    P->>W: js.postMessage("OnDebugFileCreated")
+    W->>C: postMessage(string) [no id]
+    C->>UI: onDebugPaused callback
+
+    UI->>C: debugContinue()
+    C->>W: notify(DebugUserCommandContinue)
+    W->>P: future.set_result(None)

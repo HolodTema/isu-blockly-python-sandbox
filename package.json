@@ -14,7 +14,8 @@
     "docs:gen": "typedoc",
     "docs:dev": "concurrently \"npm:docs:gen -- --watch\" \"vitepress dev docs\"",
     "docs:build": "npm run docs:gen && vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "docs:diagrams": "for f in docs/diagrams/*.mmd; do npx mmdc -i \"$f\" -o \"docs/diagrams/$(basename \"${f%.mmd}\").svg\"; done"
   },
   "dependencies": {
     "@codemirror/lang-python": "^6.2.1",
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@babel/core": "^7.29.7",
     "@eslint/js": "^10.0.1",
+    "@mermaid-js/mermaid-cli": "^11.17.0",
     "@rolldown/plugin-babel": "^0.2.3",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
