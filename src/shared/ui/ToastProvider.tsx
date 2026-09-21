@@ -20,13 +20,26 @@ const ToastContext = createContext<ToastApi | null>(null);
 
 const DEFAULT_DURATION_MS = 3000;
 
+/**
+ * Provides toast notifications for React tree inside.
+ *
+ * Wrap application root with this component and use {@link useToast} anywhere
+ * inside the tree to show messages. Component renders own container with fixed
+ * position. Toasts are stacked vertically and disappear automatically after
+ * some time.
+ *
+ * @example
+ * ```tsx
+ * <ToastProvider>
+ *   <App />
+ * </ToastProvider>
+ * ```
+ */
 export function ToastProvider({ children }: { children: ReactNode }) {
     const [toasts, setToasts] = useState<Toast[]>([]);
     const nextIdRef = useRef(0);
     const timersRef = useRef(new Map<number, ReturnType<typeof setTimeout>>());
 
-    // Сначала помечаем тост скрывающимся, чтобы отработала анимация ухода,
-    // и удаляем его уже по её окончании.
     const hide = useCallback((id: number) => {
         const timer = timersRef.current.get(id);
         if (timer !== undefined) {
@@ -72,10 +85,23 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     );
 }
 
+/**
+ * Returns toast API for showing info and error messages. Part of React ContextAPI
+ *
+ * Should be called only inside {@link ToastProvider}. If context is missing,
+ * throws error — this is intentional, because missing provider is a bug, not
+ * a valid fallback state.
+ *
+ * @returns
+ * - `showInfo(message, durationMs?)` — shows neutral toast. Default duration
+ *   is 3000 ms.
+ * - `showError(message, durationMs?)` — shows red toast. Default duration
+ *   is 3000 ms.
+ */
 export function useToast(): ToastApi {
     const api = useContext(ToastContext);
     if (!api) {
-        throw new Error('useToast используется вне ToastProvider');
+        throw new Error('useToast is used outside ToastProvider');
     }
     return api;
 }

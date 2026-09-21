@@ -2,6 +2,29 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { PyodideWorkerClient } from "./PyodideWorkerClient.ts";
 import { downloadBlob } from "../../shared/lib/download";
 
+/**
+ * Hook which manages code execution state and gives access to worker client.
+ *
+ * Creates `PyodideWorkerClient` on mount and disposes it on unmount. Because
+ * client lives inside hook, all components which need to talk to worker should
+ * get `clientRef` from this hook and pass it down — this way single worker is
+ * shared between code runner, debugger and file manager.
+ *
+ * @returns
+ * - `output` — accumulated stdout and error messages from worker.
+ * - `isReady` — `true` after Pyodide finished initialization.
+ * - `isRunning` — `true` while code is running (not debug).
+ * - `runCode(code, inputFilenames?, stdinText?)` — starts execution.
+ * - `stopCode()` — sends stop signal to worker.
+ * - `clearCodeOutput()` — wipes output without touching worker.
+ * - `clientRef` — ref to worker client, should be passed to other hooks.
+ *
+ * @example
+ * ```tsx
+ * const { output, runCode, clientRef } = useCodeRunner();
+ * const files = useInputOutputFiles(clientRef);
+ * ```
+ */
 export function useCodeRunner() {
     const [output, setOutput] = useState("");
     const [isReady, setIsReady] = useState(false);

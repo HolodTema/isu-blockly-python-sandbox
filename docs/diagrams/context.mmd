@@ -1,0 +1,25 @@
+flowchart LR
+    Student([Student])
+    Teacher([Teacher])
+
+    subgraph VDS["VDS (codechef.ru)"]
+        Nginx["nginx<br/>reverse proxy"]
+        Proxy["CORS-Proxy<br/>CORS-Anywhere"]
+    end
+
+    subgraph Browser["Student's browser"]
+        SPA["CodeChef SPA<br/>(React + Blockly + CodeMirror)"]
+        Worker["PyodideWorker<br/>(Web Worker)"]
+        Pyodide["Pyodide<br/>(WebAssembly runtime)"]
+    end
+
+    Target[(External HTTP services)]
+
+    Student -->|"opens the site"| Nginx
+    Teacher -->|"opens the site"| Nginx
+    Nginx -->|"serves static files"| SPA
+    SPA -->|"starts Python"| Worker
+    Worker -->|"executes code"| Pyodide
+    SPA -->|"HTTPS requests from Python"| Nginx
+    Nginx --> Proxy
+    Proxy -->|"bypasses CORS"| Target

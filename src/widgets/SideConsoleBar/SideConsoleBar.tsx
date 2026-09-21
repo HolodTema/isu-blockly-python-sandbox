@@ -33,6 +33,37 @@ interface SideConsoleBarProps {
     onStdinTextChange: (value: string) => void;
 }
 
+/**
+ * Right half of the application: Blockly workspace on the left, code editor
+ * and output panel on the right.
+ *
+ * Main responsibilities:
+ * - renders Blockly canvas through {@link BlocklyCanvas};
+ * - shows read-only code preview with breakpoint gutter;
+ * - renders output panel with four tabs: "Вывод", "Отладка", "Итоговые файлы",
+ *   "Ввод";
+ * - switches to debug tab automatically when execution pauses on breakpoint.
+ *
+ * Component is heavy and mostly presentational. Real state lives in hooks
+ * (`useInputOutputFiles`, `useDebugger`) which are passed from parent.
+ * Only local UI state (active tab, expanded output) is managed inside.
+ *
+ * @example
+ * ```tsx
+ * <SideConsoleBar
+ *     output={output}
+ *     codeToShow={code.toShow}
+ *     onCodeChange={handleCodeChange}
+ *     onStateChange={handleStateChange}
+ *     blocklyRef={blocklyRef}
+ *     inputOutputFiles={inputOutputFiles}
+ *     isCodeHidden={isCodeHidden}
+ *     debug={debug}
+ *     stdinText={stdinText}
+ *     onStdinTextChange={setStdinText}
+ * />
+ * ```
+ */
 export function SideConsoleBar({
     output,
     codeToShow,

@@ -1,3 +1,18 @@
+/**
+ * Web Worker which runs Python code through Pyodide.
+ *
+ * Lives in a separate thread to keep main thread responsive: Pyodide is heavy
+ * to load and Python code can run for a long time without blocking UI.
+ *
+ * The worker is created from main thread by `PyodideWorkerClient`. All
+ * communication goes through `postMessage` with the protocol described in
+ * `WorkerCommand` and `WorkerEvent`.
+ *
+ * Worker initialises Pyodide on first load, then stays alive and serves
+ * multiple run/debug sessions one after another. It does not reset between
+ * runs — only filesystem is cleaned before each run.
+ */
+
 import {WorkerCommand} from "./WorkerCommand";
 import {WorkerEvent} from "./WorkerEvent";
 
@@ -7,6 +22,14 @@ let currentRunTask: any | null = null;
 
 const STDOUT_FLUSH_INTERVAL_MS = 50;
 
+/**
+ * Buffers stdout chunks and flushes them to main thread periodically.
+ *
+ * Python code often prints one character at a time (for example in a loop),
+ * and sending a separate `postMessage` per character would be slow. Instead
+ * we accumulate text in a buffer and flush it every 50 ms. This keeps output
+ * live-looking while reducing message overhead.
+ */
 class WorkerStdout {
     private buffer: string = "";
     private flushTimerId: ReturnType<typeof setTimeout> | null = null;
@@ -41,6 +64,16 @@ sys.stdin = io.StringIO(${JSON.stringify(stdinText)})
     );
 }
 
+/**
+ * Loads Pyodide and installs required packages.
+ *
+ * Called once on worker start. After success, sends `InitComplete` event so
+ * main thread knows it can start sending commands.
+ *
+ * Packages installed: `requests`, `pandas`, `lxml`, `micropip`. Then
+ * `pyodideInit.py` runs, which installs `pyodide-http` and patches `requests`
+ * to work in browser environment.
+ */
 async function initPyodide(): Promise<void> {
     if (isInitComplete) return;
     try {
@@ -69,12 +102,24 @@ async function initPyodide(): Promise<void> {
     }
 }
 
+/**
+ * Patches `builtins.input` and `pandas` / `requests` for CORS proxy.
+ *
+ * Runs before every code execution. Actual patching happens in `patchCode.py`
+ * and is guarded by flags inside Python, so repeated calls are cheap.
+ */
 async function runPatchCode() {
     const response = await fetch("/assets/python/patchCode.py");
     const code = await response.text();
     await pyodide.runPythonAsync(code);
 }
 
+/**
+ * Reads `transformCodeToDebugReady.py` and applies it to the given code.
+ *
+ * The transformation inserts `await _check_breakpoint(N)` before every
+ * top-level statement, where N is the 1-based line number.
+ */
 async function getTransformedDebugReadyCode(originalCode: string): Promise<string> {
     const response: Response = await fetch("/assets/python/transformCodeToDebugReady.py");
     const script: string = await response.text();
@@ -82,6 +127,12 @@ async function getTransformedDebugReadyCode(originalCode: string): Promise<strin
     return pyodide.runPython(`_transformCodeToDebugReady(${JSON.stringify(originalCode)})`);
 }
 
+/**
+ * Reads `transformCodeToRunReady.py` and applies it to the given code.
+ *
+ * The transformation inserts `await _check_stop_run_code()` before every
+ * top-level statement, so user can stop long loops.
+ */
 async function getTransformedRunReadyCode(originalCode: string): Promise<string> {
     const script = await fetch("/assets/python/transformCodeToRunReady.py");
     const scriptText = await script.text();
@@ -93,6 +144,13 @@ _transform_code_to_run_ready(${JSON.stringify(originalCode)})
     );
 }
 
+/**
+ * Prepares debug state in Python: sets breakpoints and defines debug helpers.
+ *
+ * Runs `debugPrepare.py` which defines `_check_breakpoint` function. This
+ * function is later called from transformed code before each top-level
+ * statement.
+ */
 async function runDebugPrepareCode(breakpoints: number[]) {
     const response = await fetch("/assets/python/debugPrepare.py");
     const script = await response.text();
@@ -106,6 +164,13 @@ _debugger_state = {
     await pyodide.runPythonAsync(script);
 }
 
+/**
+ * Handles `StartRunCode` command: cleans filesystem, patches environment,
+ * transforms code and runs it.
+ *
+ * Sends `RunCodeDone` on success or `RunCodeCancelled` if user stopped
+ * execution. Errors are sent as `Error` event.
+ */
 async function handleRunCode(payload: { code: string; inputFilenames: string[]; stdinText: string }, id: number) {
     try {
         const { code, inputFilenames, stdinText } = payload;
@@ -197,6 +262,12 @@ async function handleReadOutputFile(filename: string, id: number) {
     }
 }
 
+/**
+ * Handles `StartDebugCode` command: same as `handleRunCode` but uses debug
+ * transformation and does not install stop-run check.
+ *
+ * Debug session ends with `DebugCodeDone` or `DebugCodeCancelled`.
+ */
 async function handleDebugCode(payload: { code: string; breakpoints: number[]; inputFilenames: string[], stdinText: string }, id: number) {
     console.log("pyodideWorker.handleDebugCode");
     try {
@@ -255,6 +326,13 @@ if _debugger_state['future'] is not None and not _debugger_state['future'].done(
     );
 }
 
+/**
+ * Handles `ReadDebugFile` command: reads `__debug_data.json` from filesystem
+ * and returns parsed snapshot.
+ *
+ * The file is created by `debugPrepare.py` each time execution pauses on a
+ * breakpoint.
+ */
 async function handleReadDebugFile(id: number) {
     try {
         const content = pyodide.FS.readFile('/home/pyodide/__debug_data.json', { encoding: 'utf8' });
@@ -265,6 +343,13 @@ async function handleReadDebugFile(id: number) {
     }
 }
 
+/**
+ * Removes all files from worker filesystem except input files.
+ *
+ * Called before each run. Internal files (starting with `__`) are also removed.
+ * This gives clean state between runs: old output files do not mix with new
+ * ones, and debug snapshots from previous session do not leak.
+ */
 async function cleanFilesystemBesidesInputFiles(inputFilenames: string[]): Promise<void> {
     const setInputFilenames = new Set(inputFilenames);
     const allFiles = pyodide.FS.readdir("/home/pyodide/")
@@ -280,6 +365,13 @@ async function cleanFilesystemBesidesInputFiles(inputFilenames: string[]): Promi
     }
 }
 
+/**
+ * Main message handler. Receives `{id, type, payload}` and dispatches to the
+ * matching `handle*` function based on `type`.
+ *
+ * Commands that expect a reply send it back with same `id`. Commands that do
+ * not (like stop signals) just execute and return.
+ */
 self.addEventListener('message', async (event: MessageEvent) => {
     const { id, type, payload } = event.data;
 
@@ -334,4 +426,6 @@ self.addEventListener('message', async (event: MessageEvent) => {
     }
 });
 
+// Start loading Pyodide immediately when worker is created. Main thread will
+// wait for `InitComplete` event before sending actual commands.
 initPyodide();

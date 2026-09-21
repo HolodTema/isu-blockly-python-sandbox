@@ -11,16 +11,36 @@ import { initHttpBlocks } from '../../entities/blocks/httpBlocks';
 
 let blocksDefined = false;
 
+/**
+ * Code which is generated from current workspace, in two variants.
+ *
+ * `toLaunch` is code which runs in Python sandbox; `toShow` is read-only
+ * preview code for user. They can be different if execution generator adds some
+ * instrumentation and patches (for example stop-signal checks).
+ */
 export interface GeneratedCode {
   toLaunch: string;
   toShow: string;
 }
 
+/**
+ * Handle-interface for imperative access to Blockly workspace.
+ *
+ * Use ref to call these methods from parent component, for example to load
+ * saved project into canvas.
+ */
 export interface BlocklyCanvasHandle {
   getWorkspace: () => Blockly.WorkspaceSvg | null;
   loadState: (state: object) => void;
 }
 
+/**
+ * Creates Blockly block with type `start_block` on given workspace and marks it non-deletable
+ * and non-movable.
+ *
+ * Called automatically on mount and after project loading. External
+ * code can recreate block after workspace is cleared. See {@link useNewProject}.
+ */
 export function createStartBlock(ws: Blockly.WorkspaceSvg): void {
   const startBlock = ws.newBlock('start_block');
   startBlock.initSvg();
@@ -57,6 +77,26 @@ function generate(generator: PythonGenerator, ws: Blockly.WorkspaceSvg, startBlo
   return generator.finish(code)?.trim() ?? '';
 }
 
+/**
+ * Renders Blockly workspace with custom blocks and generates Python code from
+ * block graph.
+ *
+ * On mount component loads block definitions and toolbox config from
+ * `/assets/blockly/`. Component is uncontrolled — to load saved project, use
+ * ref with {@link BlocklyCanvasHandle.loadState}.
+ *
+ * @example
+ * ```tsx
+ * const ref = useRef<BlocklyCanvasHandle>(null);
+ * <BlocklyCanvas
+ *   ref={ref}
+ *   onCodeChange={(code) => setCode(code)}
+ *   onStateChange={(state) => setState(state)}
+ * />
+ * // later:
+ * ref.current?.loadState(savedState);
+ * ```
+ */
 export const BlocklyCanvas = forwardRef<BlocklyCanvasHandle, Props>(
   ({ onStateChange, onCodeChange }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);

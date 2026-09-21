@@ -1,0 +1,20 @@
+flowchart TB
+    User([User])
+
+    subgraph CodeChef["CodeChef SPA"]
+        UC1["Build a program from blocks"]
+        UC2["Run the program"]
+        UC3["Debug the program"]
+        UC4["Upload input files"]
+        UC5["Download output files"]
+        UC6["Save / open a project"]
+        UC7["Provide stdin for input()"]
+    end
+
+    User --> UC1
+    User --> UC2
+    User --> UC3
+    User --> UC4
+    User --> UC5
+    User --> UC6
+    User --> UC7

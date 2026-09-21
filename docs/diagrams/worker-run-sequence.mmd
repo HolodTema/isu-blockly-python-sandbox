@@ -1,0 +1,19 @@
+sequenceDiagram
+    autonumber
+    participant UI as React UI
+    participant C as PyodideWorkerClient
+    participant W as PyodideWorker
+    participant P as Python
+
+    Note over C,W: Request with id becomes a promise.<br/>Event without id goes to a callback.
+
+    UI->>C: runCode(code)
+    C->>W: postMessage({id, StartRunCode})
+    W->>P: runPythonAsync(code)
+    P-->>W: print output
+    W->>C: postMessage({Stdout}) [no id]
+    C->>UI: onStdout callback
+    P-->>W: code finished
+    W-->>C: postMessage({id, RunCodeDone})
+    C-->>UI: resolve promise
+
