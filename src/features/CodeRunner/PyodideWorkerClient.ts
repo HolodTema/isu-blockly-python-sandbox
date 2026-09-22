@@ -3,7 +3,7 @@ import { WorkerEvent } from "../../worker/WorkerEvent";
 import PyodideWorker from "../../worker/pyodideWorker.ts?worker";
 
 interface PromiseCallbacks {
-    resolve: (value: any) => void;
+    resolve: (value: unknown) => void;
     reject: (error: Error) => void;
 }
 
@@ -48,22 +48,23 @@ export class PyodideWorkerClient {
         });
     }
 
-    private handleWorkerEvent(msg: any) {
-        if (typeof msg === "string") {
+    private handleWorkerEvent(raw: unknown) {
+        if (typeof raw === "string") {
             // python code on breakpoint sends plain string, not WorkerEvent object from worker
-            if (msg === WorkerEvent.OnDebugFileCreated) {
+            if (raw === WorkerEvent.OnDebugFileCreated) {
                 console.log("WorkerEvent.OnDebugFileCreated");
                 this.callbacks.onDebugPaused?.();
             }
             return;
         }
+        const msg = raw as { id?: number; type: WorkerEvent; payload?: unknown };
         if (msg.type === WorkerEvent.InitComplete) {
             this.isInitComplete = true;
             this.resolveReady();
             return;
         }
         if (msg.type === WorkerEvent.Stdout) {
-            this.callbacks.onStdout(msg.payload);
+            this.callbacks.onStdout(msg.payload as string);
             return;
         }
         if (msg.type === WorkerEvent.Log) {
@@ -71,12 +72,12 @@ export class PyodideWorkerClient {
             return;
         }
         if (msg.type === WorkerEvent.OutputFilesZipReady) {
-            this.callbacks.onOutputFilesZip?.(msg.payload);
+            this.callbacks.onOutputFilesZip?.(msg.payload as ArrayBuffer);
             return;
         }
         if (typeof msg.id !== "number") {
             if (msg.type === WorkerEvent.Error) {
-                this.callbacks.onError?.(msg.payload);
+                this.callbacks.onError?.(msg.payload as string);
             }
             return;
         }
@@ -85,7 +86,7 @@ export class PyodideWorkerClient {
         if (!promise) return;
         this.mapPromiseCallbacks.delete(msg.id);
         if (msg.type === WorkerEvent.Error) {
-            promise.reject(new Error(msg.payload));
+            promise.reject(new Error(msg.payload as string));
         } else {
             promise.resolve(msg.payload);
         }

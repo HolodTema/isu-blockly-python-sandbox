@@ -36,7 +36,9 @@ export function useDebugger(clientRef: RefObject<PyodideWorkerClient | null>) {
     const [breakpoints, setBreakpoints] = useState<number[]>([]);
 
     const breakpointsRef = useRef<number[]>([]);
-    breakpointsRef.current = breakpoints;
+    useEffect(() => {
+        breakpointsRef.current = breakpoints;
+    }, [breakpoints]);
 
     useEffect(() => {
         clientRef.current?.setDebugPausedHandler(async () => {

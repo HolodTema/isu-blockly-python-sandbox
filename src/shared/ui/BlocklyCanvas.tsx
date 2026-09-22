@@ -8,6 +8,7 @@ import { initPandasBlocks } from '../../entities/blocks/pandasBlocks';
 import { initConvertBlocks } from '../../entities/blocks/convertBlocks';
 import { initTextFileBlocks } from '../../entities/blocks/textFileBlocks';
 import { initHttpBlocks } from '../../entities/blocks/httpBlocks';
+import { createStartBlock } from './blocklyStartBlock';
 
 let blocksDefined = false;
 
@@ -33,24 +34,6 @@ export interface BlocklyCanvasHandle {
   getWorkspace: () => Blockly.WorkspaceSvg | null;
   loadState: (state: object) => void;
 }
-
-/**
- * Creates Blockly block with type `start_block` on given workspace and marks it non-deletable
- * and non-movable.
- *
- * Called automatically on mount and after project loading. External
- * code can recreate block after workspace is cleared. See {@link useNewProject}.
- */
-export function createStartBlock(ws: Blockly.WorkspaceSvg): void {
-  const startBlock = ws.newBlock('start_block');
-  startBlock.initSvg();
-  startBlock.render();
-  startBlock.moveBy(50, 30);
-  startBlock.setDeletable(false);
-  startBlock.setMovable(false);
-}
-
-
 
 interface Props {
   onStateChange?: (state: object) => void;

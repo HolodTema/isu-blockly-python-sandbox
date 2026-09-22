@@ -10,7 +10,7 @@ vi.mock('blockly', () => ({
     getMainWorkspace: mocks.getMainWorkspace,
 }));
 
-vi.mock('../../shared/ui/BlocklyCanvas', () => ({
+vi.mock('../../shared/ui/blocklyStartBlock', () => ({
     createStartBlock: mocks.createStartBlock,
 }));
 

@@ -14,10 +14,10 @@ import * as Blockly from "blockly";
  * Registers Python generators for HTTP blocks on given generator instance.
  *
  * @param generator - Python generator which will get new block handlers.
- * @param mode - Current mode of generator. Not used right now.
+ * @param _mode - Current mode of generator. Not used right now.
  */
-export function initHttpBlocks(generator: PythonGenerator, mode: "display"|"execution") {
-    generator.forBlock["import_lib_requests_block"] = function (block: Blockly.Block): string {
+export function initHttpBlocks(generator: PythonGenerator, _mode: "display"|"execution") {
+    generator.forBlock["import_lib_requests_block"] = function (_block: Blockly.Block): string {
         return "import requests\n";
     };
 
@@ -62,9 +62,9 @@ export function initHttpBlocks(generator: PythonGenerator, mode: "display"|"exec
      */
     generator.forBlock["http_get_request_block"] = function (block: Blockly.Block): string {
         const requestType = block.getFieldValue("REQUEST_TYPE");
-        let path = generator.valueToCode(block, "PATH", Order.ATOMIC) || `""`;
+        const path = generator.valueToCode(block, "PATH", Order.ATOMIC) || `""`;
 
-        let queryItems = [];
+        const queryItems = [];
         let queryBlock = block.getInputTargetBlock("QUERY");
         while (queryBlock) {
             const queryItemCode = generator.blockToCode(queryBlock, true);
@@ -75,7 +75,7 @@ export function initHttpBlocks(generator: PythonGenerator, mode: "display"|"exec
         }
         const queryDict = queryItems.length ? '{' + queryItems.join(', ') + '}' : '{}';
 
-        let headerItems = [];
+        const headerItems = [];
         let headerBlock = block.getInputTargetBlock("HEADERS");
         while (headerBlock) {
             const headerItemCode = generator.blockToCode(headerBlock, true);
@@ -90,8 +90,8 @@ export function initHttpBlocks(generator: PythonGenerator, mode: "display"|"exec
         const variableStatusCode = generator.valueToCode(block, "STATUS_CODE", Order.ATOMIC) || "status_code";
         const variableResponseBody = generator.valueToCode(block, "RESPONSE_BODY", Order.ATOMIC) || "response_body";
 
-        let codeOnResponse = generator.statementToCode(block, "RESPONSE");
-        let codeOnTimeout = generator.statementToCode(block, "TIMEOUT");
+        const codeOnResponse = generator.statementToCode(block, "RESPONSE");
+        const codeOnTimeout = generator.statementToCode(block, "TIMEOUT");
 
         let code = "";
         code += `url = ${path}\n`;
