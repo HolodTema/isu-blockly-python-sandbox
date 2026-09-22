@@ -1,10 +1,14 @@
 # CodeChef
 
+![](docs/images/full_logo.png)
+
 Browser-based platform for visual programming. User builds a program from blocks,
 application generates Python code from block graph, and then runs this code
 directly in browser without any backend.
 
 **Production:** https://codechef.ru
+
+**Docs:** https://docs.codechef.ru
 
 ## What is it
 
@@ -12,7 +16,7 @@ CodeChef is an educational tool for teaching programming basics. Instead of
 typing code, students drag and drop blocks — like in Scratch — but the result
 is real Python code which they can read, modify and run.
 
-Main target audience is school students who are just starting with programming,
+Main target audience is school 10-14 y.o. students who are just starting with programming,
 and their teachers. Interface is fully in Russian, code preview is real Python
 which can be shown on lessons.
 
@@ -96,7 +100,7 @@ npm run build        # type check and build for production
 npm run preview      # preview built version locally
 ```
 
-Linting:
+Linting (not configured properly yet):
 
 ```bash
 npm run lint         # run ESLint on whole project
@@ -105,8 +109,8 @@ npm run lint         # run ESLint on whole project
 Testing:
 
 ```bash
-npm test             # run tests in watch mode (for development)
-npm run test:run     # run tests once and exit (for CI)
+npm test              # run tests in watch mode (for development)
+npm run test:run      # run tests once and exit (for CI)
 npm run test:coverage # run tests with coverage report
 ```
 
