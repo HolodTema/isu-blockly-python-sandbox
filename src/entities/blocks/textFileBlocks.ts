@@ -14,9 +14,9 @@ import * as Blockly from "blockly";
  * Registers Python generators for text file blocks on given generator instance.
  *
  * @param generator - Python generator which will get new block handlers.
- * @param mode - Current mode of generator. Not used right now.
+ * @param _mode - Current mode of generator. Not used right now.
  */
-export function initTextFileBlocks(generator: PythonGenerator, mode: "display"|"execution") {
+export function initTextFileBlocks(generator: PythonGenerator, _mode: "display"|"execution") {
 
     /**
      * Opens file in given mode and saves file object into variable.

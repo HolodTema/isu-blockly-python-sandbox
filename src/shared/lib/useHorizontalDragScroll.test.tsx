@@ -7,14 +7,15 @@ type HookApi = ReturnType<typeof useHorizontalDragScroll<HTMLDivElement>>;
 
 function ScrollableTestComponent({onReady}: { onReady: (api: HookApi) => void }) {
     const api = useHorizontalDragScroll<HTMLDivElement>();
+    const { elementRef, onPointerDown } = api;
     useEffect(() => {
         onReady(api);
     });
     return (
         <div
-            ref={api.elementRef}
+            ref={elementRef}
             data-testid="scrollable-test-component"
-            onPointerDown={api.onPointerDown}
+            onPointerDown={onPointerDown}
         />
     );
 }

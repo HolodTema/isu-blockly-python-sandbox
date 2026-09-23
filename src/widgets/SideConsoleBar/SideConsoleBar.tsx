@@ -79,6 +79,7 @@ export function SideConsoleBar({
     const [activeTab, setActiveTab] = useState<CodeOutputTab>(CodeOutputTab.Output);
     const [isOutputExpanded, setIsOutputExpanded] = useState(true);
     const inputFileRef = useRef<HTMLInputElement>(null);
+    const [prevIsPaused, setPrevIsPaused] = useState(debug.isPaused);
 
     const { refreshOutputFiles } = inputOutputFiles;
 
@@ -93,11 +94,12 @@ export function SideConsoleBar({
     }, [activeTab, refreshOutputFiles]);
 
     // На точке останова показываем переменные сразу, не заставляя искать вкладку.
-    useEffect(() => {
+    if (debug.isPaused !== prevIsPaused) {
+        setPrevIsPaused(debug.isPaused);
         if (debug.isPaused) {
             setActiveTab(CodeOutputTab.Debug);
         }
-    }, [debug.isPaused]);
+    }
 
     return (
     <main className={isCodeHidden ? 'code-hidden' : undefined}>

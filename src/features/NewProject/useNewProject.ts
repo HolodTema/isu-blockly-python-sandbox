@@ -1,6 +1,6 @@
 import * as Blockly from 'blockly';
 import { useCallback } from 'react';
-import { createStartBlock } from '../../shared/ui/BlocklyCanvas';
+import { createStartBlock } from '../../shared/ui/blocklyStartBlock';
 
 /**
  * Hook which provides "create new project" action.
