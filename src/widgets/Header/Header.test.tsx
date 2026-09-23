@@ -11,6 +11,8 @@ interface HeaderOverrides {
     onNewProject?: () => void;
     onToggleCode?: () => void;
     onDebugCode?: () => void;
+    onToggleMute?: () => void;
+    isMuted?: boolean;
     isRunning?: boolean;
     isDebugging?: boolean;
     isCodeHidden?: boolean;
@@ -25,6 +27,8 @@ function renderHeader(overrides: HeaderOverrides = {}) {
         onNewProject: vi.fn(),
         onToggleCode: vi.fn(),
         onDebugCode: vi.fn(),
+        onToggleMute: vi.fn(),
+        isMuted: false,
         isRunning: false,
         isDebugging: false,
         isCodeHidden: false,

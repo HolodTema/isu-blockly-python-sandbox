@@ -12,6 +12,8 @@ import icDebugCode from '../../shared/assets/ic_debug_code.svg'
 import icExpandLeft from '../../shared/assets/ic_expand_left.svg'
 import icExpandRight from '../../shared/assets/ic_expand_right.svg'
 import icFolders from '../../shared/assets/ic_folders.svg'
+import icAudio from '../../shared/assets/ic_audio.svg'
+import icNoAudio from '../../shared/assets/ic_NoAudio.svg'
 
 /**
  * Top bar of the application with main actions and execution status.
@@ -35,6 +37,8 @@ interface HeaderProps {
     onNewProject: () => void;
     onToggleCode: () => void;
     onDebugCode: () => void;
+     onToggleMute: () => void;
+    isMuted: boolean;
     isRunning: boolean;
     isDebugging: boolean;
     isCodeHidden: boolean;
@@ -65,6 +69,8 @@ export function Header({
     onNewProject,
     onToggleCode,
     onDebugCode,
+    onToggleMute ,
+    isMuted,
     isRunning,
     isDebugging,
     isCodeHidden
@@ -76,7 +82,8 @@ export function Header({
         { text: 'Создать проект', icon: icFolders, onClick: onNewProject, shortcut: 'Alt+N' },
         { text: 'Сохранить', icon: icSaveProject, onClick: onSaveProject, shortcut: 'Ctrl+S' },
     ];
-
+    
+  
     return (
         <div className='header_container'>
             <div className='header_container__left'>
@@ -110,6 +117,7 @@ export function Header({
 
                 <HeaderButton img={icRunCode} text="Запуск" onClick={onRunCode} />
                 <HeaderButton img={icDebugCode} text="Отладка" onClick={onDebugCode} />
+                <HeaderButton img={isMuted ? icNoAudio: icAudio } text="" onClick={onToggleMute} />
             </div>
 
             <div className='header_container__right'>
