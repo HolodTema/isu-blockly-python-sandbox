@@ -41,6 +41,14 @@ let pyodide: PyodideInterface | null = null;
 let isInitComplete: boolean = false;
 let currentRunTask: Promise<unknown> | null = null;
 
+/** Returns the initialized Pyodide instance. Throws if called before `initPyodide()` resolves. */
+function getPyodide(): PyodideInterface {
+    if (!pyodide) {
+        throw new Error("Pyodide is not initialized yet");
+    }
+    return pyodide;
+}
+
 const STDOUT_FLUSH_INTERVAL_MS = 50;
 
 /**
@@ -77,7 +85,7 @@ class WorkerStdout {
 let workerStdout: WorkerStdout | null = null;
 
 function installStdin(stdinText: string) {
-    pyodide.runPython(
+    getPyodide().runPython(
 `
 import sys, io
 sys.stdin = io.StringIO(${JSON.stringify(stdinText)})
@@ -132,7 +140,7 @@ async function initPyodide(): Promise<void> {
 async function runPatchCode() {
     const response = await fetch("/assets/python/patchCode.py");
     const code = await response.text();
-    await pyodide.runPythonAsync(code);
+    await getPyodide().runPythonAsync(code);
 }
 
 /**
@@ -144,8 +152,8 @@ async function runPatchCode() {
 async function getTransformedDebugReadyCode(originalCode: string): Promise<string> {
     const response: Response = await fetch("/assets/python/transformCodeToDebugReady.py");
     const script: string = await response.text();
-    pyodide.runPython(script);
-    return pyodide.runPython(`_transformCodeToDebugReady(${JSON.stringify(originalCode)})`) as string;
+    getPyodide().runPython(script);
+    return getPyodide().runPython(`_transformCodeToDebugReady(${JSON.stringify(originalCode)})`) as string;
 }
 
 /**
@@ -157,8 +165,8 @@ async function getTransformedDebugReadyCode(originalCode: string): Promise<strin
 async function getTransformedRunReadyCode(originalCode: string): Promise<string> {
     const script = await fetch("/assets/python/transformCodeToRunReady.py");
     const scriptText = await script.text();
-    pyodide.runPython(scriptText);
-    return pyodide.runPython(
+    getPyodide().runPython(scriptText);
+    return getPyodide().runPython(
 `
 _transform_code_to_run_ready(${JSON.stringify(originalCode)})
 `
@@ -175,14 +183,14 @@ _transform_code_to_run_ready(${JSON.stringify(originalCode)})
 async function runDebugPrepareCode(breakpoints: number[]) {
     const response = await fetch("/assets/python/debugPrepare.py");
     const script = await response.text();
-    await pyodide.runPythonAsync(`
+    await getPyodide().runPythonAsync(`
 _debugger_state = {
     'breakpoints': ${JSON.stringify(breakpoints)},
     'future': None,
     'step_mode': False,
 }
 `);
-    await pyodide.runPythonAsync(script);
+    await getPyodide().runPythonAsync(script);
 }
 
 /**
@@ -200,11 +208,11 @@ async function handleRunCode(payload: { code: string; inputFilenames: string[]; 
         installStdin(stdinText);
 
         const scriptStopRunCodeCheck = await fetch("/assets/python/stopRunCodeCheck.py");
-        await pyodide.runPythonAsync(await scriptStopRunCodeCheck.text());
+        await getPyodide().runPythonAsync(await scriptStopRunCodeCheck.text());
 
         const runReadyCode = await getTransformedRunReadyCode(code);
 
-        currentRunTask = pyodide.runPythonAsync(
+        currentRunTask = getPyodide().runPythonAsync(
 `
 async def _main():
 ${runReadyCode.split("\n").map(line => "    " + line).join("\n")}
@@ -232,7 +240,7 @@ await _main()
 async function handleLoadInputFile(filename: string, byteArray: ArrayBuffer) {
     try {
         const data = new Uint8Array(byteArray);
-        pyodide.FS.writeFile(filename, data);
+        getPyodide().FS.writeFile(filename, data);
         self.postMessage({ type: WorkerEvent.OnInputFileLoaded, payload: filename });
     } catch (e) {
         self.postMessage({ type: WorkerEvent.Error, payload: `Ошибка загрузки файла ${filename}: ${getErrorMessage(e)}` });
@@ -241,7 +249,7 @@ async function handleLoadInputFile(filename: string, byteArray: ArrayBuffer) {
 
 async function handleRemoveInputFile(filename: string) {
     try {
-        pyodide.FS.unlink(filename);
+        getPyodide().FS.unlink(filename);
         self.postMessage({ type: WorkerEvent.OnInputFileRemoved, payload: filename });
     } catch (e) {
         self.postMessage({ type: WorkerEvent.Error, payload: `Не удалось удалить ${filename}: ${getErrorMessage(e)}` });
@@ -252,8 +260,8 @@ async function handleSaveOutputFilesZip() {
     try {
         const scriptResponse = await fetch("/assets/python/createZipArchiveOfResultFiles.py");
         const script = await scriptResponse.text();
-        pyodide.runPython(script);
-        const zipData = pyodide.FS.readFile("/home/pyodide/__exported_files.zip");
+        getPyodide().runPython(script);
+        const zipData = getPyodide().FS.readFile("/home/pyodide/__exported_files.zip");
         self.postMessage({
             type: WorkerEvent.OutputFilesZipReady,
             payload: zipData.buffer,
@@ -265,7 +273,7 @@ async function handleSaveOutputFilesZip() {
 
 async function handleGetListOutputFiles(id: number) {
     try {
-        const listFiles = pyodide.FS.readdir("/home/pyodide/")
+        const listFiles = getPyodide().FS.readdir("/home/pyodide/")
             .filter((name: string) => name !== "." && name !== ".." && !name.startsWith("__"));
         self.postMessage({ id, type: WorkerEvent.ListOutputFilesResult, payload: listFiles });
     } catch (e) {
@@ -275,7 +283,7 @@ async function handleGetListOutputFiles(id: number) {
 
 async function handleReadOutputFile(filename: string, id: number) {
     try {
-        const content = pyodide.FS.readFile(filename, { encoding: "utf8" });
+        const content = getPyodide().FS.readFile(filename, { encoding: "utf8" });
         self.postMessage({ id, type: WorkerEvent.ReadOutputFileResult, payload: content });
     } catch (e) {
         self.postMessage({ id, type: WorkerEvent.Error, payload: getErrorMessage(e) });
@@ -303,7 +311,7 @@ ${debugReadyCode.split('\n').map((line: string) => "    " + line).join("\n")}
 
 await __main__()
 `;
-        await pyodide.runPythonAsync(finalCode);
+        await getPyodide().runPythonAsync(finalCode);
         workerStdout?.flush();
         self.postMessage({ id, type: WorkerEvent.DebugCodeDone, payload: "ok" });
     } catch (e) {
@@ -319,7 +327,7 @@ await __main__()
 }
 
 async function handleDebugUserCommandContinue() {
-    await pyodide.runPythonAsync(
+    await getPyodide().runPythonAsync(
 `
 if _debugger_state['future'] is not None and not _debugger_state['future'].done():
     _debugger_state['step_mode'] = False
@@ -329,7 +337,7 @@ if _debugger_state['future'] is not None and not _debugger_state['future'].done(
 }
 
 async function handleDebugUserCommandStep() {
-    await pyodide.runPythonAsync(
+    await getPyodide().runPythonAsync(
 `
 if _debugger_state['future'] is not None and not _debugger_state['future'].done():
     _debugger_state['step_mode'] = True
@@ -339,7 +347,7 @@ if _debugger_state['future'] is not None and not _debugger_state['future'].done(
 }
 
 async function handleDebugUserCommandStop() {
-    await pyodide.runPythonAsync(
+    await getPyodide().runPythonAsync(
         `
 if _debugger_state['future'] is not None and not _debugger_state['future'].done():
     _debugger_state['future'].set_exception(asyncio.CancelledError())
@@ -356,7 +364,7 @@ if _debugger_state['future'] is not None and not _debugger_state['future'].done(
  */
 async function handleReadDebugFile(id: number) {
     try {
-        const content = pyodide.FS.readFile('/home/pyodide/__debug_data.json', { encoding: 'utf8' });
+        const content = getPyodide().FS.readFile('/home/pyodide/__debug_data.json', { encoding: 'utf8' });
         const data = JSON.parse(content);
         self.postMessage({ id, type: WorkerEvent.OnDebugFileRead, payload: data });
     } catch (e) {
@@ -373,12 +381,12 @@ async function handleReadDebugFile(id: number) {
  */
 async function cleanFilesystemBesidesInputFiles(inputFilenames: string[]): Promise<void> {
     const setInputFilenames = new Set(inputFilenames);
-    const allFiles = pyodide.FS.readdir("/home/pyodide/")
+    const allFiles = getPyodide().FS.readdir("/home/pyodide/")
         .filter((name: string) => name !== "." && name !== ".." && !name.startsWith("__"));
     for (const filename of allFiles) {
         if (!setInputFilenames.has(filename)) {
             try {
-                pyodide.FS.unlink(`/home/pyodide/${filename}`);
+                getPyodide().FS.unlink(`/home/pyodide/${filename}`);
             } catch (_) {
                 // do nothing
             }

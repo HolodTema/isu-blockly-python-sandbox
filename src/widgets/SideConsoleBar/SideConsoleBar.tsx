@@ -26,6 +26,7 @@ interface SideConsoleBarProps {
     onCodeChange?: (code: GeneratedCode) => void;
     onStateChange?: (state: object) => void;
     blocklyRef?: RefObject<BlocklyCanvasHandle | null>;
+    initialState?: object | null;
     inputOutputFiles: InputOutputFilesApi;
     isCodeHidden?: boolean;
     debug: DebuggerApi;
@@ -70,6 +71,7 @@ export function SideConsoleBar({
     onCodeChange,
     onStateChange,
     blocklyRef,
+    initialState,
     inputOutputFiles,
     isCodeHidden,
     debug,
@@ -104,7 +106,7 @@ export function SideConsoleBar({
     return (
     <main className={isCodeHidden ? 'code-hidden' : undefined}>
     <div id="blockly_workspace">
-        <BlocklyCanvas ref={blocklyRef} onCodeChange={onCodeChange} onStateChange={onStateChange} />
+        <BlocklyCanvas ref={blocklyRef} onCodeChange={onCodeChange} onStateChange={onStateChange} initialState={initialState} />
     </div>
     <div id="code_workspace">
         <div id="input_files_toolbar">

@@ -3,8 +3,8 @@ import { WorkerEvent } from "../../worker/WorkerEvent";
 import PyodideWorker from "../../worker/pyodideWorker.ts?worker";
 
 interface PromiseCallbacks {
-    resolve: (value: unknown) => void;
-    reject: (error: Error) => void;
+    resolve(value: unknown): void;
+    reject(error: Error): void;
 }
 
 export interface DebugSnapshot {

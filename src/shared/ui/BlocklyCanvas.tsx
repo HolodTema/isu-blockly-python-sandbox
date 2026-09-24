@@ -38,6 +38,8 @@ export interface BlocklyCanvasHandle {
 interface Props {
   onStateChange?: (state: object) => void;
   onCodeChange?: (code: GeneratedCode) => void;
+  /** State to restore into a freshly created workspace, e.g. from autosave. */
+  initialState?: object | null;
 }
 
 function createGenerator(mode: 'display' | 'execution'): PythonGenerator {
@@ -61,6 +63,25 @@ function generate(generator: PythonGenerator, ws: Blockly.WorkspaceSvg, startBlo
 }
 
 /**
+ * Loads serialized state into workspace and restores `start_block` invariants.
+ *
+ * Serialized state does not store non-deletable/non-movable flags, and the
+ * `start_block` itself may be missing from state saved by an older version —
+ * in that case a fresh one is created instead.
+ */
+function loadStateIntoWorkspace(ws: Blockly.WorkspaceSvg, state: object): void {
+  Blockly.serialization.workspaces.load(state, ws);
+
+  const startBlock = ws.getTopBlocks(false).find((b) => b.type === 'start_block');
+  if (startBlock) {
+    startBlock.setDeletable(false);
+    startBlock.setMovable(false);
+  } else {
+    createStartBlock(ws);
+  }
+}
+
+/**
  * Renders Blockly workspace with custom blocks and generates Python code from
  * block graph.
  *
@@ -81,12 +102,15 @@ function generate(generator: PythonGenerator, ws: Blockly.WorkspaceSvg, startBlo
  * ```
  */
 export const BlocklyCanvas = forwardRef<BlocklyCanvasHandle, Props>(
-  ({ onStateChange, onCodeChange }, ref) => {
+  ({ onStateChange, onCodeChange, initialState }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null);
     const onStateChangeRef = useRef(onStateChange);
     const onCodeChangeRef = useRef(onCodeChange);
     const emitCodeRef = useRef<(() => void) | null>(null);
+    // Только первое значение имеет смысл — состояние восстанавливается один
+    // раз, при создании воркспейса.
+    const initialStateRef = useRef(initialState);
 
     useEffect(() => {
       onStateChangeRef.current = onStateChange;
@@ -119,7 +143,11 @@ export const BlocklyCanvas = forwardRef<BlocklyCanvasHandle, Props>(
           trashcan: false,
         });
 
-        createStartBlock(ws);
+        if (initialStateRef.current) {
+          loadStateIntoWorkspace(ws, initialStateRef.current);
+        } else {
+          createStartBlock(ws);
+        }
 
         const launchGenerator = createGenerator('execution');
         const showGenerator = createGenerator('display');
@@ -163,18 +191,7 @@ export const BlocklyCanvas = forwardRef<BlocklyCanvasHandle, Props>(
         const ws = workspaceRef.current;
         if (!ws) return;
 
-        Blockly.serialization.workspaces.load(state, ws);
-
-        // Сериализованное состояние не хранит признаки неудаляемости, а сам
-        // start_block может отсутствовать в файле, собранном старой версией.
-        const startBlock = ws.getTopBlocks(false).find((b) => b.type === 'start_block');
-        if (startBlock) {
-          startBlock.setDeletable(false);
-          startBlock.setMovable(false);
-        } else {
-          createStartBlock(ws);
-        }
-
+        loadStateIntoWorkspace(ws, state);
         emitCodeRef.current?.();
       },
     }), []);

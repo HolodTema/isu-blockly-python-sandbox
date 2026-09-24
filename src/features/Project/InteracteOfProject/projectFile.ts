@@ -1,4 +1,4 @@
-import { downloadBlob } from "../../shared/lib/download";
+import { downloadBlob } from "../../../shared/lib/download";
 
 /**
  * Shape of `.chef` project file.
