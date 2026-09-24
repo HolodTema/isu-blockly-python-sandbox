@@ -5,10 +5,11 @@ import { LoadScreen } from '../widgets/LoadScreen/LoadScreen';
 import { useCodeRunner } from '../features/CodeRunner/useCodeRunner';
 import { useInputOutputFiles } from '../features/Files/useInputOutputFiles.ts';
 import { useDebugger } from '../features/Debugger/useDebugger';
-import { pickProjectFile, readProjectFile, saveProjectToFile } from '../features/Project/projectFile';
+import { pickProjectFile, readProjectFile, saveProjectToFile } from '../features/Project/InteracteOfProject/projectFile.ts';
 import { useToast } from '../shared/ui/useToast';
 import type { BlocklyCanvasHandle, GeneratedCode } from '../shared/ui/BlocklyCanvas';
-import { useNewProject } from '../features/NewProject/useNewProject.ts';
+import { useNewProject } from '../features/Project/NewProject/useNewProject.ts';
+import { useAutosave } from '../features/Project/AutoSave/useAutosave.ts';
 
 export function CodeRunnerPage() {
     const toast = useToast();
@@ -21,6 +22,7 @@ export function CodeRunnerPage() {
     const [isCodeHidden, setIsCodeHidden] = useState(false);
     const { createNewProject } = useNewProject();
     const [stdinText, setStdinText] = useState('');
+    const { initialState, saveState } = useAutosave();
 
     const handleCodeChange = useCallback((generated: GeneratedCode) => {
         setCode(generated);
@@ -28,7 +30,8 @@ export function CodeRunnerPage() {
 
     const handleStateChange = useCallback((state: object) => {
         blocklyStateRef.current = state;
-    }, []);
+        saveState(state)
+    }, [saveState]);
 
     const handleSaveProject = useCallback(() => {
         saveProjectToFile({
@@ -143,6 +146,7 @@ export function CodeRunnerPage() {
                 inputOutputFiles={inputOutputFiles}
                 isCodeHidden={isCodeHidden}
                 debug={debug}
+                initialState={initialState} 
                 stdinText={stdinText}
                 onStdinTextChange={setStdinText}
             />
