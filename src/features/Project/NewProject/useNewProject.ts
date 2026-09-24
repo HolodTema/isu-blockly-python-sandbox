@@ -1,8 +1,8 @@
 import * as Blockly from 'blockly';
-import { useCallback, type RefObject } from 'react';
-import { createStartBlock, type BlocklyCanvasHandle } from '../../../shared/ui/BlocklyCanvas';
+import { useCallback } from 'react';
+import { createStartBlock } from '../../../shared/ui/blocklyStartBlock';
 
-export function useNewProject(blocklyRef: RefObject<BlocklyCanvasHandle | null>, onCleared?: () => void) {
+export function useNewProject(onCleared?: () => void) {
     const createNewProject = useCallback(() => {
         if (!window.confirm('Вы уверены, что хотите создать новый проект? Все несохранённые изменения будут потеряны.')) {
             return;

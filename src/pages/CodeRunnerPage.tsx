@@ -118,6 +118,18 @@ export function CodeRunnerPage() {
         }
     }, [handleSaveProject, handleOpenProject, createNewProject]);
 
+    const hasUnsavedChanges = code.toShow.length > 0;
+
+    useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        if (hasUnsavedChanges) {
+            e.preventDefault();
+        }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+}, [hasUnsavedChanges]);
+
     return (
         
         <>
