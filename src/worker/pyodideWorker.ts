@@ -16,30 +16,9 @@
 import {WorkerCommand} from "./WorkerCommand";
 import {WorkerEvent} from "./WorkerEvent";
 
-interface PyodideFS {
-    readFile(path: string, options: { encoding: "utf8" }): string;
-    readFile(path: string): Uint8Array;
-    writeFile(path: string, data: Uint8Array): void;
-    unlink(path: string): void;
-    readdir(path: string): string[];
-}
-
-interface PyodideInterface {
-    runPython(code: string): unknown;
-    runPythonAsync(code: string): Promise<unknown>;
-    loadPackage(name: string): Promise<unknown>;
-    globals: { set(name: string, value: unknown): void };
-    FS: PyodideFS;
-}
-
-/** Extracts human-readable message from caught value of unknown shape. */
-function getErrorMessage(e: unknown): string {
-    return e instanceof Error ? e.message : String(e);
-}
-
-let pyodide: PyodideInterface | null = null;
+let pyodide: any = null;
 let isInitComplete: boolean = false;
-let currentRunTask: Promise<unknown> | null = null;
+let currentRunTask: any | null = null;
 
 const STDOUT_FLUSH_INTERVAL_MS = 50;
 
@@ -100,7 +79,7 @@ async function initPyodide(): Promise<void> {
     try {
         self.postMessage({ type: WorkerEvent.Log, payload: "Pyodide init is in progress" });
         const { loadPyodide } = await import("https://cdn.jsdelivr.net/pyodide/v0.27.0/full/pyodide.mjs");
-        pyodide = (await loadPyodide()) as PyodideInterface;
+        pyodide = await loadPyodide();
         await pyodide.loadPackage("requests");
         await pyodide.loadPackage("pandas");
         await pyodide.loadPackage("lxml");
@@ -118,8 +97,8 @@ async function initPyodide(): Promise<void> {
         await pyodide.runPythonAsync(strInitCode);
         isInitComplete = true;
         self.postMessage({ type: WorkerEvent.InitComplete, payload: "ok" });
-    } catch (e) {
-        self.postMessage({ type: WorkerEvent.Error, payload: getErrorMessage(e) });
+    } catch (e: any) {
+        self.postMessage({ type: WorkerEvent.Error, payload: e.message });
     }
 }
 
@@ -145,7 +124,7 @@ async function getTransformedDebugReadyCode(originalCode: string): Promise<strin
     const response: Response = await fetch("/assets/python/transformCodeToDebugReady.py");
     const script: string = await response.text();
     pyodide.runPython(script);
-    return pyodide.runPython(`_transformCodeToDebugReady(${JSON.stringify(originalCode)})`) as string;
+    return pyodide.runPython(`_transformCodeToDebugReady(${JSON.stringify(originalCode)})`);
 }
 
 /**
@@ -162,7 +141,7 @@ async function getTransformedRunReadyCode(originalCode: string): Promise<string>
 `
 _transform_code_to_run_ready(${JSON.stringify(originalCode)})
 `
-    ) as string;
+    );
 }
 
 /**
@@ -215,13 +194,14 @@ await _main()
         const result = await currentRunTask;
         workerStdout?.flush();
         self.postMessage({ id, type: WorkerEvent.RunCodeDone, payload: result });
-    } catch (e) {
+    } catch (e: any) {
         workerStdout?.flush();
-        const message = getErrorMessage(e);
-        if (message.includes("StopExecution") || message.includes("CancelledError")) {
+        if (e.message && e.message.includes("StopExecution")) {
+            self.postMessage({ id, type: WorkerEvent.RunCodeCancelled, payload: "Code running was cancelled by user" });
+        } else if (e.message && e.message.includes("CancelledError")) {
             self.postMessage({ id, type: WorkerEvent.RunCodeCancelled, payload: "Code running was cancelled by user" });
         } else {
-            self.postMessage({ id, type: WorkerEvent.Error, payload: message });
+            self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
         }
     }
     finally {
@@ -234,8 +214,8 @@ async function handleLoadInputFile(filename: string, byteArray: ArrayBuffer) {
         const data = new Uint8Array(byteArray);
         pyodide.FS.writeFile(filename, data);
         self.postMessage({ type: WorkerEvent.OnInputFileLoaded, payload: filename });
-    } catch (e) {
-        self.postMessage({ type: WorkerEvent.Error, payload: `Ошибка загрузки файла ${filename}: ${getErrorMessage(e)}` });
+    } catch (e: any) {
+        self.postMessage({ type: WorkerEvent.Error, payload: `Ошибка загрузки файла ${filename}: ${e.message}` });
     }
 }
 
@@ -243,8 +223,8 @@ async function handleRemoveInputFile(filename: string) {
     try {
         pyodide.FS.unlink(filename);
         self.postMessage({ type: WorkerEvent.OnInputFileRemoved, payload: filename });
-    } catch (e) {
-        self.postMessage({ type: WorkerEvent.Error, payload: `Не удалось удалить ${filename}: ${getErrorMessage(e)}` });
+    } catch (e: any) {
+        self.postMessage({ type: WorkerEvent.Error, payload: `Не удалось удалить ${filename}: ${e.message}` });
     }
 }
 
@@ -258,8 +238,8 @@ async function handleSaveOutputFilesZip() {
             type: WorkerEvent.OutputFilesZipReady,
             payload: zipData.buffer,
         }, [zipData.buffer]);
-    } catch (e) {
-        self.postMessage({ type: WorkerEvent.Error, payload: `Ошибка создания zip: ${getErrorMessage(e)}` });
+    } catch (e: any) {
+        self.postMessage({ type: WorkerEvent.Error, payload: `Ошибка создания zip: ${e.message}` });
     }
 }
 
@@ -268,8 +248,8 @@ async function handleGetListOutputFiles(id: number) {
         const listFiles = pyodide.FS.readdir("/home/pyodide/")
             .filter((name: string) => name !== "." && name !== ".." && !name.startsWith("__"));
         self.postMessage({ id, type: WorkerEvent.ListOutputFilesResult, payload: listFiles });
-    } catch (e) {
-        self.postMessage({ id, type: WorkerEvent.Error, payload: getErrorMessage(e) });
+    } catch (e: any) {
+        self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
     }
 }
 
@@ -277,8 +257,8 @@ async function handleReadOutputFile(filename: string, id: number) {
     try {
         const content = pyodide.FS.readFile(filename, { encoding: "utf8" });
         self.postMessage({ id, type: WorkerEvent.ReadOutputFileResult, payload: content });
-    } catch (e) {
-        self.postMessage({ id, type: WorkerEvent.Error, payload: getErrorMessage(e) });
+    } catch (e: any) {
+        self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
     }
 }
 
@@ -306,14 +286,13 @@ await __main__()
         await pyodide.runPythonAsync(finalCode);
         workerStdout?.flush();
         self.postMessage({ id, type: WorkerEvent.DebugCodeDone, payload: "ok" });
-    } catch (e) {
+    } catch (e: any) {
         workerStdout?.flush();
-        const message = getErrorMessage(e);
-        if (message.includes("CancelledError")) {
+        if (e.message && e.message.includes("CancelledError")) {
             self.postMessage({ id, type: WorkerEvent.DebugCodeCancelled, payload: "debug was cancelled by the user" });
         }
         else {
-            self.postMessage({ id, type: WorkerEvent.Error, payload: message });
+            self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
         }
     }
 }
@@ -359,8 +338,8 @@ async function handleReadDebugFile(id: number) {
         const content = pyodide.FS.readFile('/home/pyodide/__debug_data.json', { encoding: 'utf8' });
         const data = JSON.parse(content);
         self.postMessage({ id, type: WorkerEvent.OnDebugFileRead, payload: data });
-    } catch (e) {
-        self.postMessage({ id, type: WorkerEvent.Error, payload: getErrorMessage(e) });
+    } catch (e: any) {
+        self.postMessage({ id, type: WorkerEvent.Error, payload: e.message });
     }
 }
 

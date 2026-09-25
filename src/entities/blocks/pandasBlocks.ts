@@ -15,10 +15,10 @@ import * as Blockly from "blockly";
  * Registers Python generators for pandas blocks on given generator instance.
  *
  * @param generator - Python generator which will get new block handlers.
- * @param _mode - Current mode of generator. Not used right now.
+ * @param mode - Current mode of generator. Not used right now.
  */
-export function initPandasBlocks(generator: PythonGenerator, _mode: "display"|"execution") {
-    generator.forBlock["pandas_import_block"] = function(_block: Blockly.Block): string {
+export function initPandasBlocks(generator: PythonGenerator, mode: "display"|"execution") {
+    generator.forBlock["pandas_import_block"] = function(block: Blockly.Block): string {
         return "import pandas as pd\n";
     };
 

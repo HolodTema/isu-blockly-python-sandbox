@@ -18,19 +18,19 @@ import * as Blockly from "blockly";
  * instance, handlers are just overwritten with new ones.
  *
  * @param generator - Python generator which will get new block handlers.
- * @param _mode - Current mode of generator. In "execution" mode some blocks can
+ * @param mode - Current mode of generator. In "execution" mode some blocks can
  *   generate extra code (for example stop-check inside loops), in "display"
  *   mode code is only for preview and should stay readable. Right now both
  *   modes produce same result, parameter is reserved for future use.
  */
-export function initBaseBlocks(generator: PythonGenerator, _mode: "display"|"execution") {
-    generator.forBlock["start_block"] = function(_block: Blockly.Block) {
+export function initBaseBlocks(generator: PythonGenerator, mode: "display"|"execution") {
+    generator.forBlock["start_block"] = function(block: Blockly.Block) {
         return "";
     };
 
     generator.forBlock["custom_if_block"] = function(block: Blockly.Block): string {
-        const condition = generator.valueToCode(block, "CONDITION", Order.ATOMIC) || "False";
-        const codeInsideIf = generator.statementToCode(block, "THEN");
+        let condition = generator.valueToCode(block, "CONDITION", Order.ATOMIC) || "False";
+        let codeInsideIf = generator.statementToCode(block, "THEN");
         return `if ${condition}:\n${codeInsideIf}\n`;
     };
 

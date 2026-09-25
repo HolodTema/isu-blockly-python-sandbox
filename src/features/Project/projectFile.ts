@@ -9,7 +9,7 @@ import { downloadBlob } from "../../shared/lib/download";
  */
 export interface ProjectFile {
     python: string;
-    blocklyState: Record<string, unknown>;
+    blocklyState: Record<string, any>;
 }
 
 /**

@@ -61,7 +61,7 @@ function customVariablesCategory(workspace: Blockly.WorkspaceSvg) {
  */
 export function configureVariablesCategory(workspace: Blockly.WorkspaceSvg) {
     workspace.registerToolboxCategoryCallback("VARIABLE", customVariablesCategory);
-    workspace.registerButtonCallback('CREATE_VARIABLE', function(_b: Blockly.FlyoutButton) {
+    workspace.registerButtonCallback('CREATE_VARIABLE', function(b: Blockly.FlyoutButton) {
         Blockly.Variables.createVariableButtonHandler(workspace);
     });
 }

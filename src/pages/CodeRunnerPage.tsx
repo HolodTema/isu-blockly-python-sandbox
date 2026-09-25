@@ -6,7 +6,7 @@ import { useCodeRunner } from '../features/CodeRunner/useCodeRunner';
 import { useInputOutputFiles } from '../features/Files/useInputOutputFiles.ts';
 import { useDebugger } from '../features/Debugger/useDebugger';
 import { pickProjectFile, readProjectFile, saveProjectToFile } from '../features/Project/projectFile';
-import { useToast } from '../shared/ui/useToast';
+import { useToast } from '../shared/ui/ToastProvider';
 import type { BlocklyCanvasHandle, GeneratedCode } from '../shared/ui/BlocklyCanvas';
 import { useNewProject } from '../features/NewProject/useNewProject.ts';
 
@@ -136,7 +136,7 @@ export function CodeRunnerPage() {
         else {
             stopCode();
         }
-    }, [debug, stopCode]);
+    }, [debug.isDebugging, debug.stopDebug, stopCode]);
 
     return (
         <>

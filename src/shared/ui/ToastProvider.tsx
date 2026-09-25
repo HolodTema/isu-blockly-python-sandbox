@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import './Toast.css';
-import { ToastContext } from './ToastContext';
-import type { ToastApi, ToastType } from './ToastContext';
+
+type ToastType = 'info' | 'error';
 
 interface Toast {
     id: number;
@@ -10,6 +10,13 @@ interface Toast {
     type: ToastType;
     isHiding: boolean;
 }
+
+interface ToastApi {
+    showInfo: (message: string, durationMs?: number) => void;
+    showError: (message: string, durationMs?: number) => void;
+}
+
+const ToastContext = createContext<ToastApi | null>(null);
 
 const DEFAULT_DURATION_MS = 3000;
 
@@ -76,4 +83,25 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             </div>
         </ToastContext.Provider>
     );
+}
+
+/**
+ * Returns toast API for showing info and error messages. Part of React ContextAPI
+ *
+ * Should be called only inside {@link ToastProvider}. If context is missing,
+ * throws error — this is intentional, because missing provider is a bug, not
+ * a valid fallback state.
+ *
+ * @returns
+ * - `showInfo(message, durationMs?)` — shows neutral toast. Default duration
+ *   is 3000 ms.
+ * - `showError(message, durationMs?)` — shows red toast. Default duration
+ *   is 3000 ms.
+ */
+export function useToast(): ToastApi {
+    const api = useContext(ToastContext);
+    if (!api) {
+        throw new Error('useToast is used outside ToastProvider');
+    }
+    return api;
 }

@@ -11,10 +11,10 @@ import * as Blockly from "blockly";
  * Registers Python generators for conversion blocks on given generator instance.
  *
  * @param generator - Python generator which will get new block handlers.
- * @param _mode - Current mode of generator. Not used right now, kept for
+ * @param mode - Current mode of generator. Not used right now, kept for
  *   consistency with other init functions.
  */
-export function initConvertBlocks(generator: PythonGenerator, _mode: "display"|"execution") {
+export function initConvertBlocks(generator: PythonGenerator, mode: "display"|"execution") {
     generator.forBlock["convert_to_int_block"] = function (block: Blockly.Block): [string, Order] {
         const valueToConvert = generator.valueToCode(block, "VALUE_TO_CONVERT", Order.ATOMIC) || "";
         return [`int(${valueToConvert})`, Order.FUNCTION_CALL];
