@@ -85,6 +85,34 @@ Run development server:
 npm run dev
 ```
 
+## Or you can use Makefile to get started
+
+The command below will launch linting, unit-tests
+and then run development server:
+
+```bash
+make
+```
+
+Or you can use Makefile for several commands:
+
+```bash
+# start linter
+make lint
+
+# start tests
+make tests
+
+# check linter and tests
+make check-all
+
+# run dev server
+make run-dev
+
+# build project and run version for production
+make run-build
+```
+
 ## Available commands
 
 Development:
