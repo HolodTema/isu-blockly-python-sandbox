@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeChef - от визуального алгоритма к Python</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<style>
+:root{--accent:#2457e6;--ink:#111;--muted:#666;--line:#e8e8e8;}
+.reveal{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);font-size:34px;background:#fff}
+.reveal .slides{text-align:left}
+.reveal section{height:100%;box-sizing:border-box;padding:48px 72px}
+.reveal h1,.reveal h2,.reveal h3{font-weight:700;letter-spacing:-.035em;margin:0;color:var(--ink)}
+.reveal h1{font-size:1.85em;line-height:1.05;max-width:1000px}
+.reveal h2{font-size:1.25em;line-height:1.1;margin-bottom:28px}
+.reveal p,.reveal li{font-size:.66em;line-height:1.35}
+.reveal .muted{color:var(--muted)}
+.reveal .accent{color:var(--accent)}
+.kicker{font-size:.36em;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:22px}
+.sub{font-size:.52em;color:var(--muted);margin-top:18px;max-width:850px}
+.meta{position:absolute;bottom:34px;left:72px;right:72px;display:flex;justify-content:space-between;color:#8a8a8a;font-size:14px;letter-spacing:.02em}
+.num{color:var(--accent);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center;height:calc(100% - 80px)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:32px}
+.card{border-top:3px solid var(--accent);padding:20px 6px 0 0}
+.card .big{font-size:1.05em;font-weight:700;letter-spacing:-.02em;margin-bottom:8px}
+.card .small{font-size:.48em;color:var(--muted);line-height:1.35}
+.quote{font-size:.98em;line-height:1.18;font-weight:600;max-width:850px;border-left:5px solid var(--accent);padding-left:26px}
+.flow{display:flex;align-items:center;gap:14px;margin-top:36px}
+.node{border:1px solid #ddd;border-radius:14px;padding:18px 20px;font-size:.52em;font-weight:600;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.04)}
+.arrow{color:var(--accent);font-size:.7em}
+img.shot{width:100%;max-height:500px;object-fit:contain;border:1px solid #eee;border-radius:12px;box-shadow:0 16px 45px rgba(0,0,0,.07)}
+.code{background:#fafafa;border:1px solid #e9e9e9;border-radius:14px;padding:22px 26px;font:500 .42em/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}
+.pill{display:inline-block;border:1px solid #ddd;border-radius:999px;padding:7px 12px;font-size:.36em;color:#555;margin:5px 6px 0 0}
+.qr-row{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:34px}
+.qr-slot{height:118px;border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;background:#fff;overflow:hidden}
+.qr-slot img{width:100%;height:100%;object-fit:contain;display:block}
+.qr-label{text-align:center;font-size:.34em;color:#777;margin-top:8px}
+.source-note{font-size:.32em;color:var(--muted);line-height:1.35;margin-top:24px;max-width:1100px}
+.source-note em{color:#444}
+
+.stat-layout{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center;margin-top:18px}
+.stat-note{font-size:.34em;color:var(--muted);line-height:1.35;margin-top:16px}
+.stat-highlight{font-size:1.65em;font-weight:800;letter-spacing:-.05em;color:var(--accent)}
+.chart{display:flex;align-items:flex-end;justify-content:center;gap:72px;height:390px;border-bottom:1px solid #ddd;padding:0 30px 0 18px}
+.bar-group{height:100%;display:flex;align-items:flex-end;gap:12px;width:180px}
+.bar{width:78px;display:flex;flex-direction:column;justify-content:flex-start;position:relative;border-radius:8px 8px 0 0;overflow:hidden}
+.bar .yes{background:#5b8f67;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.34em;font-weight:700;min-height:36px}
+.bar .no{background:#b8bdc0;display:flex;align-items:center;justify-content:center;color:#555;font-size:.32em;font-weight:700;flex:1;min-height:50px}
+.bar-label{font-size:.38em;text-align:center;color:#555;margin-top:10px}
+.bar-total{font-size:.34em;color:#777;text-align:center;margin-bottom:8px}
+.comp-layout{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center;margin-top:22px}
+.comp-layout img{width:100%;max-height:360px;object-fit:contain;border:1px solid #eee;border-radius:12px}
+.comp-callout{border-left:5px solid var(--accent);padding-left:24px;font-size:.9em;line-height:1.2;font-weight:600}
+.comp-small{font-size:.47em;color:var(--muted);line-height:1.4;margin-top:20px}
+
+.center{display:flex;flex-direction:column;justify-content:center;height:100%}
+.bigstat{font-size:2.4em;font-weight:800;letter-spacing:-.06em;color:var(--accent)}
+.timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:42px}
+.titem{position:relative;padding:18px 16px 0 0;border-top:3px solid #ddd}
+.titem.active{border-top-color:var(--accent)}
+.titem b{font-size:.47em}.titem span{display:block;font-size:.36em;color:var(--muted);margin-top:8px;line-height:1.35}
+@media(max-width:900px){.reveal section{padding:36px}.grid2,.grid3{grid-template-columns:1fr}.timeline{grid-template-columns:1fr}.meta{left:36px;right:36px}.flow{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+<section>
+  <div class="center">
+    <div class="kicker">Научная конференция · ФБКИ ИГУ</div>
+    <h1>CodeChef: от визуального алгоритма<br>к <span class="accent">Python и pandas</span></h1>
+    <p class="sub">Веб-платформа визуального программирования и предобработки данных для учащихся 5–7 классов</p>
+    <p class="sub" style="margin-top:38px">Холодилов А.Д. · Трубачев Д.А. · Воловиков Г.А.<br>Научный руководитель - Пестова Ю.В., к.т.н.</p>
+  </div>
+  <div class="meta"><span>CodeChef</span><span class="num">01</span></div>
+</section>
+
+<section>
+  <div class="kicker">Постановка проблемы</div>
+  <h2>Что мешает школьнику перейти от идеи к коду?</h2>
+  <div class="grid3">
+    <div class="card"><div class="big">Синтаксис</div><div class="small">Кавычки, скобки, отступы и англоязычные ключевые слова создают лишний порог входа.</div></div>
+    <div class="card"><div class="big">Логика алгоритма</div><div class="small">Вместо построения алгоритма учащийся может тратить время на исправление синтаксических ошибок.</div></div>
+    <div class="card"><div class="big">Данные</div><div class="small">Визуальные среды часто не дают раннего опыта работы с реальными наборами данных и pandas.</div></div>
+  </div>
+  <div class="source-note"><em>«...этот способ создания программ не требует знания всех тонкостей синтаксиса языка программирования».</em> Широких А.А., Костарева Е.А. «Графические среды для обучения школьников программированию» // Информатика в школе. 2016. № 6 (119).</div>
+  <div class="meta"><span>Проблема</span><span class="num">02</span></div>
+</section>
+
+<section>
+  <div class="kicker">Исследовательская рамка</div>
+  <h2>Что именно мы хотели проверить на уровне учебного сценария?</h2>
+  <div class="grid2">
+    <div>
+      <div class="quote">Можно ли дать школьнику точку входа в программирование через блоки - и при этом не оторвать его от настоящего Python?</div>
+      <p class="sub">Фокус: программирование + предобработка данных + постепенный переход к текстовому коду.</p>
+    </div>
+    <div>
+      <div class="card"><div class="big">Объект</div><div class="small">Веб-приложение для предобработки данных с элементами визуального программирования.</div></div>
+      <div class="card"><div class="big">Предмет</div><div class="small">Проектирование и разработка такого веб-приложения.</div></div>
+      <div class="card"><div class="big">Аудитория</div><div class="small">Учащиеся 5–7 классов, изучающие программирование и анализ данных.</div></div>
+    </div>
+  </div>
+  <div class="meta"><span>Исследование</span><span class="num">03</span></div>
+</section>
+
+<section>
+  <div class="kicker">Решение</div>
+  <h2>Один учебный цикл: собрать → увидеть → запустить</h2>
+  <div class="flow">
+    <div class="node">Визуальные блоки</div><div class="arrow">→</div>
+    <div class="node">Генерация Python</div><div class="arrow">→</div>
+    <div class="node">Запуск в браузере</div><div class="arrow">→</div>
+    <div class="node">Работа с данными</div>
+  </div>
+  <div class="grid3" style="margin-top:55px">
+    <div class="card"><div class="big">Без сервера</div><div class="small">Python выполняется в браузере через Pyodide / WebAssembly.</div></div>
+    <div class="card"><div class="big">С настоящим кодом</div><div class="small">Результат визуального конструирования - реальный Python-код, а не только блоки.</div></div>
+    <div class="card"><div class="big">С реальными данными</div><div class="small">CSV, JSON, HTML и операции pandas становятся частью учебного сценария.</div></div>
+  </div>
+  <div class="meta"><span>CodeChef</span><span class="num">04</span></div>
+</section>
+
+<section>
+  <div class="kicker">Ключевой методический принцип</div>
+  <h2>Блоки и Python - одновременно</h2>
+  <div class="grid2">
+    <div><img class="shot" src="assets/codechef-blocks.png"></div>
+    <div>
+      <div class="quote">Школьник не «учит потом Python». Он видит текстовый эквивалент сразу.</div>
+      <div class="code" style="margin-top:28px">Блок → граф программы → Python
+
+for row in data:
+    print(row)
+
+# текстовый код доступен рядом
+# с визуальной схемой</div>
+    </div>
+  </div>
+  <div class="meta"><span>Методика</span><span class="num">05</span></div>
+</section>
+
+<section>
+  <div class="kicker">Предобработка данных</div>
+  <h2>pandas становится не «отдельной темой», а частью задачи</h2>
+  <div class="grid2">
+    <div><img class="shot" src="assets/codechef-pandas.png"></div>
+    <div>
+      <ul>
+        <li>чтение таблиц из HTML, JSON и CSV;</li>
+        <li>объединение таблиц;</li>
+        <li>отбор и удаление колонок;</li>
+        <li>сохранение результата в CSV;</li>
+        <li>ввод данных через stdin.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="meta"><span>Данные</span><span class="num">06</span></div>
+</section>
+
+<section>
+  <div class="kicker">Учебный сценарий</div>
+  <h2>От первой схемы - к самостоятельной отладке</h2>
+  <div class="timeline">
+    <div class="titem active"><b>1. Собрать</b><span>Перетащить блоки и увидеть алгоритм.</span></div>
+    <div class="titem active"><b>2. Сравнить</b><span>Сопоставить блоки с Python-кодом.</span></div>
+    <div class="titem active"><b>3. Запустить</b><span>Выполнить программу прямо в браузере.</span></div>
+    <div class="titem active"><b>4. Отладить</b><span>Использовать точки останова и шаги.</span></div>
+    <div class="titem active"><b>5. Продолжить</b><span>Сохранить проект и вернуться к нему позже.</span></div>
+  </div>
+  <div style="margin-top:42px"><img class="shot" src="assets/codechef-debug.png" style="max-height:330px"></div>
+  <div class="meta"><span>Учебный процесс</span><span class="num">07</span></div>
+</section>
+
+<section>
+  <div class="kicker">Техническая реализация</div>
+  <h2>Веб-приложение, в котором «тяжёлый» Python не блокирует интерфейс</h2>
+  <div class="grid2">
+    <div>
+      <div class="card"><div class="big">React + TypeScript</div><div class="small">Клиентская часть и интерфейс редактора.</div></div>
+      <div class="card"><div class="big">Blockly + Pyodide</div><div class="small">Визуальные блоки и выполнение Python в браузере.</div></div>
+      <div class="card"><div class="big">Web Worker</div><div class="small">Pyodide вынесен из основного потока, чтобы тяжёлая инициализация не блокировала UI.</div></div>
+    </div>
+    <div>
+      <img class="shot" src="assets/codechef-editor.png">
+    </div>
+  </div>
+  <div class="meta"><span>Архитектура</span><span class="num">08</span></div>
+</section>
+
+<section>
+  <div class="kicker">Апробация</div>
+  <h2>Платформа уже используется в олимпиадном контексте</h2>
+  <div class="grid2">
+    <div>
+      <div class="bigstat">НТО Junior</div>
+      <p class="sub">CodeChef используется во всероссийской олимпиаде «НТО Юниоры» для школьников 5–7 классов.</p>
+      <div style="margin-top:26px"><span class="pill">визуальное программирование</span><span class="pill">предобработка данных</span><span class="pill">5–7 классы</span></div>
+    </div>
+    <div><img class="shot" src="assets/nto.png" style="max-height:430px"></div>
+  </div>
+  <div class="meta"><span>Апробация</span><span class="num">09</span></div>
+</section>
+
+<section>
+  <div class="kicker">Конкурентный контекст</div>
+  <h2>Близкий по подходу сервис Trinket прекратил работу</h2>
+  <div class="comp-layout">
+    <div>
+      <div class="comp-callout">31 августа 2026 года Trinket был закрыт.</div>
+      <div class="comp-small">Сервис предлагал похожий сценарий: программирование в браузере, учебные материалы и выполнение кода. Это освобождает нишу для решений, ориентированных на Python, визуальное программирование и работу с данными.</div>
+    </div>
+    <div><img src="assets/trinket-shutdown.png"></div>
+  </div>
+  <div class="meta"><span>Конкурентный контекст</span><span class="num">10</span></div>
+</section>
+
+<section>
+  <div class="kicker">Апробация: результаты НТО</div>
+  <h2>Доля участников, решивших задачу, выросла с 29% до 46%</h2>
+  <div class="stat-layout">
+    <div>
+      <div class="stat-highlight">+17 п.п.</div>
+      <p class="sub">2025: 154 из 529 участников решили задачу.<br>2026: 524 из 1132 участников решили задачу.</p>
+      <p class="stat-note">Данные предоставлены по результатам НТО. Рост доли решивших фиксирует изменение результата между 2025 и 2026 годами; причинно-следственный эффект CodeChef отдельно не оценивается.</p>
+    </div>
+    <div class="chart">
+      <div>
+        <img class="shot" src="assets/nto-stats.png" style="max-height:500px">
+        
+      
+    </div>
+  </div>
+  <div class="meta"><span>Апробация</span><span class="num">11</span></div>
+</section>
+
+<section>
+  <div class="kicker">В сравнении</div>
+  <h2>Не «ещё один Scratch»</h2>
+  <div class="grid2">
+    <div>
+      <div class="card"><div class="big">Scratch</div><div class="small">Снимает синтаксический барьер, но результатом остаётся собственный блочный код.</div></div>
+      <div class="card"><div class="big">CodeChef</div><div class="small">Сохраняет визуальный вход, но одновременно показывает эквивалентный Python и работает с реальными данными.</div></div>
+    </div>
+    <div>
+      <img class="shot" src="assets/scratch.png" style="max-height:420px">
+    </div>
+  </div>
+  <div class="meta"><span>Новизна подхода</span><span class="num">12</span></div>
+</section>
+
+<section>
+  <div class="kicker">Вывод</div>
+  <h2>CodeChef снижает порог входа - <span class="accent">не пряча Python</span></h2>
+  <div class="grid3">
+    <div class="card"><div class="big">1</div><div class="small">Визуальная схема помогает сосредоточиться на логике алгоритма.</div></div>
+    <div class="card"><div class="big">2</div><div class="small">Рядом остаётся реальный Python-код, поэтому переход к тексту происходит без разрыва.</div></div>
+    <div class="card"><div class="big">3</div><div class="small">pandas и реальные файлы позволяют рано перейти от учебных конструкций к анализу данных.</div></div>
+  </div>
+  <p class="quote" style="margin-top:34px">Идея платформы: сделать первый шаг проще, но следующий - настоящим.</p>
+  <div class="qr-row">
+    <div><div class="qr-slot"><img src="assets/qr1.png" alt="QR CodeChef"></div><div class="qr-label">CodeChef</div></div>
+    <div><div class="qr-slot"><img src="assets/qr2.png" alt="QR Документация"></div><div class="qr-label">Документация</div></div>
+    <div><div class="qr-slot"><img src="assets/qr3.png" alt="QR Обучение"></div><div class="qr-label">Обучение</div></div>
+    <div><div class="qr-slot"><img src="assets/qr4.jpeg" alt="QR GitHub"></div><div class="qr-label">GitHub</div></div>
+  </div>
+  <div class="meta"><span>Заключение</span><span class="num">13</span></div>
+</section>
+
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>Reveal.initialize({hash:true,slideNumber:false,controls:true,progress:true,transition:'fade',backgroundTransition:'fade',width:1280,height:720,margin:0});</script>
+</body>
+</html>
